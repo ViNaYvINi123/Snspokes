@@ -1,0 +1,102 @@
+{
+  "name": "SNSpokes — AI Debug Assistant (OpenRouter)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sn-ai-debug",
+        "responseMode": "responseNode"
+      },
+      "id": "webhook",
+      "name": "AI Debug Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json;\nconst question = (body.question || '').trim();\nconst contextType = body.context_type || 'general';\nconst contextData = body.context_data || '';\nif (!question || question.length < 5) return [{ json: { valid: false, error: 'Question required' } }];\nreturn [{ json: { valid: true, question, contextType, contextData } }];"
+      },
+      "id": "validate",
+      "name": "Validate",
+      "type": "n8n-nodes-base.code",
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": { "boolean": [{ "value1": "={{ $json.valid }}", "value2": true }] }
+      },
+      "id": "check-valid",
+      "name": "Valid?",
+      "type": "n8n-nodes-base.if",
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.OPENROUTER_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "HTTP-Referer", "value": "https://snspokes.com" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "bodyParameters": {
+          "parameters": [
+            { "name": "model", "value": "meta-llama/llama-3.1-8b-instruct:free" },
+            { "name": "max_tokens", "value": 1500 },
+            {
+              "name": "messages",
+              "value": "=[{\"role\":\"system\",\"content\":\"You are an expert full-stack developer debugging a ServiceNow SaaS platform called snspokes. Tech stack: Next.js, PostgreSQL, Redis, n8n, Ollama/OpenRouter AI, Docker on Hetzner. Help debug issues, suggest fixes, write SQL queries, explain errors. Be concise and give actionable advice.\"},{\"role\":\"user\",\"content\":\"{{ $json.contextData ? 'Context:\\n' + $json.contextData + '\\n\\nQuestion: ' : '' }}{{ $json.question }}\"}]"
+            }
+          ]
+        },
+        "options": { "timeout": 60000, "response": { "response": { "neverError": true } } }
+      },
+      "id": "openrouter",
+      "name": "OpenRouter — Debug",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const res = $input.first().json;\nconst answer = res?.choices?.[0]?.message?.content || 'AI unavailable';\nreturn [{ json: { success: true, answer, model: res.model, context_used: $('Validate').first().json.contextType } }];"
+      },
+      "id": "parse",
+      "name": "Parse Answer",
+      "type": "n8n-nodes-base.code",
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { success: false, error: $json.error || 'Invalid input' } }];"
+      },
+      "id": "error-resp",
+      "name": "Error",
+      "type": "n8n-nodes-base.code",
+      "position": [900, 420]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": { "responseHeaders": { "entries": [{ "name": "Content-Type", "value": "application/json" },{ "name": "Access-Control-Allow-Origin", "value": "*" }] } }
+      },
+      "id": "respond",
+      "name": "Send Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [1340, 300]
+    }
+  ],
+  "connections": {
+    "AI Debug Webhook": { "main": [[{ "node": "Validate", "type": "main", "index": 0 }]] },
+    "Validate": { "main": [[{ "node": "Valid?", "type": "main", "index": 0 }]] },
+    "Valid?": { "main": [[{ "node": "OpenRouter — Debug", "type": "main", "index": 0 }],[{ "node": "Error", "type": "main", "index": 0 }]] },
+    "OpenRouter — Debug": { "main": [[{ "node": "Parse Answer", "type": "main", "index": 0 }]] },
+    "Parse Answer": { "main": [[{ "node": "Send Response", "type": "main", "index": 0 }]] },
+    "Error": { "main": [[{ "node": "Send Response", "type": "main", "index": 0 }]] }
+  },
+  "active": true
+}

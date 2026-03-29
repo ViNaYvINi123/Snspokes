@@ -1,0 +1,174 @@
+{
+  "name": "SNSpokes — AI Spoke Content Enricher (OpenRouter)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sn-enrich-spoke",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Enrich Spoke Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate input from seeder\nconst body = $input.first().json;\nconst slug = (body.slug || '').trim().toLowerCase();\nconst name = (body.name || '').trim();\nconst category = (body.category || 'Integration').trim();\nconst pluginId = (body.plugin_id || '').trim();\nconst credType = (body.credential_type || 'OAuth 2.0').trim();\nconst minVersion = (body.min_version || 'Rome').trim();\n\nif (!slug || !name) {\n  return [{ json: { valid: false, error: 'slug and name required' } }];\n}\n\nreturn [{ json: { valid: true, slug, name, category, pluginId, credType, minVersion } }];"
+      },
+      "id": "validate",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [{ "value1": "={{ $json.valid }}", "value2": true }]
+        }
+      },
+      "id": "check-valid",
+      "name": "Is Valid?",
+      "type": "n8n-nodes-base.if",
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.OPENROUTER_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "HTTP-Referer", "value": "https://snspokes.com" },
+            { "name": "X-Title", "value": "snspokes" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "bodyParameters": {
+          "parameters": [
+            { "name": "model", "value": "meta-llama/llama-3.1-8b-instruct:free" },
+            { "name": "max_tokens", "value": 2500 },
+            {
+              "name": "messages",
+              "value": "=[{\"role\":\"system\",\"content\":\"You are a ServiceNow Integration Hub expert with deep knowledge of all official spokes from the ServiceNow Store.\\n\\nGenerate ACCURATE, REAL documentation based only on the actual ServiceNow spoke capabilities. Do NOT invent actions that don't exist.\\n\\nReturn ONLY valid JSON — no markdown, no backticks, no explanation.\"},{\"role\":\"user\",\"content\":\"Generate complete reference documentation for the ServiceNow Integration Hub spoke: {{ $json.name }}\\n\\nKnown facts:\\n- Scope/Plugin ID: {{ $json.pluginId }}\\n- Category: {{ $json.category }}\\n- Auth type: {{ $json.credType }}\\n- Min ServiceNow version: {{ $json.minVersion }}\\n\\nReturn this exact JSON structure with REAL, ACCURATE information:\\n{\\n  \\\"slug\\\": \\\"{{ $json.slug }}\\\",\\n  \\\"name\\\": \\\"{{ $json.name }}\\\",\\n  \\\"description\\\": \\\"One clear sentence describing what this spoke does in ServiceNow\\\",\\n  \\\"official_description\\\": \\\"2-3 sentences from the perspective of the ServiceNow Store listing. Be accurate.\\\",\\n  \\\"personal_tip\\\": \\\"One practical developer tip for using this spoke effectively\\\",\\n  \\\"ai_description\\\": \\\"Beginner-friendly explanation: what problem does this spoke solve and how?\\\",\\n  \\\"setup_steps\\\": [\\n    \\\"Step 1: Install the spoke from ServiceNow Store (scope: {{ $json.pluginId }})\\\",\\n    \\\"Step 2: ...\\\",\\n    \\\"Step 3: ...\\\",\\n    \\\"Step 4: ...\\\",\\n    \\\"Step 5: Test with a simple flow in Flow Designer\\\"\\n  ],\\n  \\\"actions\\\": [\\n    {\\\"name\\\": \\\"Real Action Name\\\", \\\"description\\\": \\\"What this action does\\\"},\\n    {\\\"name\\\": \\\"Real Action Name 2\\\", \\\"description\\\": \\\"What this action does\\\"}\\n  ],\\n  \\\"common_errors\\\": [\\n    {\\\"error\\\": \\\"Real error message\\\", \\\"fix\\\": \\\"How to fix it\\\"},\\n    {\\\"error\\\": \\\"Another real error\\\", \\\"fix\\\": \\\"Fix steps\\\"}\\n  ],\\n  \\\"code_example\\\": \\\"// ServiceNow Flow Designer script example for {{ $json.name }}\\\\n// This shows how to use this spoke in a script action\\\\nvar result = ...\\\",\\n  \\\"version_support\\\": {\\n    \\\"min_version\\\": \\\"{{ $json.minVersion }}\\\",\\n    \\\"tested_versions\\\": [\\\"List real SN versions this works on\\\"],\\n    \\\"known_breaking_changes\\\": \\\"Any known version-specific issues or empty string\\\"\\n  },\\n  \\\"related_spokes\\\": [\\\"Related Spoke 1\\\", \\\"Related Spoke 2\\\"]\\n}\\n\\nIMPORTANT: Only include REAL actions that actually exist in this spoke. Do not make up actions.\"}]"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000,
+          "response": { "response": { "neverError": true } }
+        }
+      },
+      "id": "openrouter-call",
+      "name": "Call OpenRouter AI",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse the OpenRouter response and extract JSON\nconst response = $input.first().json;\nconst slug = $('Validate Input').first().json.slug;\n\n// Check for API errors\nif (response.error) {\n  return [{ json: { success: false, error: response.error.message || 'OpenRouter error', slug } }];\n}\n\nconst content = response?.choices?.[0]?.message?.content || '';\nif (!content) {\n  return [{ json: { success: false, error: 'Empty AI response', slug } }];\n}\n\n// Parse JSON from response\nlet spokeData;\ntry {\n  // Strip markdown code blocks if present\n  const cleaned = content.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  const match = cleaned.match(/\\{[\\s\\S]*\\}/);\n  spokeData = JSON.parse(match ? match[0] : cleaned);\n} catch (parseErr) {\n  return [{ json: { success: false, error: 'JSON parse failed: ' + parseErr.message, raw: content.substring(0, 200), slug } }];\n}\n\n// Validate required fields\nif (!spokeData.actions || !Array.isArray(spokeData.actions) || spokeData.actions.length === 0) {\n  return [{ json: { success: false, error: 'No actions generated', slug } }];\n}\n\nreturn [{ json: { success: true, slug, spoke: spokeData, model: response.model } }];"
+      },
+      "id": "parse-response",
+      "name": "Parse AI Response",
+      "type": "n8n-nodes-base.code",
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [{ "value1": "={{ $json.success }}", "value2": true }]
+        }
+      },
+      "id": "check-parsed",
+      "name": "Parse Successful?",
+      "type": "n8n-nodes-base.if",
+      "position": [1340, 200]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE sn_spokes SET\n  official_description = $1,\n  personal_tip = $2,\n  ai_description = $3,\n  setup_steps = $4,\n  actions = $5,\n  common_errors = $6,\n  code_example = $7,\n  updated_at = NOW()\nWHERE slug = $8\nRETURNING id, name, slug",
+        "additionalFields": {
+          "queryParams": "={{ [\n  $json.spoke.official_description || '',\n  $json.spoke.personal_tip || '',\n  $json.spoke.ai_description || '',\n  JSON.stringify($json.spoke.setup_steps || []),\n  JSON.stringify($json.spoke.actions || []),\n  JSON.stringify($json.spoke.common_errors || []),\n  $json.spoke.code_example || '',\n  $json.slug\n] }}"
+        }
+      },
+      "id": "save-to-db",
+      "name": "Save to Database",
+      "type": "n8n-nodes-base.postgres",
+      "credentials": { "postgres": { "id": "1", "name": "Postgres snspokes" } },
+      "position": [1560, 140]
+    },
+    {
+      "parameters": {
+        "jsCode": "const dbResult = $input.first().json;\nconst spokeName = $('Parse AI Response').first().json.spoke?.name || '';\nreturn [{ json: { success: true, message: 'Spoke enriched successfully', name: spokeName, slug: $('Parse AI Response').first().json.slug } }];"
+      },
+      "id": "success-response",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.code",
+      "position": [1780, 140]
+    },
+    {
+      "parameters": {
+        "jsCode": "const err = $json.error || 'Parse failed';\nconst slug = $json.slug || 'unknown';\nreturn [{ json: { success: false, error: err, slug } }];"
+      },
+      "id": "error-response",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.code",
+      "position": [1560, 320]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { success: false, error: $json.error || 'Invalid input' } }];"
+      },
+      "id": "invalid-response",
+      "name": "Invalid Response",
+      "type": "n8n-nodes-base.code",
+      "position": [900, 420]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Content-Type", "value": "application/json" },
+              { "name": "Access-Control-Allow-Origin", "value": "*" }
+            ]
+          }
+        }
+      },
+      "id": "respond",
+      "name": "Send Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [2000, 300]
+    }
+  ],
+  "connections": {
+    "Enrich Spoke Webhook": { "main": [[{ "node": "Validate Input", "type": "main", "index": 0 }]] },
+    "Validate Input": { "main": [[{ "node": "Is Valid?", "type": "main", "index": 0 }]] },
+    "Is Valid?": {
+      "main": [
+        [{ "node": "Call OpenRouter AI", "type": "main", "index": 0 }],
+        [{ "node": "Invalid Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Call OpenRouter AI": { "main": [[{ "node": "Parse AI Response", "type": "main", "index": 0 }]] },
+    "Parse AI Response": { "main": [[{ "node": "Parse Successful?", "type": "main", "index": 0 }]] },
+    "Parse Successful?": {
+      "main": [
+        [{ "node": "Save to Database", "type": "main", "index": 0 }],
+        [{ "node": "Error Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Save to Database": { "main": [[{ "node": "Success Response", "type": "main", "index": 0 }]] },
+    "Success Response": { "main": [[{ "node": "Send Response", "type": "main", "index": 0 }]] },
+    "Error Response": { "main": [[{ "node": "Send Response", "type": "main", "index": 0 }]] },
+    "Invalid Response": { "main": [[{ "node": "Send Response", "type": "main", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": { "executionOrder": "v1" }
+}

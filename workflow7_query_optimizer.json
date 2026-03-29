@@ -1,0 +1,102 @@
+{
+  "name": "SNSpokes — Query Optimization (OpenRouter)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sn-optimize-query",
+        "responseMode": "responseNode"
+      },
+      "id": "webhook",
+      "name": "Optimize Query Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json;\nconst script = (body.script || '').trim();\nconst tableName = (body.table_name || '').trim();\nif (!script || script.length < 20) return [{ json: { valid: false, error: 'Script too short' } }];\nreturn [{ json: { valid: true, script, tableName } }];"
+      },
+      "id": "validate",
+      "name": "Validate",
+      "type": "n8n-nodes-base.code",
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": { "boolean": [{ "value1": "={{ $json.valid }}", "value2": true }] }
+      },
+      "id": "check-valid",
+      "name": "Valid?",
+      "type": "n8n-nodes-base.if",
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.OPENROUTER_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "HTTP-Referer", "value": "https://snspokes.com" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "bodyParameters": {
+          "parameters": [
+            { "name": "model", "value": "meta-llama/llama-3.1-8b-instruct:free" },
+            { "name": "max_tokens", "value": 1500 },
+            {
+              "name": "messages",
+              "value": "=[{\"role\":\"system\",\"content\":\"ServiceNow GlideRecord performance expert. Return ONLY JSON: {\\\"issues\\\":[{\\\"severity\\\":\\\"warning|error|info\\\",\\\"message\\\":\\\"...\\\"}],\\\"optimized_script\\\":\\\"...\\\",\\\"explanation\\\":\\\"...\\\",\\\"score\\\":85,\\\"tips\\\":[\\\"...\\\"]}\"},{\"role\":\"user\",\"content\":\"Optimize this GlideRecord script for ServiceNow table '{{ $json.tableName }}':\\n\\n{{ $json.script }}\"}]"
+            }
+          ]
+        },
+        "options": { "timeout": 45000, "response": { "response": { "neverError": true } } }
+      },
+      "id": "ai-optimize",
+      "name": "AI Optimize",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const res = $input.first().json;\nconst content = res?.choices?.[0]?.message?.content || '';\nlet data;\ntry {\n  const clean = content.replace(/```json|```/g,'').trim();\n  data = JSON.parse(clean.match(/\\{[\\s\\S]*\\}/)?.[0] || clean);\n} catch {\n  data = { explanation: content, issues: [], tips: [], score: 50 };\n}\nreturn [{ json: { success: true, ...data, model: res.model } }];"
+      },
+      "id": "parse",
+      "name": "Parse Result",
+      "type": "n8n-nodes-base.code",
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { success: false, error: $json.error || 'Invalid input' } }];"
+      },
+      "id": "error-resp",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.code",
+      "position": [900, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": { "responseHeaders": { "entries": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Access-Control-Allow-Origin", "value": "*" }] } }
+      },
+      "id": "respond",
+      "name": "Send Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [1340, 300]
+    }
+  ],
+  "connections": {
+    "Optimize Query Webhook": { "main": [[{ "node": "Validate", "type": "main", "index": 0 }]] },
+    "Validate": { "main": [[{ "node": "Valid?", "type": "main", "index": 0 }]] },
+    "Valid?": { "main": [[{ "node": "AI Optimize", "type": "main", "index": 0 }], [{ "node": "Error Response", "type": "main", "index": 0 }]] },
+    "AI Optimize": { "main": [[{ "node": "Parse Result", "type": "main", "index": 0 }]] },
+    "Parse Result": { "main": [[{ "node": "Send Response", "type": "main", "index": 0 }]] },
+    "Error Response": { "main": [[{ "node": "Send Response", "type": "main", "index": 0 }]] }
+  },
+  "active": true
+}

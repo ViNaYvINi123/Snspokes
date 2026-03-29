@@ -1,0 +1,201 @@
+{
+  "name": "snspokes - 2. Get Spoke Detail",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sn-get-spoke",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-g-001",
+      "name": "Get Spoke Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "sn-get-spoke"
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  const body = $input.first().json.body;\n  if (!body) throw new Error('Request body is empty');\n  const slug = body.slug || '';\n  if (!slug || slug.trim().length < 1) throw new Error('Spoke slug is required');\n  const clean = slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');\n  return [{ json: { slug: clean } }];\n} catch(e) {\n  throw new Error(e.message);\n}"
+      },
+      "id": "node-g-002",
+      "name": "Validate Slug",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"success\": false, \"error\": \"{{ $json.error.message }}\" }",
+        "options": { "responseCode": 400, "responseHeaders": { "entries": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Access-Control-Allow-Origin", "value": "*" }] } }
+      },
+      "id": "node-g-003",
+      "name": "Return Validation Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [460, 500]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT s.*, array_agg(DISTINCT rs.related_slug) as related_spokes FROM sn_spokes s LEFT JOIN sn_related_spokes rs ON s.slug = rs.spoke_slug WHERE s.slug = '{{ $json.slug }}' GROUP BY s.id, s.slug, s.name, s.description, s.official_description, s.personal_tip, s.ai_description, s.icon, s.plugin_id, s.category, s.credential_type, s.min_version, s.setup_steps, s.actions, s.common_errors, s.code_example, s.tags, s.created_at LIMIT 1;",
+        "options": {}
+      },
+      "id": "node-g-004",
+      "name": "Fetch Spoke from DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [680, 300],
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "Hetzner Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"success\": false, \"error\": \"Database connection failed. Please try again.\" }",
+        "options": { "responseCode": 503, "responseHeaders": { "entries": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Access-Control-Allow-Origin", "value": "*" }] } }
+      },
+      "id": "node-g-005",
+      "name": "Return DB Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [680, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = $input.all();\nconst slug = $('Validate Slug').first().json.slug;\n\nif (results && results.length > 0 && results[0].json.slug) {\n  return [{ json: { found: true, slug: slug, spoke: results[0].json } }];\n}\n\nreturn [{ json: { found: false, slug: slug } }];"
+      },
+      "id": "node-g-006",
+      "name": "Check if Found",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [{ "value1": "={{ $json.found }}", "value2": true }]
+        }
+      },
+      "id": "node-g-007",
+      "name": "Exists in DB?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.19.0.1:11434/api/chat",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"qwen2.5:3b\",\n  \"stream\": false,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a ServiceNow Integration Hub expert. Return ONLY valid JSON. No markdown, no explanation, just pure JSON object.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Generate a complete detailed reference for the ServiceNow Integration Hub spoke: '{{ $json.slug }}'. Return a JSON object with these exact fields: slug (string), name (string), description (string, 2 sentences), official_description (string, technical description from docs perspective, 3-4 sentences), personal_tip (string, practical developer tip, 2-3 sentences), ai_description (string, simple explanation for beginners, 3-4 sentences), icon (single emoji), plugin_id (string, e.g. com.glide.hub.spoke.slack), category (one of: Communication/DevOps/Cloud/ITSM/Security/HR/CRM), credential_type (string), min_version (string, e.g. Rome), setup_steps (array of 5-7 strings), actions (array of objects with name and description fields, minimum 5 actions), common_errors (array of objects with error and fix fields, minimum 3), code_example (string, working ServiceNow Flow Designer or script example), tags (array of strings), related_spokes (array of 3-4 related spoke name strings). Return ONLY the JSON object.\"\n    }\n  ]\n}",
+        "options": { "timeout": 120000 }
+      },
+      "id": "node-g-008",
+      "name": "AI Generate Spoke Detail",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1340, 400],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"success\": false, \"error\": \"AI model unavailable. Please try again shortly.\" }",
+        "options": { "responseCode": 503, "responseHeaders": { "entries": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Access-Control-Allow-Origin", "value": "*" }] } }
+      },
+      "id": "node-g-009",
+      "name": "Return AI Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1340, 600]
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  const aiResponse = $input.first().json;\n  const slug = $('Validate Slug').first().json.slug;\n  const content = aiResponse.message && aiResponse.message.content ? aiResponse.message.content : '';\n  const clean = content.replace(/```json/g, '').replace(/```/g, '').trim();\n  const spoke = JSON.parse(clean);\n  if (!spoke || typeof spoke !== 'object') throw new Error('Invalid response');\n  spoke.slug = spoke.slug || slug;\n  spoke.from_ai = true;\n  return [{ json: { success: true, spoke: spoke, from_ai: true } }];\n} catch(e) {\n  throw new Error('Failed to parse AI response: ' + e.message);\n}"
+      },
+      "id": "node-g-010",
+      "name": "Parse AI Spoke",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1560, 400],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"success\": false, \"error\": \"Failed to generate spoke details. Please try again.\" }",
+        "options": { "responseCode": 500, "responseHeaders": { "entries": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Access-Control-Allow-Origin", "value": "*" }] } }
+      },
+      "id": "node-g-011",
+      "name": "Return Parse Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1560, 600]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO sn_spokes (slug, name, description, official_description, personal_tip, ai_description, icon, plugin_id, category, credential_type, min_version, setup_steps, actions, common_errors, code_example, tags, created_at)\nVALUES (\n  '{{ $json.spoke.slug }}',\n  '{{ $json.spoke.name }}',\n  '{{ $json.spoke.description ? $json.spoke.description.replace(/'/g, \"''\") : \"\" }}',\n  '{{ $json.spoke.official_description ? $json.spoke.official_description.replace(/'/g, \"''\") : \"\" }}',\n  '{{ $json.spoke.personal_tip ? $json.spoke.personal_tip.replace(/'/g, \"''\") : \"\" }}',\n  '{{ $json.spoke.ai_description ? $json.spoke.ai_description.replace(/'/g, \"''\") : \"\" }}',\n  '{{ $json.spoke.icon || \"🔌\" }}',\n  '{{ $json.spoke.plugin_id || \"\" }}',\n  '{{ $json.spoke.category || \"Integration\" }}',\n  '{{ $json.spoke.credential_type || \"OAuth 2.0\" }}',\n  '{{ $json.spoke.min_version || \"Rome\" }}',\n  '{{ JSON.stringify($json.spoke.setup_steps || []) }}'::jsonb,\n  '{{ JSON.stringify($json.spoke.actions || []) }}'::jsonb,\n  '{{ JSON.stringify($json.spoke.common_errors || []) }}'::jsonb,\n  '{{ ($json.spoke.code_example || \"\").replace(/'/g, \"''\") }}',\n  ARRAY[{{ ($json.spoke.tags || []).map(t => \"'\" + t + \"'\").join(\",\") }}],\n  NOW()\n) ON CONFLICT (slug) DO UPDATE SET\n  ai_description = EXCLUDED.ai_description,\n  updated_at = NOW();",
+        "options": {}
+      },
+      "id": "node-g-012",
+      "name": "Cache Spoke in DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1780, 400],
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "postgres": {
+          "id": "YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "Hetzner Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use DB spoke data directly\nconst spoke = $input.first().json.spoke;\nreturn [{ json: { success: true, spoke: spoke, from_ai: false } }];"
+      },
+      "id": "node-g-013",
+      "name": "Use DB Spoke",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": { "responseCode": 200, "responseHeaders": { "entries": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Access-Control-Allow-Origin", "value": "*" }] } }
+      },
+      "id": "node-g-014",
+      "name": "Send Spoke Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2000, 300]
+    }
+  ],
+  "connections": {
+    "Get Spoke Webhook": { "main": [[{ "node": "Validate Slug", "type": "main", "index": 0 }]] },
+    "Validate Slug": { "main": [[{ "node": "Fetch Spoke from DB", "type": "main", "index": 0 }], [{ "node": "Return Validation Error", "type": "main", "index": 0 }]] },
+    "Fetch Spoke from DB": { "main": [[{ "node": "Check if Found", "type": "main", "index": 0 }], [{ "node": "Return DB Error", "type": "main", "index": 0 }]] },
+    "Check if Found": { "main": [[{ "node": "Exists in DB?", "type": "main", "index": 0 }]] },
+    "Exists in DB?": { "main": [[{ "node": "Use DB Spoke", "type": "main", "index": 0 }], [{ "node": "AI Generate Spoke Detail", "type": "main", "index": 0 }]] },
+    "AI Generate Spoke Detail": { "main": [[{ "node": "Parse AI Spoke", "type": "main", "index": 0 }], [{ "node": "Return AI Error", "type": "main", "index": 0 }]] },
+    "Parse AI Spoke": { "main": [[{ "node": "Cache Spoke in DB", "type": "main", "index": 0 }], [{ "node": "Return Parse Error", "type": "main", "index": 0 }]] },
+    "Cache Spoke in DB": { "main": [[{ "node": "Send Spoke Response", "type": "main", "index": 0 }]] },
+    "Use DB Spoke": { "main": [[{ "node": "Send Spoke Response", "type": "main", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": { "executionOrder": "v1" },
+  "tags": ["snspokes", "spoke-detail"]
+}

@@ -1,0 +1,98 @@
+{
+  "name": "SNSpokes — Churn Re-engagement (Scheduled)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "triggerAtHour": 10, "triggerAtMinute": 0 }] }
+      },
+      "id": "trigger",
+      "name": "Daily 10AM Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT u.id, u.email, u.name, u.plan FROM sn_users u WHERE u.is_active=true AND u.email IS NOT NULL AND (u.last_login < NOW()-INTERVAL '14 days' OR u.last_login IS NULL) AND (u.churn_email_sent IS NULL OR u.churn_email_sent < NOW()-INTERVAL '30 days') LIMIT 50"
+      },
+      "id": "find-churned",
+      "name": "Find Inactive Users",
+      "type": "n8n-nodes-base.postgres",
+      "credentials": { "postgres": { "id": "1", "name": "Postgres snspokes" } },
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [{ "value1": "={{ $input.all().length }}", "operation": "larger", "value2": 0 }]
+        }
+      },
+      "id": "has-users",
+      "name": "Has Users?",
+      "type": "n8n-nodes-base.if",
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.OPENROUTER_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "bodyParameters": {
+          "parameters": [
+            { "name": "model", "value": "meta-llama/llama-3.1-8b-instruct:free" },
+            { "name": "max_tokens", "value": 300 },
+            {
+              "name": "messages",
+              "value": "=[{\"role\":\"system\",\"content\":\"Write a short friendly re-engagement email for a ServiceNow developer who has not used snspokes in 2 weeks. Max 3 sentences. Return only the email body.\"},{\"role\":\"user\",\"content\":\"Write it for {{ $json.name || 'Developer' }} on {{ $json.plan }} plan.\"}]"
+            }
+          ]
+        },
+        "options": { "timeout": 30000, "response": { "response": { "neverError": true } } }
+      },
+      "id": "generate-email",
+      "name": "AI Generate Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE sn_users SET churn_email_sent=NOW() WHERE id=$1",
+        "additionalFields": { "queryParams": "={{ [$json.id] }}" }
+      },
+      "id": "mark-sent",
+      "name": "Mark Email Sent",
+      "type": "n8n-nodes-base.postgres",
+      "credentials": { "postgres": { "id": "1", "name": "Postgres snspokes" } },
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { skipped: true, reason: 'No inactive users found' } }];"
+      },
+      "id": "no-users",
+      "name": "No Users",
+      "type": "n8n-nodes-base.code",
+      "position": [900, 420]
+    }
+  ],
+  "connections": {
+    "Daily 10AM Trigger": { "main": [[{ "node": "Find Inactive Users", "type": "main", "index": 0 }]] },
+    "Find Inactive Users": { "main": [[{ "node": "Has Users?", "type": "main", "index": 0 }]] },
+    "Has Users?": {
+      "main": [
+        [{ "node": "AI Generate Email", "type": "main", "index": 0 }],
+        [{ "node": "No Users", "type": "main", "index": 0 }]
+      ]
+    },
+    "AI Generate Email": { "main": [[{ "node": "Mark Email Sent", "type": "main", "index": 0 }]] }
+  },
+  "active": true
+}

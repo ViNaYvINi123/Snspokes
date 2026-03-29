@@ -1,0 +1,94 @@
+version: '3.8'
+
+networks:
+  internal:
+    driver: bridge
+  external:
+    driver: bridge
+
+services:
+  # ── PostgreSQL ──
+  db:
+    image: postgres:15-alpine
+    container_name: snspokes_db
+    restart: always
+    environment:
+      POSTGRES_DB: snspokes
+      POSTGRES_USER: snspokes_user
+      POSTGRES_PASSWORD: Vinay@123
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U snspokes_user -d snspokes"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis ──
+  redis:
+    image: redis:7-alpine
+    container_name: snspokes_redis
+    restart: always
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --save ""
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # ── n8n ──
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: snspokes_n8n
+    restart: always
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=false
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=db
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=snspokes
+      - DB_POSTGRESDB_USER=snspokes_user
+      - DB_POSTGRESDB_PASSWORD=Vinay@123
+      - EXECUTIONS_PROCESS=main
+      - GENERIC_TIMEZONE=UTC
+    ports: ["5678:5678"]
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [internal, external]
+    volumes:
+      - n8ndata:/home/node/.n8n
+
+  # ── Next.js (Production) ──
+  nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: snspokes_nextjs
+    restart: always
+    env_file: .env.local
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [internal, external]
+    ports: ["3001:3001"]
+
+  # ── Nginx ──
+  nginx:
+    image: nginx:alpine
+    container_name: snspokes_nginx
+    restart: always
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on: [nextjs]
+    networks: [external]
+
+volumes:
+  pgdata:
+  n8ndata:

@@ -1,0 +1,88 @@
+{
+  "name": "snspokes",
+  "version": "32.2.1",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "lint": "next lint",
+    "test": "jest --runInBand --forceExit",
+    "test:unit": "jest __tests__/unit --runInBand --forceExit",
+    "test:api": "jest __tests__/api --runInBand --forceExit",
+    "test:integration": "jest __tests__/integration --runInBand --forceExit",
+    "test:coverage": "jest --coverage --runInBand --forceExit",
+    "test:watch": "jest --watch",
+    "test:mock": "MOCK_MODE=true node __tests__/run-tests.js",
+    "test:run": "node __tests__/run-tests.js"
+  },
+  "dependencies": {
+    "next": "14.2.3",
+    "react": "^18",
+    "react-dom": "^18",
+    "axios": "^1.6.0",
+    "next-auth": "^4.24.5",
+    "bcryptjs": "^2.4.3",
+    "pg": "^8.11.3",
+    "jsonwebtoken": "^9.0.2",
+    "cookie": "^0.6.0",
+    "razorpay": "^2.9.2",
+    "ioredis": "^5.3.2",
+    "bullmq": "^5.4.0",
+    "winston": "^3.11.0",
+    "zod": "^3.22.4",
+    "nodemailer": "^6.9.8",
+    "redis": "^4.6.12"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.0.1",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "jest": "^29.7.0",
+    "babel-jest": "^29.7.0",
+    "node-mocks-http": "^1.14.1",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/jest-dom": "^6.1.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "supertest": "^6.3.4"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {
+      "^.+\\.(js|jsx)$": [
+        "babel-jest",
+        {
+          "presets": [
+            "next/babel"
+          ]
+        }
+      ]
+    },
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/$1",
+      "^../../../lib/(.*)$": "<rootDir>/lib/$1",
+      "^../../lib/(.*)$": "<rootDir>/lib/$1",
+      "^../lib/(.*)$": "<rootDir>/lib/$1"
+    },
+    "setupFilesAfterFramework": [],
+    "setupFiles": [
+      "<rootDir>/__tests__/setup.js"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/.next/"
+    ],
+    "collectCoverageFrom": [
+      "lib/**/*.js",
+      "pages/api/**/*.js",
+      "!**/node_modules/**"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "lines": 60,
+        "functions": 60,
+        "branches": 50
+      }
+    }
+  }
+}
