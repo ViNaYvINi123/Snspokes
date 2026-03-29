@@ -127,4 +127,6 @@ function AdminChurn() {
     </>
   );
 }
+export const getServerSideProps = async () => ({ props: {} });
+
 export default withAdminPage(AdminChurn);

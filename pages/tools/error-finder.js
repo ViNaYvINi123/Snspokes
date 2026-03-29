@@ -114,7 +114,7 @@ export default function ErrorFinder() {
                   <span>🤖</span>
                   <span style={{ fontSize: '13px', fontWeight: '700', color: '#8b85ff' }}>AI Analysis {aiResult.source === 'encyclopedia' ? '— Found in Encyclopedia' : '— Generated'}</span>
                 </div>
-                {aiResult.severity && <span style={{ padding: '2px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', background: /* dark */[aiResult.severity], color: SEV_COLORS[aiResult.severity], border: `1px solid ${SEV_COLORS[aiResult.severity]}30` }}>{aiResult.severity?.toUpperCase()}</span>}
+                {aiResult.severity && <span style={{ padding: '2px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', background: SEV_BG[aiResult.severity], color: SEV_COLORS[aiResult.severity], border: `1px solid ${SEV_COLORS[aiResult.severity]}30` }}>{aiResult.severity?.toUpperCase()}</span>}
               </div>
               <div style={{ padding: '18px 20px' }}>
                 <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#e2e8f0', marginBottom: '10px' }}>{aiResult.title}</h3>
@@ -154,7 +154,7 @@ export default function ErrorFinder() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                       <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#e2e8f0', margin: 0 }}>{err.title}</h3>
                       {err.verified && <span style={{ fontSize: '10px', padding: '1px 6px', background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0', borderRadius: '20px', fontWeight: '600' }}>✓ Verified</span>}
-                      <span style={{ fontSize: '10px', padding: '1px 6px', background: /* dark */[err.severity] || '#f9fafb', color: SEV_COLORS[err.severity] || '#374151', border: `1px solid ${SEV_COLORS[err.severity] || '#e5e7eb'}30`, borderRadius: '20px', fontWeight: '600' }}>{err.severity}</span>
+                      <span style={{ fontSize: '10px', padding: '1px 6px', background: SEV_BG[err.severity] || '#0a0a0f', color: SEV_COLORS[err.severity] || '#9999bb', border: `1px solid ${SEV_COLORS[err.severity] || '#e5e7eb'}30`, borderRadius: '20px', fontWeight: '600' }}>{err.severity}</span>
                     </div>
                     <p style={{ fontSize: '13px', color: '#6b6b8a', margin: 0, lineHeight: '1.5' }}>{err.description?.substring(0, 120)}...</p>
                   </div>

@@ -162,7 +162,7 @@ function SpokeSeeder() {
               </thead>
               <tbody>
                 {pending.map(sp => (
-                  <tr key={sp.slug} style={{ borderBottom: '1px solid #f9fafb' }}>
+                  <tr key={sp.slug} style={{ borderBottom: '1px solid #1e1e2e' }}>
                     <td style={{ padding: '10px 14px' }}>
                       <span style={{ fontWeight: '600', color: '#e2e8f0' }}>{sp.name}</span>
                       <code style={{ marginLeft: '8px', fontSize: '11px', color: '#9ca3af' }}>{sp.slug}</code>
@@ -212,5 +212,7 @@ function SpokeSeeder() {
     </>
   );
 }
+
+export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(SpokeSeeder);

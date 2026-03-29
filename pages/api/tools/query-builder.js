@@ -1,6 +1,6 @@
 import { query } from '../../../lib/db';
 import { buildScript, analyzeScript, SN_OPERATORS } from '../../../lib/glideQueryBuilder';
-import { callN8N, N8N_WEBHOOKS } from '../../../lib/n8n';
+import { callN8n } from '../../../lib/n8n';
 import { cacheGet, cacheSet } from '../../../lib/redis';
 import { apiError } from '../../../lib/validate';
 import { withTrace } from '../../../lib/requestTrace';
@@ -62,7 +62,7 @@ async function handler(req, res) {
       if (cached) return res.status(200).json({ success: true, ...cached, cached: true });
       try {
         // n8n → OpenRouter
-        const result = await callN8N(N8N_WEBHOOKS.QUERY_OPTIMIZER, { script: inputScript, table_name: tableName });
+        const result = await callN8n('sn-optimize-query', { script: inputScript, table_name: tableName });
         await cacheSet(cacheKey, result, 3600);
         return res.status(200).json({ success: true, ...result, source: 'n8n+openrouter' });
       } catch (err) { return apiError(res, 'AI optimization failed', 500); }

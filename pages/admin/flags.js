@@ -207,4 +207,6 @@ function AdminFlags() {
   );
 }
 
+export const getServerSideProps = async () => ({ props: {} });
+
 export default withAdminPage(AdminFlags);

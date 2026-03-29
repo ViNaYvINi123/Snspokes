@@ -11,6 +11,7 @@ const EMPTY_SPOKE = { slug: '', name: '', description: '', icon: '🔌', categor
 function AdminSpokes() {
   const router = useRouter();
   const [spokes, setSpokes] = useState([]);
+  const [errMsg, setErrMsg] = useState('');
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -49,7 +50,7 @@ function AdminSpokes() {
   };
 
   const handleSave = async () => {
-    if (!form.slug || !form.name) return alert('Slug and name are required');
+    if (!form.slug || !form.name) { setErrMsg('Slug and name are required'); return; }
     setSaving(true);
     try {
       const payload = {
@@ -74,7 +75,7 @@ function AdminSpokes() {
       setShowModal(false);
       fetchSpokes();
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to save spoke');
+      setErrMsg(err.response?.data?.error || err.message || 'Failed to save spoke');
     } finally { setSaving(false); }
   };
 
@@ -83,7 +84,7 @@ function AdminSpokes() {
     try {
       await axios.delete('/api/admin/spokes', { data: { id: spoke.id } });
       fetchSpokes();
-    } catch { alert('Failed to delete spoke'); }
+    } catch(e) { setErrMsg('Failed to delete spoke'); }
   };
 
   const inputStyle = { width: '100%', padding: '10px 12px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '8px', color: '#fff', fontSize: '13px', fontFamily: 'Syne, sans-serif', outline: 'none', marginBottom: '12px' };
@@ -200,5 +201,7 @@ function AdminSpokes() {
     </>
   );
 }
+
+export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminSpokes);

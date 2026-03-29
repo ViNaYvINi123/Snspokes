@@ -82,4 +82,6 @@ function AdminChatbotLogs() {
     </>
   );
 }
+export const getServerSideProps = async () => ({ props: {} });
+
 export default withAdminPage(AdminChatbotLogs);

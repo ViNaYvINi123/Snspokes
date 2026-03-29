@@ -159,4 +159,6 @@ function AdminAnalyticsPage() {
   );
 }
 
+export const getServerSideProps = async () => ({ props: {} });
+
 export default withAdminPage(AdminAnalyticsPage);

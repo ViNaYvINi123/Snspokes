@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /admin
-Disallow: /api/
-Allow: /api/health
-
-Sitemap: https://snspokes.com/sitemap.xml

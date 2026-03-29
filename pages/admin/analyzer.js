@@ -45,7 +45,7 @@ function AnalyzerPage() {
         <div className="flex gap-3 mb-4">
           {['query', 'error'].map(t => (
             <button key={t} onClick={() => setType(t)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${type === t ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'}`}>
+              style={{ padding:'8px 16px', borderRadius:'8px', fontSize:'13px', fontWeight:'600', transition:'all 0.15s', border:'none', cursor:'pointer', fontFamily:'inherit', background: type === t ? '#6c63ff' : '#111827', color: type === t ? '#fff' : '#6b7280' }}>
               {t === 'query' ? '📊 Query Analyzer' : '⚠️ Error Analyzer'}
             </button>
           ))}
@@ -103,4 +103,6 @@ function AnalyzerPage() {
     </AdminLayout>
   );
 }
+export const getServerSideProps = async () => ({ props: {} });
+
 export default withAdminPage(AnalyzerPage);

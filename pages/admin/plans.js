@@ -37,7 +37,7 @@ function PlansPage() {
 
   return (
     <AdminLayout title="Plans Management">
-      {toast && <div className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-xl text-sm font-medium shadow-lg ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white`}>{toast.msg}</div>}
+      {toast && <div style={{ position:'fixed', top:'16px', right:'16px', zIndex:50, padding:'12px 20px', borderRadius:'12px', fontSize:'13px', fontWeight:'600', boxShadow:'0 10px 25px rgba(0,0,0,0.3)', background: toast.type === 'success' ? '#16a34a' : '#dc2626', color:'#fff' }}>{toast.msg}</div>}
       <div className="p-6">
         <h1 className="text-2xl font-bold text-white mb-6">Plans & Pricing</h1>
         <div className="grid md:grid-cols-3 gap-6">
@@ -69,4 +69,6 @@ function PlansPage() {
     </AdminLayout>
   );
 }
+export const getServerSideProps = async () => ({ props: {} });
+
 export default withAdminPage(PlansPage);

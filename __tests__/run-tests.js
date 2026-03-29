@@ -807,7 +807,7 @@ describe('v19 improvements — all in place', () => {
   });
   test('health API has correct version 19', () => {
     const c = fs.readFileSync(path.join(ROOT, 'pages/api/health.js'), 'utf8');
-    if (!['19','20','21','22','23','24','25','26','27','28','29','30','31','32'].some(v => c.includes(v + '.0.0') || c.includes(v + '.1.0'))) throw new Error('Health API version outdated');
+    if (!['19','20','21','22','23','24','25','26','27','28','29','30','31','32'].some(v => c.includes(v + '.0.0') || c.includes(v + '.1.0') || c.includes(v + '.2.0') || c.includes(v + '.3.0'))) throw new Error('Health API version outdated');
   });
   test('tools have rate limiting', () => {
     const tools = ['error-search', 'query-builder', 'script-linter', 'version-matrix'];
@@ -942,7 +942,7 @@ describe('v22 — All fixes verified', () => {
   });
   test('health API version is 22', () => {
     const c = fs.readFileSync(path.join(ROOT, 'pages/api/health.js'), 'utf8');
-    if (!['19','20','21','22','23','24','25','26','27','28','29','30','31','32'].some(v => c.includes(v+'.0.0') || c.includes(v+'.1.0')))
+    if (!['19','20','21','22','23','24','25','26','27','28','29','30','31','32'].some(v => c.includes(v+'.0.0') || c.includes(v+'.1.0') || c.includes(v+'.3.0')))
       throw new Error('Health API version not updated');
   });
 });

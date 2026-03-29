@@ -183,7 +183,7 @@ function AdminDashboard() {
               <SectionCard title="🕐 Recent Searches">
                 {(data?.recent_queries || []).length > 0
                   ? (data.recent_queries || []).slice(0, 8).map((q, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: i < 7 ? '1px solid #f9fafb' : 'none' }}>
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: i < 7 ? '1px solid #1e1e2e' : 'none' }}>
                       <span style={{ fontSize: '13px', color: '#9999bb', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>{q.query}</span>
                       <span style={{ fontSize: '11px', color: '#9ca3af', flexShrink: 0, marginLeft: '8px' }}>{new Date(q.ts).toLocaleTimeString()}</span>
                     </div>
@@ -220,5 +220,7 @@ function AdminDashboard() {
     </>
   );
 }
+
+export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminDashboard);

@@ -20,7 +20,7 @@ function SystemPage() {
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-white">System Monitor</h1>
-          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${data?.status === 'ok' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+          <span style={{ padding:'4px 12px', borderRadius:'20px', fontSize:'11px', fontWeight:'600', background: data?.status === 'ok' ? 'rgba(74,222,128,0.15)' : 'rgba(248,113,113,0.15)', color: data?.status === 'ok' ? '#4ade80' : '#f87171' }}>
             {data?.status === 'ok' ? '● Live' : '● Degraded'}
           </span>
         </div>
@@ -65,4 +65,6 @@ function SystemPage() {
     </AdminLayout>
   );
 }
+export const getServerSideProps = async () => ({ props: {} });
+
 export default withAdminPage(SystemPage);

@@ -3,6 +3,8 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import axios from 'axios';
 
+export const getServerSideProps = async () => ({ props: {} });
+
 export default function AdminLogin() {
   const router = useRouter();
   const [form, setForm] = useState({ username: '', password: '' });
@@ -44,7 +46,7 @@ export default function AdminLogin() {
       </Head>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: Inter, system-ui, sans-serif; background: #f9fafb; }
+        body { font-family: Inter, system-ui, sans-serif; background: #0a0a0f; }
         input:focus { border-color: #6c63ff !important; box-shadow: 0 0 0 3px rgba(108,99,255,0.1); }
       `}</style>
 

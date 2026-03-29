@@ -1,14 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
+import Head from 'next/head';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { withAdminPage } from '../../lib/adminAuth';
 
 const TYPE_CONFIG = {
-  signup:     { icon: '👤', color: 'blue',   label: 'New Signup' },
-  search:     { icon: '🔍', color: 'purple', label: 'Search' },
-  payment:    { icon: '💳', color: 'green',  label: 'Payment' },
-  error:      { icon: '⚠️', color: 'red',    label: 'Error' },
-  codegen:    { icon: '💻', color: 'yellow', label: 'Code Generated' },
-  submission: { icon: '📥', color: 'orange', label: 'Spoke Submitted' },
+  signup:     { icon: '👤', color: '#60a5fa', label: 'New Signup' },
+  search:     { icon: '🔍', color: '#a78bfa', label: 'Search' },
+  payment:    { icon: '💳', color: '#4ade80', label: 'Payment' },
+  error:      { icon: '⚠️',  color: '#f87171', label: 'Error' },
+  codegen:    { icon: '💻', color: '#facc15', label: 'Code Generated' },
+  submission: { icon: '📥', color: '#fb923c', label: 'Spoke Submitted' },
 };
 
 function ActivityFeedPage() {
@@ -22,25 +23,22 @@ function ActivityFeedPage() {
   const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') || '' : '';
 
   useEffect(() => {
-    const es = new EventSource(`/api/admin/activity-feed?token=${token}`);
-
+    const es = new EventSource('/api/admin/activity-feed?token=' + token);
     es.onopen = () => setConnected(true);
     es.onerror = () => setConnected(false);
-
     es.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
         if (data.type === 'batch' && !pausedRef.current) {
           setEvents(prev => {
-            const existing = new Set(prev.map(ev => `${ev.type}-${ev.created_at}`));
-            const newOnes = (data.events || []).filter(ev => !existing.has(`${ev.type}-${ev.created_at}`));
+            const existing = new Set(prev.map(ev => ev.type + '-' + ev.created_at));
+            const newOnes = (data.events || []).filter(ev => !existing.has(ev.type + '-' + ev.created_at));
             if (newOnes.length === 0) return prev;
-            return [...newOnes, ...prev].slice(0, 200); // keep last 200
+            return [...newOnes, ...prev].slice(0, 200);
           });
         }
-      } catch {}
+      } catch(err) {}
     };
-
     return () => { es.close(); setConnected(false); };
   }, [token]);
 
@@ -55,73 +53,85 @@ function ActivityFeedPage() {
     return true;
   });
 
+  const FILTERS = ['all', 'signup', 'search', 'payment', 'error', 'codegen', 'submission'];
+
   return (
     <AdminLayout title="Live Activity Feed">
-      <div className="p-6 h-[calc(100vh-80px)] flex flex-col">
+      <Head><title>Activity Feed | snspokes Admin</title></Head>
+      <div style={{ padding: '24px', height: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-white">📡 Live Activity Feed</h1>
-            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${connected ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <h1 style={{ fontSize: '22px', fontWeight: '800', color: '#fff', margin: 0 }}>📡 Live Activity Feed</h1>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 12px',
+              borderRadius: '20px', fontSize: '11px', fontWeight: '600',
+              background: connected ? 'rgba(74,222,128,0.15)' : 'rgba(248,113,113,0.15)',
+              color: connected ? '#4ade80' : '#f87171'
+            }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: connected ? '#4ade80' : '#f87171' }} />
               {connected ? 'Live' : 'Disconnected'}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search events..."
-              className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-xs focus:outline-none focus:border-purple-500 w-48" />
+              style={{ background: '#111827', border: '1px solid #1e1e2e', borderRadius: '8px', padding: '6px 12px', color: '#fff', fontSize: '12px', width: '180px', outline: 'none', fontFamily: 'inherit' }} />
             <button onClick={togglePause}
-              className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${paused ? 'bg-green-600 text-white' : 'bg-yellow-600/20 text-yellow-400 hover:bg-yellow-600/40'}`}>
+              style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                background: paused ? '#16a34a' : 'rgba(202,138,4,0.15)', color: paused ? '#fff' : '#facc15' }}>
               {paused ? '▶ Resume' : '⏸ Pause'}
             </button>
-            <button onClick={() => setEvents([])} className="bg-gray-800 hover:bg-gray-700 text-gray-400 px-3 py-1.5 rounded-lg text-xs">
+            <button onClick={() => setEvents([])}
+              style={{ background: '#111827', border: '1px solid #1e1e2e', borderRadius: '8px', padding: '6px 12px', fontSize: '12px', color: '#6b7280', cursor: 'pointer', fontFamily: 'inherit' }}>
               🗑 Clear
             </button>
           </div>
         </div>
 
         {/* Filter tabs */}
-        <div className="flex gap-2 mb-4 overflow-x-auto">
-          {['all', 'signup', 'search', 'payment', 'error', 'codegen', 'submission'].map(f => {
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', overflowX: 'auto' }}>
+          {FILTERS.map(f => {
             const cfg = TYPE_CONFIG[f];
             const count = f === 'all' ? events.length : events.filter(e => e.type === f).length;
+            const active = filter === f;
             return (
               <button key={f} onClick={() => setFilter(f)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all
-                  ${filter === f ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'}`}>
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '8px', fontSize: '11px', whiteSpace: 'nowrap', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600', transition: 'all 0.15s',
+                  background: active ? '#6c63ff' : '#111827', color: active ? '#fff' : '#6b7280' }}>
                 {cfg?.icon || '📋'} {f === 'all' ? 'All' : cfg?.label}
-                <span className={`px-1.5 py-0.5 rounded-full text-xs ${filter === f ? 'bg-white/20' : 'bg-gray-700'}`}>{count}</span>
+                <span style={{ padding: '1px 6px', borderRadius: '10px', fontSize: '10px',
+                  background: active ? 'rgba(255,255,255,0.2)' : '#1e1e2e', color: active ? '#fff' : '#6b7280' }}>{count}</span>
               </button>
             );
           })}
         </div>
 
         {/* Events list */}
-        <div className="flex-1 overflow-y-auto bg-gray-950 rounded-xl border border-gray-800 p-2 font-mono text-xs">
+        <div style={{ flex: 1, overflowY: 'auto', background: '#0a0a0f', borderRadius: '12px', border: '1px solid #1e1e2e', padding: '8px', fontFamily: 'monospace', fontSize: '12px' }}>
           {paused && (
-            <div className="sticky top-0 bg-yellow-900/80 text-yellow-300 text-center py-2 rounded-lg mb-2 text-xs">
-              ⏸ Feed paused — {events.length - filtered.length} new events waiting
+            <div style={{ position: 'sticky', top: 0, background: 'rgba(120,53,15,0.5)', color: '#fcd34d', textAlign: 'center', padding: '8px', borderRadius: '8px', marginBottom: '8px', fontSize: '11px' }}>
+              ⏸ Feed paused
             </div>
           )}
           {filtered.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-gray-600">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#4b5563' }}>
               {connected ? 'Waiting for activity...' : 'Connecting to event stream...'}
             </div>
           ) : (
             filtered.map((ev, i) => {
-              const cfg = TYPE_CONFIG[ev.type] || { icon: '📋', color: 'gray', label: ev.type };
+              const cfg = TYPE_CONFIG[ev.type] || { icon: '📋', color: '#6b7280', label: ev.type };
               return (
-                <div key={i} className={`flex items-start gap-3 px-3 py-2 rounded-lg mb-1 hover:bg-gray-900/50 border-l-2 border-${cfg.color}-500/40`}>
-                  <span className="text-base shrink-0 mt-0.5">{cfg.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-${cfg.color}-400 font-semibold`}>{cfg.label}</span>
-                      {ev.label && <span className="text-white truncate">{ev.label}</span>}
-                      {ev.sublabel && <span className="text-gray-500 truncate">{ev.sublabel}</span>}
-                      {ev.meta && <span className={`text-${cfg.color}-300/70`}>[{ev.meta}]</span>}
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '6px 10px', borderRadius: '8px', marginBottom: '2px', borderLeft: '2px solid ' + cfg.color + '40' }}>
+                  <span style={{ fontSize: '14px', flexShrink: 0, marginTop: '2px' }}>{cfg.icon}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <span style={{ color: cfg.color, fontWeight: '600' }}>{cfg.label}</span>
+                      {ev.label && <span style={{ color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.label}</span>}
+                      {ev.sublabel && <span style={{ color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.sublabel}</span>}
+                      {ev.meta && <span style={{ color: cfg.color, opacity: 0.7 }}>[{ev.meta}]</span>}
                     </div>
                   </div>
-                  <span className="text-gray-600 shrink-0">{new Date(ev.created_at).toLocaleTimeString()}</span>
+                  <span style={{ color: '#4b5563', flexShrink: 0 }}>{new Date(ev.created_at).toLocaleTimeString()}</span>
                 </div>
               );
             })
@@ -129,7 +139,7 @@ function ActivityFeedPage() {
           <div ref={bottomRef} />
         </div>
 
-        <p className="text-gray-600 text-xs mt-2 text-right">{filtered.length} events shown · Updates every 5s</p>
+        <p style={{ color: '#4b5563', fontSize: '11px', marginTop: '8px', textAlign: 'right' }}>{filtered.length} events shown · Updates every 5s</p>
       </div>
     </AdminLayout>
   );

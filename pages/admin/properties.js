@@ -360,4 +360,6 @@ function AdminProperties() {
   );
 }
 
+export const getServerSideProps = async () => ({ props: {} });
+
 export default withAdminPage(AdminProperties);

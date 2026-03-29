@@ -107,7 +107,7 @@ function CommandCenter() {
               🔄 Refresh
             </button>
             <button onClick={toggleMaintenance}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${maintenance ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-gray-800 hover:bg-gray-700 text-gray-300'}`}>
+              style={{ padding:'8px 16px', borderRadius:'8px', fontSize:'13px', fontWeight:'600', transition:'all 0.15s', border:'none', cursor:'pointer', fontFamily:'inherit', background: maintenance ? '#dc2626' : '#111827', color: maintenance ? '#fff' : '#d1d5db' }}>
               {maintenance ? '🚨 Maintenance ON' : '🟢 Site Live'}
             </button>
           </div>
@@ -122,12 +122,12 @@ function CommandCenter() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {statCards.map(s => (
               <Link key={s.label} href={s.href}>
-                <div className={`bg-gray-900 border border-${s.color}-500/20 hover:border-${s.color}-500/50 rounded-xl p-5 cursor-pointer transition-all group`}>
+                <div style={{ background:"#111827", border:"1px solid " + (s.color || "#6b7280") + "33", borderRadius:"12px", padding:"20px", cursor:"pointer", transition:"all 0.15s" }}>
                   <div className="flex items-start justify-between mb-2">
                     <span className="text-2xl">{s.icon}</span>
                     <span className="text-gray-600 group-hover:text-gray-400 text-xs">→</span>
                   </div>
-                  <div className={`text-2xl font-bold text-${s.color}-400`}>{s.value ?? '—'}</div>
+                  <div style={{ fontSize:"24px", fontWeight:"700", color: s.color || "#9999bb" }}>{s.value ?? '—'}</div>
                   <div className="text-gray-400 text-xs mt-0.5">{s.label}</div>
                   <div className="text-gray-600 text-xs mt-0.5">{s.sub}</div>
                 </div>
@@ -189,7 +189,7 @@ function CommandCenter() {
                       <span>{p.count} users ({pct}%)</span>
                     </div>
                     <div className="w-full bg-gray-800 rounded-full h-2">
-                      <div className={`bg-${c}-500 h-2 rounded-full`} style={{ width: `${pct}%` }} />
+                      <div style={{ background: c || "#6b7280", height:"8px", borderRadius:"9999px" }} style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 );
@@ -226,7 +226,7 @@ function CommandCenter() {
                       <div className="text-gray-500 text-xs truncate">{u.email}</div>
                     </div>
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded shrink-0 bg-${planColors[u.plan] || 'gray'}-900/40 text-${planColors[u.plan] || 'gray'}-400`}>
+                  <span style={{ fontSize:'11px', padding:'2px 8px', borderRadius:'4px', flexShrink:0, background:(planColors[u.plan] || '#6b7280') + '15', color: planColors[u.plan] || '#6b7280' }}>
                     {u.plan}
                   </span>
                 </div>
@@ -264,5 +264,7 @@ function CommandCenter() {
     </AdminLayout>
   );
 }
+
+export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(CommandCenter);

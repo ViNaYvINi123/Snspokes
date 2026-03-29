@@ -192,7 +192,7 @@ function APIConnectors() {
                   <div>
                     {connectors.map(c => (
                       <div key={c.id} onClick={() => { setSelected(c); fetchConnectorDetail(c.id); setView('tester'); }}
-                        style={{ padding:'12px 16px',borderBottom:'1px solid #f9fafb',cursor:'pointer',display:'flex',alignItems:'center',gap:'10px',background: selected?.id===c.id ? '#0d0d1a' : 'transparent',transition:'background 0.1s' }}
+                        style={{ padding:'12px 16px',borderBottom:'1px solid #1e1e2e',cursor:'pointer',display:'flex',alignItems:'center',gap:'10px',background: selected?.id===c.id ? '#0d0d1a' : 'transparent',transition:'background 0.1s' }}
                         onMouseEnter={e => e.currentTarget.style.background='#0d0d1a'}
                         onMouseLeave={e => e.currentTarget.style.background= selected?.id===c.id ? '#0d0d1a' : 'transparent'}
                       >
@@ -279,7 +279,7 @@ function APIConnectors() {
                   </div>
                   {testResult && (
                     <div style={{ margin:'0 16px 16px',borderRadius:'8px',border:'1px solid #1e1e2e',overflow:'hidden' }}>
-                      <div style={{ padding:'8px 12px',background: testResult.success ? '#052e16' : '#2d0a0a',borderBottom:'1px solid #e5e7eb',display:'flex',gap:'12px',fontSize:'12px',fontWeight:'600' }}>
+                      <div style={{ padding:'8px 12px',background: testResult.success ? '#052e16' : '#2d0a0a',borderBottom:'1px solid #1e1e2e',display:'flex',gap:'12px',fontSize:'12px',fontWeight:'600' }}>
                         <span style={{ color: testResult.success ? '#16a34a' : '#dc2626' }}>{testResult.success ? '✅ Success' : '❌ Error'}</span>
                         {testResult.status_code && <span style={{ color:'#6b7280' }}>HTTP {testResult.status_code}</span>}
                         {testResult.duration_ms && <span style={{ color:'#6b7280' }}>{testResult.duration_ms}ms</span>}
@@ -318,7 +318,7 @@ function APIConnectors() {
                     </div>
                   ) : null}
                   {endpoints.map(ep => (
-                    <div key={ep.id} style={{ padding:'10px 16px',borderBottom:'1px solid #f9fafb',display:'flex',alignItems:'center',gap:'10px' }}>
+                    <div key={ep.id} style={{ padding:'10px 16px',borderBottom:'1px solid #1e1e2e',display:'flex',alignItems:'center',gap:'10px' }}>
                       <Badge color={METHOD_COLORS[ep.method] || '#6c63ff'}>{ep.method}</Badge>
                       <code style={{ fontSize:'13px',color:'#9999bb',flex:1 }}>{ep.path}</code>
                       <span style={{ fontSize:'12px',color:'#6b7280' }}>{ep.name}</span>
@@ -366,7 +366,7 @@ function APIConnectors() {
                     </>
                   )}
 
-                  <div style={{ gridColumn:'1/-1',display:'flex',gap:'10px',justifyContent:'flex-end',paddingTop:'8px',borderTop:'1px solid #f3f4f6' }}>
+                  <div style={{ gridColumn:'1/-1',display:'flex',gap:'10px',justifyContent:'flex-end',paddingTop:'8px',borderTop:'1px solid #1e1e2e' }}>
                     <Btn variant="secondary" onClick={() => setView(selected ? 'tester' : 'list')}>Cancel</Btn>
                     <Btn onClick={handleSaveConnector} disabled={saving}>{saving ? 'Saving...' : form.id ? 'Update Connector' : 'Create Connector'}</Btn>
                   </div>
@@ -385,14 +385,14 @@ function APIConnectors() {
             </div>
             <Card>
               <table style={{ width:'100%',borderCollapse:'collapse',fontSize:'13px' }}>
-                <thead><tr style={{ background:'#0d0d1a',borderBottom:'1px solid #e5e7eb' }}>
+                <thead><tr style={{ background:'#0d0d1a',borderBottom:'1px solid #1e1e2e' }}>
                   {['Name','Webhook URL','Received','Last Activity','Status','Actions'].map(h=>(
                     <th key={h} style={{ padding:'10px 16px',textAlign:'left',fontSize:'11px',fontWeight:'600',color:'#6b7280',textTransform:'uppercase',letterSpacing:'0.5px' }}>{h}</th>
                   ))}
                 </tr></thead>
                 <tbody>
                   {webhooks.map(wh => (
-                    <tr key={wh.id} style={{ borderBottom:'1px solid #f9fafb' }}>
+                    <tr key={wh.id} style={{ borderBottom:'1px solid #1e1e2e' }}>
                       <td style={{ padding:'12px 16px',fontWeight:'600',color:'#e2e8f0' }}>{wh.name}</td>
                       <td style={{ padding:'12px 16px' }}>
                         <code style={{ fontSize:'11px',color:'#6c63ff',background:'#ede9fe',padding:'3px 8px',borderRadius:'4px' }}>
@@ -424,5 +424,7 @@ function APIConnectors() {
     </>
   );
 }
+
+export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(APIConnectors);

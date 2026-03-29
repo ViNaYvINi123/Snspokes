@@ -86,7 +86,7 @@ function AdminAnnouncements() {
               {announcements.length === 0 ? (
                 <div style={{ padding:'40px', textAlign:'center', color:'#9ca3af', fontSize:'13px' }}>No announcements yet</div>
               ) : announcements.map(a => (
-                <div key={a.id} style={{ padding:'14px 16px', borderBottom:'1px solid #f9fafb', opacity: a.is_active ? 1 : 0.5 }}>
+                <div key={a.id} style={{ padding:'14px 16px', borderBottom:'1px solid #1e1e2e', opacity: a.is_active ? 1 : 0.5 }}>
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'6px' }}>
                     <div>
                       <span style={{ display:'inline-block', padding:'2px 8px', borderRadius:'20px', fontSize:'10px', fontWeight:'700', background:`${TYPE_COLORS[a.type]}15`, color:TYPE_COLORS[a.type], border:`1px solid ${TYPE_COLORS[a.type]}30`, marginBottom:'5px' }}>{a.type}</span>
@@ -114,5 +114,7 @@ function AdminAnnouncements() {
     </>
   );
 }
+
+export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminAnnouncements);

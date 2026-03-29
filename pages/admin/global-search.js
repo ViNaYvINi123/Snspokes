@@ -95,7 +95,7 @@ function GlobalSearch() {
             {flat.map((item, i) => {
               const cfg = TYPE_CONFIG[item.type] || { icon: '📄', color: '#6b6b8a', href: '/admin/dashboard' };
               return (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 16px', borderBottom: i < flat.length - 1 ? '1px solid #f9fafb' : 'none', transition: 'background 0.1s' }}
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 16px', borderBottom: i < flat.length - 1 ? '1px solid #1e1e2e' : 'none', transition: 'background 0.1s' }}
                   onMouseEnter={e => e.currentTarget.style.background = '#0d0d1a'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
@@ -123,5 +123,7 @@ function GlobalSearch() {
     </>
   );
 }
+
+export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(GlobalSearch);

@@ -106,7 +106,7 @@ function EnvManager() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                   <tbody>
                     {items.filter(v => !search || v.key.toLowerCase().includes(search.toLowerCase())).map((v, i) => (
-                      <tr key={v.key} style={{ borderBottom: i < items.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
+                      <tr key={v.key} style={{ borderBottom: i < items.length - 1 ? '1px solid #1e1e2e' : 'none' }}>
                         <td style={{ padding: '12px 16px', width: '40%' }}>
                           <code style={{ fontFamily: 'monospace', fontSize: '12px', color: '#9999bb', fontWeight: '600' }}>{v.key}</code>
                         </td>
@@ -182,5 +182,7 @@ function EnvManager() {
     </>
   );
 }
+
+export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(EnvManager);

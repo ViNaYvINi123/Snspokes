@@ -61,10 +61,10 @@ function NotificationsPage() {
             {notifications.map(n => {
               const c = typeColors[n.type] || 'gray';
               return (
-                <div key={n.id} className={`bg-gray-900 border rounded-xl p-4 flex items-start justify-between gap-4 ${!n.read_at ? `border-${c}-500/40` : 'border-gray-800'}`}>
+                <div key={n.id} style={{ background:'#111827', border:'1px solid ' + (!n.read_at ? (c || '#6b7280') + '66' : '#1e1e2e'), borderRadius:'12px', padding:'16px', display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:'16px' }}>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={`w-2 h-2 rounded-full bg-${c}-400`} />
+                      <span style={{ width:'8px', height:'8px', borderRadius:'50%', background: c || '#6b7280' }} />
                       <span className="text-white font-medium text-sm">{n.title}</span>
                       {!n.read_at && <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full">New</span>}
                     </div>
@@ -83,4 +83,6 @@ function NotificationsPage() {
     </AdminLayout>
   );
 }
+export const getServerSideProps = async () => ({ props: {} });
+
 export default withAdminPage(NotificationsPage);

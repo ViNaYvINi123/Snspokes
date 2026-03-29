@@ -69,7 +69,7 @@ export default function CookieBanner() {
                   { key:'preferences', label:'Preferences', desc:'Remember your settings' },
                   { key:'marketing', label:'Marketing', desc:'Personalized content' },
                 ].map(cat => (
-                  <div key={cat.key} style={{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 14px',background:'#f9fafb',borderRadius:'8px',border:'1px solid #f3f4f6' }}>
+                  <div key={cat.key} style={{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 14px',background:'#111827',borderRadius:'8px',border:'1px solid #1e1e2e' }}>
                     <div>
                       <div style={{ fontSize:'13px',fontWeight:'600',color:'#111827',marginBottom:'2px' }}>{cat.label}</div>
                       <div style={{ fontSize:'11px',color:'#9ca3af' }}>{cat.desc}</div>
@@ -93,7 +93,7 @@ export default function CookieBanner() {
                 {saved ? '✅ Saved!' : 'Accept All'}
               </button>
               <button onClick={() => save({ necessary:true,analytics:false,preferences:false,marketing:false })}
-                style={{ flex:1,minWidth:'100px',padding:'9px',background:'#f9fafb',border:'1px solid #e5e7eb',borderRadius:'8px',color:'#374151',fontSize:'13px',fontWeight:'600',cursor:'pointer',fontFamily:'inherit' }}>
+                style={{ flex:1,minWidth:'100px',padding:'9px',background:'#111827',border:'1px solid #e5e7eb',borderRadius:'8px',color:'#374151',fontSize:'13px',fontWeight:'600',cursor:'pointer',fontFamily:'inherit' }}>
                 Necessary Only
               </button>
               {showDetails ? (

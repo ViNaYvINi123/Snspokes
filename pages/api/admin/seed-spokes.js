@@ -1,6 +1,6 @@
 import { withAdminAuth } from '../../../lib/adminAuth';
 import { query } from '../../../lib/db';
-import { callN8N, N8N_WEBHOOKS } from '../../../lib/n8n';
+import { callN8n } from '../../../lib/n8n';
 import { saveVersion } from '../../../lib/spokeVersions';
 import { apiError } from '../../../lib/validate';
 import logger from '../../../lib/logger';
@@ -29,7 +29,7 @@ async function handler(req, res) {
         logger.info(`[Seeder] Enriching via n8n: ${slug}`);
 
         // Call n8n → OpenRouter
-        const result = await callN8N(N8N_WEBHOOKS.SPOKE_GENERATE, {
+        const result = await callN8n('sn-enrich-spoke', {
           slug: spoke.slug, name: spoke.name, category: spoke.category,
           plugin_id: spoke.plugin_id, credential_type: spoke.credential_type, min_version: spoke.min_version,
         }, 120000);
@@ -62,7 +62,7 @@ async function handler(req, res) {
           try {
             const ex = await query('SELECT * FROM sn_spokes WHERE slug=$1', [row.slug]);
             const spoke = ex.rows[0];
-            const result = await callN8N(N8N_WEBHOOKS.SPOKE_GENERATE, {
+            const result = await callN8n('sn-enrich-spoke', {
               slug: spoke.slug, name: spoke.name, category: spoke.category,
               plugin_id: spoke.plugin_id, credential_type: spoke.credential_type, min_version: spoke.min_version,
             }, 120000);

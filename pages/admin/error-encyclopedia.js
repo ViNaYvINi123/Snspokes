@@ -111,4 +111,6 @@ function AdminErrorEncyclopedia() {
     </>
   );
 }
+export const getServerSideProps = async () => ({ props: {} });
+
 export default withAdminPage(AdminErrorEncyclopedia);

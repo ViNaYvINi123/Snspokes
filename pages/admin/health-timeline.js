@@ -36,7 +36,7 @@ function HealthTimelinePage() {
                     <td className="py-3 text-gray-300">{new Date(s.created_at).toLocaleString()}</td>
                     <td className="py-3 text-white">{s.active_users}</td>
                     <td className="py-3 text-blue-400">{s.searches_last_hour}</td>
-                    <td className={`py-3 ${s.errors_last_hour > 0 ? 'text-red-400' : 'text-green-400'}`}>{s.errors_last_hour}</td>
+                    <td style={{ padding:'12px 0', color: s.errors_last_hour > 0 ? '#f87171' : '#4ade80' }}>{s.errors_last_hour}</td>
                     <td className="py-3 text-gray-300">{s.db_connections}</td>
                   </tr>
                 ))}
@@ -48,4 +48,6 @@ function HealthTimelinePage() {
     </AdminLayout>
   );
 }
+export const getServerSideProps = async () => ({ props: {} });
+
 export default withAdminPage(HealthTimelinePage);

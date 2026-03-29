@@ -111,7 +111,7 @@ function NavItem({ item, active, collapsed }) {
       padding: collapsed ? '9px' : '8px 10px',
       borderRadius: '8px', textDecoration: 'none',
       color: active ? '#6c63ff' : hover ? '#111827' : '#6b7280',
-      background: active ? '#ede9fe' : hover ? '#f9fafb' : 'transparent',
+      background: active ? '#1a1a2e' : hover ? '#111827' : 'transparent',
       fontSize: '14px', fontWeight: active ? '600' : '400',
       transition: 'all 0.12s ease',
       justifyContent: collapsed ? 'center' : 'flex-start',
@@ -169,7 +169,7 @@ function NotificationBell() {
           <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
             {notifs.length === 0 ? <div style={{ padding: '24px', textAlign: 'center', color: '#9ca3af', fontSize: '13px' }}>No notifications</div>
               : notifs.slice(0, 10).map(n => (
-                <div key={n.id} style={{ padding: '10px 14px', borderBottom: '1px solid #f9fafb', background: n.read ? 'transparent' : '#f9fafb' }}>
+                <div key={n.id} style={{ padding: '10px 14px', borderBottom: '1px solid #1e1e2e', background: n.read ? 'transparent' : '#111827' }}>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                     <span style={{ fontSize: '14px' }}>{n.type === 'error' ? '🔴' : n.type === 'warning' ? '🟡' : n.type === 'success' ? '🟢' : '🔵'}</span>
                     <div>
@@ -205,7 +205,7 @@ export default function AdminLayout({ children, title, breadcrumbs = [] }) {
   };
 
   if (!isAuth) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0f' }}>
       <div style={{ width: '32px', height: '32px', borderRadius: '50%', border: '3px solid #e5e7eb', borderTopColor: '#6c63ff', animation: 'spin 0.8s linear infinite' }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
@@ -214,10 +214,10 @@ export default function AdminLayout({ children, title, breadcrumbs = [] }) {
   const sidebarW = collapsed ? '60px' : '232px';
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f9fafb', fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0f', fontFamily: 'Inter, system-ui, sans-serif' }}>
       <style>{`
         * { box-sizing: border-box; }
-        body { margin: 0; background: #f9fafb; }
+        body { margin: 0; background: #0a0a0f; color: #e2e8f0; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
         ::-webkit-scrollbar { width: 4px; }
@@ -276,7 +276,7 @@ export default function AdminLayout({ children, title, breadcrumbs = [] }) {
         {/* Bottom */}
         <div style={{ padding: '8px', borderTop: '1px solid #f3f4f6', flexShrink: 0 }}>
           <Link href="/" target="_blank" title={collapsed ? 'View Site' : ''} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: collapsed ? '9px' : '8px 10px', borderRadius: '8px', textDecoration: 'none', color: '#6b7280', fontSize: '14px', marginBottom: '2px', justifyContent: collapsed ? 'center' : 'flex-start', transition: 'all 0.12s' }}
-            onMouseEnter={e => { e.currentTarget.style.background='#f9fafb'; e.currentTarget.style.color='#111827'; }}
+            onMouseEnter={e => { e.currentTarget.style.background='#1a1a2e'; e.currentTarget.style.color='#e2e8f0'; }}
             onMouseLeave={e => { e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#6b7280'; }}
           >
             <span style={{ color: '#9ca3af', display: 'flex', flexShrink: 0 }}><Icon.Globe /></span>

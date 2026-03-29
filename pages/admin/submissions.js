@@ -113,7 +113,7 @@ function SubmissionsPage() {
                     </div>
                   )}
                   {filter !== 'pending' && (
-                    <span className={`text-xs px-3 py-1 rounded-lg shrink-0 ${filter === 'approved' ? 'bg-green-900/40 text-green-400' : 'bg-red-900/40 text-red-400'}`}>
+                    <span style={{ fontSize:'11px', padding:'4px 12px', borderRadius:'8px', flexShrink:0, background: filter === 'approved' ? 'rgba(74,222,128,0.15)' : 'rgba(248,113,113,0.15)', color: filter === 'approved' ? '#4ade80' : '#f87171' }}>
                       {filter}
                     </span>
                   )}
@@ -150,5 +150,7 @@ function SubmissionsPage() {
     </AdminLayout>
   );
 }
+
+export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(SubmissionsPage);

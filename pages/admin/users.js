@@ -9,6 +9,7 @@ function AdminUsers() {
   const router = useRouter();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errMsg, setErrMsg] = useState('');
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
@@ -41,7 +42,7 @@ function AdminUsers() {
       await axios.patch('/api/admin/users', { id: selectedUser.id, action: 'ban', reason: banReason });
       setShowBanModal(false); setBanReason('');
       fetchUsers();
-    } catch (err) { alert('Failed to ban user'); }
+    } catch (err) { setErrMsg('Failed to ban user'); }
     finally { setActionLoading(null); }
   };
 
@@ -50,7 +51,7 @@ function AdminUsers() {
     try {
       await axios.patch('/api/admin/users', { id: user.id, action: 'unban' });
       fetchUsers();
-    } catch { alert('Failed to unban user'); }
+    } catch(e) { setErrMsg('Failed to unban user'); }
     finally { setActionLoading(null); }
   };
 
@@ -60,7 +61,7 @@ function AdminUsers() {
     try {
       await axios.delete('/api/admin/users', { data: { id: user.id } });
       fetchUsers();
-    } catch { alert('Failed to delete user'); }
+    } catch(e) { setErrMsg('Failed to delete user'); }
     finally { setActionLoading(null); }
   };
 
@@ -70,7 +71,7 @@ function AdminUsers() {
       await axios.patch('/api/admin/users', { id: selectedUser.id, action: 'upgrade', plan: upgradePlan });
       setShowUpgradeModal(false);
       fetchUsers();
-    } catch { alert('Failed to upgrade user'); }
+    } catch(e) { setErrMsg('Failed to upgrade user'); }
     finally { setActionLoading(null); }
   };
 
@@ -217,5 +218,7 @@ function AdminUsers() {
     </>
   );
 }
+
+export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminUsers);

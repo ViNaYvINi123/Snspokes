@@ -60,7 +60,7 @@ function ContentQuality() {
             </div>
 
             {/* Tabs */}
-            <div style={{ display:'flex', gap:'0', borderBottom:'1px solid #e5e7eb', marginBottom:'16px' }}>
+            <div style={{ display:'flex', gap:'0', borderBottom:'1px solid #1e1e2e', marginBottom:'16px' }}>
               {[['missing','📝 Missing Content'],['low_rated','👎 Low Rated'],['stale','🕐 Stale Content']].map(([t,l]) => (
                 <button key={t} onClick={()=>setTab(t)} style={{ padding:'10px 18px', background:'none', border:'none', borderBottom:`2px solid ${tab===t?'#6c63ff':'transparent'}`, color:tab===t?'#6c63ff':'#6b7280', fontSize:'13px', fontWeight:tab===t?'600':'400', cursor:'pointer', fontFamily:'inherit', marginBottom:'-1px' }}>{l}</button>
               ))}
@@ -69,7 +69,7 @@ function ContentQuality() {
             {/* Table */}
             <div style={{ background:'#0f0f1a', border:'1px solid #1e1e2e', borderRadius:'12px', overflow:'hidden' }}>
               <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'13px' }}>
-                <thead><tr style={{ background:'#0d0d1a', borderBottom:'1px solid #e5e7eb' }}>
+                <thead><tr style={{ background:'#0d0d1a', borderBottom:'1px solid #1e1e2e' }}>
                   <th style={{ padding:'10px 14px', textAlign:'left', fontSize:'11px', fontWeight:'700', color:'#6b7280', textTransform:'uppercase' }}>Spoke</th>
                   <th style={{ padding:'10px 14px', textAlign:'left', fontSize:'11px', fontWeight:'700', color:'#6b7280', textTransform:'uppercase' }}>Category</th>
                   <th style={{ padding:'10px 14px', textAlign:'center', fontSize:'11px', fontWeight:'700', color:'#6b7280', textTransform:'uppercase' }}>Views</th>
@@ -77,7 +77,7 @@ function ContentQuality() {
                 </tr></thead>
                 <tbody>
                   {(data?.[tab==='missing'?'missing_content':tab==='low_rated'?'low_rated':'stale_content']||[]).map(spoke => (
-                    <tr key={spoke.id} style={{ borderBottom:'1px solid #f9fafb' }}>
+                    <tr key={spoke.id} style={{ borderBottom:'1px solid #1e1e2e' }}>
                       <td style={{ padding:'10px 14px' }}>
                         <div style={{ fontWeight:'600', color:'#e2e8f0' }}>{spoke.name}</div>
                         <code style={{ fontSize:'11px', color:'#9ca3af' }}>{spoke.slug}</code>
@@ -106,5 +106,7 @@ function ContentQuality() {
     </>
   );
 }
+
+export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(ContentQuality);

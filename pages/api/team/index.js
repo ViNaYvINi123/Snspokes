@@ -1,4 +1,4 @@
-import { setSecurityHeaders } from '../../lib/security';
+import { setSecurityHeaders } from '../../../lib/security';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
 import { query } from '../../../lib/db';

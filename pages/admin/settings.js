@@ -287,4 +287,6 @@ function AdminSettings() {
   );
 }
 
+export const getServerSideProps = async () => ({ props: {} });
+
 export default withAdminPage(AdminSettings);

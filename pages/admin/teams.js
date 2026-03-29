@@ -44,4 +44,6 @@ function AdminTeams() {
     </>
   );
 }
+export const getServerSideProps = async () => ({ props: {} });
+
 export default withAdminPage(AdminTeams);

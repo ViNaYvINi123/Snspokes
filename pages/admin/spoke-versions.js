@@ -47,7 +47,7 @@ function SpokeVersionsPage() {
                     <td className="py-3 text-gray-300">{v.min_version || '—'}</td>
                     <td className="py-3 text-gray-400">{v.updated_at ? new Date(v.updated_at).toLocaleDateString() : '—'}</td>
                     <td className="py-3">
-                      <span className={`text-xs px-2 py-1 rounded ${v.is_active ? 'bg-green-900/40 text-green-400' : 'bg-gray-800 text-gray-500'}`}>
+                      <span style={{ fontSize:'11px', padding:'4px 8px', borderRadius:'4px', background: v.is_active ? 'rgba(74,222,128,0.15)' : '#111827', color: v.is_active ? '#4ade80' : '#6b7280' }}>
                         {v.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
@@ -62,4 +62,6 @@ function SpokeVersionsPage() {
     </AdminLayout>
   );
 }
+export const getServerSideProps = async () => ({ props: {} });
+
 export default withAdminPage(SpokeVersionsPage);

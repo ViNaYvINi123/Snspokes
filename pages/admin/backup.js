@@ -72,7 +72,7 @@ function AdminBackup() {
               </thead>
               <tbody>
                 {backups.map((b, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #f9fafb' }}>
+                  <tr key={i} style={{ borderBottom: '1px solid #1e1e2e' }}>
                     <td style={{ padding: '12px 16px' }}><code style={{ fontSize: '12px', color: '#9999bb' }}>{b.name}</code></td>
                     <td style={{ padding: '12px 16px', color: '#6b6b8a' }}>{(b.size_bytes / 1024).toFixed(1)} KB</td>
                     <td style={{ padding: '12px 16px', color: '#6b6b8a', fontSize: '12px' }}>{new Date(b.created_at).toLocaleString()}</td>
@@ -96,5 +96,7 @@ function AdminBackup() {
     </>
   );
 }
+
+export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminBackup);
