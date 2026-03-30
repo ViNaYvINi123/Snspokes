@@ -65,6 +65,7 @@ function SystemPage() {
     </AdminLayout>
   );
 }
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(SystemPage);
+
+export const getServerSideProps = async () => ({ props: {} });

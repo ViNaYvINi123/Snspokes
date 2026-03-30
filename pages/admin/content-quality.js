@@ -5,6 +5,7 @@ import { withAdminPage } from '../../lib/adminAuth';
 import axios from 'axios';
 
 function ContentQuality() {
+  const h = { 'Content-Type':'application/json', 'x-admin-token': typeof window !== 'undefined' ? localStorage.getItem('admin_token') || '' : '' };
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('missing');
@@ -107,6 +108,7 @@ function ContentQuality() {
   );
 }
 
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(ContentQuality);
+
+export const getServerSideProps = async () => ({ props: {} });

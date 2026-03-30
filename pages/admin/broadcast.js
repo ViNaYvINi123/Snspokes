@@ -97,6 +97,7 @@ function AdminBroadcast() {
     </>
   );
 }
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminBroadcast);
+
+export const getServerSideProps = async () => ({ props: {} });

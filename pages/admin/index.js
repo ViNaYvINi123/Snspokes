@@ -3,7 +3,6 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import axios from 'axios';
 
-export const getServerSideProps = async () => ({ props: {} });
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -13,7 +12,16 @@ export default function AdminLogin() {
   const [showPass, setShowPass] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem('admin_token')) router.replace('/admin/dashboard');
+    const token = localStorage.getItem('admin_token');
+    if (token) {
+      // Validate token before redirecting
+      fetch('/api/admin/system', { headers: { 'x-admin-token': token } })
+        .then(r => {
+          if (r.ok) router.replace('/admin/dashboard');
+          else localStorage.removeItem('admin_token');
+        })
+        .catch(() => localStorage.removeItem('admin_token'));
+    }
   }, []);
 
   const handleSubmit = async (e) => {
@@ -115,7 +123,7 @@ export default function AdminLogin() {
                 </div>
               </div>
 
-              <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px', background: loading ? '#9ca3af' : '#e2e8f0', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '14px', fontWeight: '600', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px', background: loading ? '#4b5563' : '#6c63ff', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '14px', fontWeight: '600', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                 {loading && <div style={{ width: '14px', height: '14px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', animation: 'spin 0.6s linear infinite' }} />}
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>
@@ -137,3 +145,5 @@ export default function AdminLogin() {
     </>
   );
 }
+
+export const getServerSideProps = async () => ({ props: {} });

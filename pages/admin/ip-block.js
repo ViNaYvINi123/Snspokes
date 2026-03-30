@@ -135,6 +135,7 @@ function AdminIpBlock() {
     </>
   );
 }
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminIpBlock);
+
+export const getServerSideProps = async () => ({ props: {} });

@@ -80,15 +80,33 @@ const NAV_GROUPS = [
   ]},
 ];
 
-// Global axios interceptor
+// Global axios interceptors
 if (typeof window !== 'undefined') {
   axios.interceptors.request.use(config => {
     const token = localStorage.getItem('admin_token');
     if (token && config.url && config.url.includes('/api/admin')) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers['x-admin-token'] = token;
+      config.headers.Authorization = 'Bearer ' + token;
     }
     return config;
   });
+
+  // Handle 401 — clear bad token and redirect to login
+  axios.interceptors.response.use(
+    response => response,
+    error => {
+      if (error.response && error.response.status === 401 && typeof window !== 'undefined') {
+        const url = error.config && error.config.url;
+        if (url && url.includes('/api/admin') && !url.includes('/api/admin/login')) {
+          localStorage.removeItem('admin_token');
+          if (window.location.pathname !== '/admin') {
+            window.location.href = '/admin';
+          }
+        }
+      }
+      return Promise.reject(error);
+    }
+  );
 }
 
 export function useAdminAuth() {
@@ -96,8 +114,17 @@ export function useAdminAuth() {
   const [checked, setChecked] = useState(false);
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
-    if (!token) router.replace('/admin');
-    else setChecked(true);
+    if (!token) {
+      router.replace('/admin');
+      return;
+    }
+    // Validate token with a lightweight API call
+    fetch('/api/admin/system', { headers: { 'x-admin-token': token } })
+      .then(r => {
+        if (r.ok) setChecked(true);
+        else { localStorage.removeItem('admin_token'); router.replace('/admin'); }
+      })
+      .catch(() => { localStorage.removeItem('admin_token'); router.replace('/admin'); });
   }, []);
   return checked;
 }
@@ -110,7 +137,7 @@ function NavItem({ item, active, collapsed }) {
       display: 'flex', alignItems: 'center', gap: '10px',
       padding: collapsed ? '9px' : '8px 10px',
       borderRadius: '8px', textDecoration: 'none',
-      color: active ? '#6c63ff' : hover ? '#111827' : '#6b7280',
+      color: active ? '#6c63ff' : hover ? '#e2e8f0' : '#6b7280',
       background: active ? '#1a1a2e' : hover ? '#111827' : 'transparent',
       fontSize: '14px', fontWeight: active ? '600' : '400',
       transition: 'all 0.12s ease',
@@ -121,7 +148,7 @@ function NavItem({ item, active, collapsed }) {
     onMouseLeave={() => setHover(false)}
     >
       {active && !collapsed && <div style={{ position: 'absolute', left: '-8px', top: '50%', transform: 'translateY(-50%)', width: '3px', height: '18px', background: '#6c63ff', borderRadius: '0 2px 2px 0' }} />}
-      <span style={{ color: active ? '#6c63ff' : hover ? '#374151' : '#9ca3af', flexShrink: 0, display: 'flex' }}>
+      <span style={{ color: active ? '#6c63ff' : hover ? '#e2e8f0' : '#9ca3af', flexShrink: 0, display: 'flex' }}>
         {IconComp && <IconComp />}
       </span>
       {!collapsed && item.label}
@@ -156,14 +183,14 @@ function NotificationBell() {
   return (
     <div style={{ position: 'relative' }}>
       <button onClick={() => { setOpen(o => !o); if (!open && count > 0) markRead(); }}
-        style={{ position: 'relative', background: 'none', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '5px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        style={{ position: 'relative', background: 'none', border: '1px solid #1e1e2e', borderRadius: '8px', padding: '5px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         {count > 0 && <span style={{ position: 'absolute', top: '-4px', right: '-4px', width: '16px', height: '16px', background: '#ef4444', borderRadius: '50%', fontSize: '10px', color: '#fff', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{count > 9 ? '9+' : count}</span>}
       </button>
       {open && (
-        <div style={{ position: 'absolute', right: 0, top: '36px', width: '320px', background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, overflow: 'hidden' }}>
-          <div style={{ padding: '12px 14px', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>Notifications</span>
+        <div style={{ position: 'absolute', right: 0, top: '36px', width: '320px', background: '#111827', border: '1px solid #1e1e2e', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, overflow: 'hidden' }}>
+          <div style={{ padding: '12px 14px', borderBottom: '1px solid #1e1e2e', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '13px', fontWeight: '600', color: '#e2e8f0' }}>Notifications</span>
             <button onClick={() => { axios.delete('/api/admin/notifications').catch(()=>{}); setNotifs([]); }} style={{ background: 'none', border: 'none', fontSize: '11px', color: '#9ca3af', cursor: 'pointer' }}>Clear all</button>
           </div>
           <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
@@ -173,7 +200,7 @@ function NotificationBell() {
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                     <span style={{ fontSize: '14px' }}>{n.type === 'error' ? '🔴' : n.type === 'warning' ? '🟡' : n.type === 'success' ? '🟢' : '🔵'}</span>
                     <div>
-                      <div style={{ fontSize: '12px', fontWeight: '600', color: '#111827' }}>{n.title}</div>
+                      <div style={{ fontSize: '12px', fontWeight: '600', color: '#e2e8f0' }}>{n.title}</div>
                       <div style={{ fontSize: '11px', color: '#6b7280' }}>{n.message?.substring(0, 60)}</div>
                     </div>
                   </div>
@@ -181,7 +208,7 @@ function NotificationBell() {
               ))
             }
           </div>
-          <div style={{ padding: '8px 14px', borderTop: '1px solid #f3f4f6' }}>
+          <div style={{ padding: '8px 14px', borderTop: '1px solid #1e1e2e' }}>
             <a href="/admin/logs" style={{ fontSize: '12px', color: '#6c63ff', textDecoration: 'none' }}>View all logs →</a>
           </div>
         </div>
@@ -206,7 +233,7 @@ export default function AdminLayout({ children, title, breadcrumbs = [] }) {
 
   if (!isAuth) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0f' }}>
-      <div style={{ width: '32px', height: '32px', borderRadius: '50%', border: '3px solid #e5e7eb', borderTopColor: '#6c63ff', animation: 'spin 0.8s linear infinite' }} />
+      <div style={{ width: '32px', height: '32px', borderRadius: '50%', border: '3px solid #1e1e2e', borderTopColor: '#6c63ff', animation: 'spin 0.8s linear infinite' }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
@@ -222,30 +249,30 @@ export default function AdminLayout({ children, title, breadcrumbs = [] }) {
         @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 2px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
         input, select, textarea, button { font-family: inherit; }
       `}</style>
 
       {/* ── SIDEBAR ── */}
       <aside style={{
-        width: sidebarW, minHeight: '100vh', background: '#fff',
-        borderRight: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column',
+        width: sidebarW, minHeight: '100vh', background: '#0d0d1a',
+        borderRight: '1px solid #1e1e2e', display: 'flex', flexDirection: 'column',
         position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 50,
         transition: 'width 0.2s ease', overflowX: 'hidden', overflowY: 'auto',
       }}>
         {/* Logo area */}
-        <div style={{ padding: '0 12px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f3f4f6', flexShrink: 0 }}>
+        <div style={{ padding: '0 12px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #1e1e2e', flexShrink: 0 }}>
           {!collapsed ? (
             <>
               <Link href="/" target="_blank" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '9px' }}>
                 <img src="/logo.svg" alt="snspokes" width="26" height="26" style={{ borderRadius: '6px', flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#111827', letterSpacing: '-0.2px', whiteSpace: 'nowrap' }}>snspokes<span style={{ color:'#6c63ff' }}>.com</span></div>
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#e2e8f0', letterSpacing: '-0.2px', whiteSpace: 'nowrap' }}>snspokes<span style={{ color:'#6c63ff' }}>.com</span></div>
                   <div style={{ fontSize: '10px', color: '#9ca3af' }}>Admin Console</div>
                 </div>
               </Link>
               <button onClick={() => setCollapsed(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: '4px', borderRadius: '4px', display: 'flex', flexShrink: 0 }}
-                onMouseEnter={e => { e.currentTarget.style.background='#f3f4f6'; e.currentTarget.style.color='#374151'; }}
+                onMouseEnter={e => { e.currentTarget.style.background='#1a1a2e'; e.currentTarget.style.color='#e2e8f0'; }}
                 onMouseLeave={e => { e.currentTarget.style.background='none'; e.currentTarget.style.color='#9ca3af'; }}
               ><Icon.Menu /></button>
             </>
@@ -274,7 +301,7 @@ export default function AdminLayout({ children, title, breadcrumbs = [] }) {
         </nav>
 
         {/* Bottom */}
-        <div style={{ padding: '8px', borderTop: '1px solid #f3f4f6', flexShrink: 0 }}>
+        <div style={{ padding: '8px', borderTop: '1px solid #1e1e2e', flexShrink: 0 }}>
           <Link href="/" target="_blank" title={collapsed ? 'View Site' : ''} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: collapsed ? '9px' : '8px 10px', borderRadius: '8px', textDecoration: 'none', color: '#6b7280', fontSize: '14px', marginBottom: '2px', justifyContent: collapsed ? 'center' : 'flex-start', transition: 'all 0.12s' }}
             onMouseEnter={e => { e.currentTarget.style.background='#1a1a2e'; e.currentTarget.style.color='#e2e8f0'; }}
             onMouseLeave={e => { e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#6b7280'; }}
@@ -296,18 +323,18 @@ export default function AdminLayout({ children, title, breadcrumbs = [] }) {
       <div style={{ flex: 1, marginLeft: sidebarW, display: 'flex', flexDirection: 'column', transition: 'margin-left 0.2s ease', minWidth: 0 }}>
 
         {/* Top Bar */}
-        <header style={{ height: '60px', background: '#fff', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', position: 'sticky', top: 0, zIndex: 40 }}>
+        <header style={{ height: '60px', background: '#0d0d1a', borderBottom: '1px solid #1e1e2e', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', position: 'sticky', top: 0, zIndex: 40 }}>
           {/* Breadcrumb */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
             <span style={{ fontSize: '13px', color: '#9ca3af' }}>Admin</span>
             <span style={{ color: '#d1d5db', display: 'flex' }}><Icon.ChevronRight /></span>
             {breadcrumbs.map((b, i) => (
               <span key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '13px', color: i === breadcrumbs.length - 1 ? '#111827' : '#6b7280', fontWeight: i === breadcrumbs.length - 1 ? '600' : '400' }}>{b}</span>
+                <span style={{ fontSize: '13px', color: i === breadcrumbs.length - 1 ? '#e2e8f0' : '#6b7280', fontWeight: i === breadcrumbs.length - 1 ? '600' : '400' }}>{b}</span>
                 {i < breadcrumbs.length - 1 && <span style={{ color: '#d1d5db', display: 'flex' }}><Icon.ChevronRight /></span>}
               </span>
             ))}
-            {breadcrumbs.length === 0 && <span style={{ fontSize: '13px', color: '#111827', fontWeight: '600' }}>{title}</span>}
+            {breadcrumbs.length === 0 && <span style={{ fontSize: '13px', color: '#e2e8f0', fontWeight: '600' }}>{title}</span>}
           </div>
 
           {/* Right */}
@@ -322,7 +349,7 @@ export default function AdminLayout({ children, title, breadcrumbs = [] }) {
 
         {/* Content */}
         <main style={{ flex: 1, padding: '28px 24px', overflowY: 'auto', animation: 'fadeIn 0.2s ease' }}>
-          <h1 style={{ fontSize: '18px', fontWeight: '700', color: '#111827', margin: '0 0 20px', letterSpacing: '-0.3px' }}>{title}</h1>
+          <h1 style={{ fontSize: '18px', fontWeight: '700', color: '#e2e8f0', margin: '0 0 20px', letterSpacing: '-0.3px' }}>{title}</h1>
           {children}
         </main>
       </div>

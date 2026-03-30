@@ -51,7 +51,7 @@ function GlobalSearch() {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input value={query} onChange={e => handleInput(e.target.value)} placeholder="Search across users, spokes, properties, logs, flags..." autoFocus
               style={{ flex: 1, border: 'none', outline: 'none', fontSize: '16px', fontFamily: 'inherit', background: 'transparent', color: '#e2e8f0' }} />
-            {loading && <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: '2px solid #e5e7eb', borderTopColor: '#6c63ff', animation: 'spin 0.6s linear infinite', flexShrink: 0 }} />}
+            {loading && <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: '2px solid #1e1e2e', borderTopColor: '#6c63ff', animation: 'spin 0.6s linear infinite', flexShrink: 0 }} />}
             {query && <button onClick={() => { setQuery(''); setResults(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: '18px' }}>×</button>}
           </div>
 
@@ -59,7 +59,7 @@ function GlobalSearch() {
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
             {[['all', 'All'], ['users', 'Users'], ['spokes', 'Spokes'], ['properties', 'Properties'], ['flags', 'Flags'], ['logs', 'Logs'], ['errors', 'Errors']].map(([val, label]) => (
               <button key={val} onClick={() => { setType(val); search(query, val); }}
-                style={{ padding: '5px 12px', borderRadius: '20px', border: '1px solid', cursor: 'pointer', fontFamily: 'inherit', fontSize: '12px', fontWeight: '500', transition: 'all 0.12s', background: type === val ? '#e2e8f0' : '#0d0d1a', borderColor: type === val ? '#e2e8f0' : '#1e1e2e', color: type === val ? '#fff' : '#6b7280' }}>
+                style={{ padding: '5px 12px', borderRadius: '20px', border: '1px solid', cursor: 'pointer', fontFamily: 'inherit', fontSize: '12px', fontWeight: '500', transition: 'all 0.12s', background: type === val ? '#6c63ff' : '#0d0d1a', borderColor: type === val ? '#6c63ff' : '#1e1e2e', color: type === val ? '#fff' : '#6b7280' }}>
                 {label}
                 {results?.counts?.[val.replace('users','user').replace('spokes','spoke').replace('properties','propert').replace('flags','flag').replace('logs','log').replace('errors','error')] > 0 && (
                   <span style={{ marginLeft: '4px', background: 'rgba(255,255,255,0.2)', padding: '0 5px', borderRadius: '10px', fontSize: '10px' }}>
@@ -124,6 +124,7 @@ function GlobalSearch() {
   );
 }
 
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(GlobalSearch);
+
+export const getServerSideProps = async () => ({ props: {} });

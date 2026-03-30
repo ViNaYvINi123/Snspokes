@@ -66,6 +66,7 @@ function AdminReferrals() {
     </>
   );
 }
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminReferrals);
+
+export const getServerSideProps = async () => ({ props: {} });

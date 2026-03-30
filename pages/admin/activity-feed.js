@@ -146,3 +146,5 @@ function ActivityFeedPage() {
 }
 
 export default withAdminPage(ActivityFeedPage);
+
+export const getServerSideProps = async () => ({ props: {} });

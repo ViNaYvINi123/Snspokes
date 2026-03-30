@@ -186,6 +186,7 @@ function AdminRevenuePage() {
   );
 }
 
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminRevenuePage);
+
+export const getServerSideProps = async () => ({ props: {} });

@@ -12,18 +12,18 @@ export default async function handler(req, res) {
 
   const start = Date.now();
 
-  const [db, ollama] = await Promise.allSettled([
+  const [db, n8nHealth] = await Promise.allSettled([
     healthCheck(),
-    axios.get(`${process.env.OLLAMA_URL || 'http://172.19.0.1:11434'}/api/tags`, { timeout: 2000 })
+    axios.get((process.env.N8N_URL || 'http://snspokes_n8n:5678') + '/healthz', { timeout: 3000 })
       .then(() => ({ healthy: true }))
       .catch(() => ({ healthy: false })),
   ]);
 
   const dbOk = db.status === 'fulfilled' && db.value.healthy;
   const redisOk = isRedisAvailable();
-  const ollamaOk = ollama.status === 'fulfilled' && ollama.value.healthy;
+  const n8nOk = n8nHealth.status === 'fulfilled' && n8nHealth.value.healthy;
 
-  const allOk = dbOk; // DB is the only critical dependency
+  const allOk = dbOk && n8nOk; // DB is the only critical dependency
   const status = allOk ? 200 : 503;
 
   // Get additional system info
@@ -48,13 +48,13 @@ export default async function handler(req, res) {
   const response = {
     maintenance_mode: maintenanceMode,
     status: allOk ? 'ok' : 'degraded',
-    version: '32.5.0',
+    version: '32.7.0',
     uptime_seconds: Math.floor((Date.now() - startTime) / 1000),
     timestamp: new Date().toISOString(),
     checks: {
       database:  { ok: dbOk,     latency_ms: db.value?.latency_ms },
       redis:     { ok: redisOk,  note: redisOk ? 'connected' : 'using memory fallback' },
-      ollama_ai: { ok: ollamaOk, note: ollamaOk ? 'connected' : 'offline (OpenRouter fallback active)' },
+      n8n_ai: { ok: n8nOk, note: n8nOk ? 'n8n connected' : 'n8n offline — AI unavailable' },
     },
   };
 

@@ -202,6 +202,7 @@ function AdminSpokes() {
   );
 }
 
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminSpokes);
+
+export const getServerSideProps = async () => ({ props: {} });

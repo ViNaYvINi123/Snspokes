@@ -97,6 +97,7 @@ function AdminBackup() {
   );
 }
 
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminBackup);
+
+export const getServerSideProps = async () => ({ props: {} });

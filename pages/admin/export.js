@@ -67,6 +67,7 @@ function ExportPage() {
     </AdminLayout>
   );
 }
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(ExportPage);
+
+export const getServerSideProps = async () => ({ props: {} });

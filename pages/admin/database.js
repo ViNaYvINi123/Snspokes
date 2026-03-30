@@ -213,6 +213,7 @@ function AdminDatabase() {
   );
 }
 
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminDatabase);
+
+export const getServerSideProps = async () => ({ props: {} });

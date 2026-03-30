@@ -48,6 +48,7 @@ function HealthTimelinePage() {
     </AdminLayout>
   );
 }
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(HealthTimelinePage);
+
+export const getServerSideProps = async () => ({ props: {} });

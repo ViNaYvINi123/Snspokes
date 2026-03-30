@@ -75,7 +75,7 @@ function AdminDashboard() {
       <AdminLayout title="Dashboard" breadcrumbs={['Dashboard']}>
         {loading ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '300px', gap: '12px' }}>
-            <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: '3px solid #e5e7eb', borderTopColor: '#6c63ff', animation: 'spin 0.8s linear infinite' }} />
+            <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: '3px solid #1e1e2e', borderTopColor: '#6c63ff', animation: 'spin 0.8s linear infinite' }} />
             <span style={{ color: '#6b7280', fontSize: '14px' }}>Loading dashboard...</span>
           </div>
         ) : (
@@ -221,6 +221,7 @@ function AdminDashboard() {
   );
 }
 
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminDashboard);
+
+export const getServerSideProps = async () => ({ props: {} });

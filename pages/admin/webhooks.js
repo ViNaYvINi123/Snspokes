@@ -118,6 +118,7 @@ function WebhooksPage() {
     </AdminLayout>
   );
 }
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(WebhooksPage);
+
+export const getServerSideProps = async () => ({ props: {} });

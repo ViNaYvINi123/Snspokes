@@ -92,7 +92,7 @@ function EnvManager() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search variables..." style={{ border: 'none', outline: 'none', fontSize: '13px', fontFamily: 'inherit', flex: 1 }} />
           </div>
-          <button onClick={() => setShowAdd(true)} style={{ padding: '8px 16px', background: '#e2e8f0', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '13px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>+ Add Variable</button>
+          <button onClick={() => setShowAdd(true)} style={{ padding: '8px 16px', background: '#6c63ff', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '13px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>+ Add Variable</button>
         </div>
 
         {loading ? <div style={{ textAlign: 'center', padding: '60px', color: '#9ca3af' }}>Loading...</div> : (
@@ -130,7 +130,7 @@ function EnvManager() {
                           <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
                             {editing === v.key ? (
                               <>
-                                <button onClick={() => handleSave(v.key)} disabled={saving} style={{ padding: '4px 12px', background: '#e2e8f0', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}>Save</button>
+                                <button onClick={() => handleSave(v.key)} disabled={saving} style={{ padding: '4px 12px', background: '#6c63ff', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}>Save</button>
                                 <button onClick={() => setEditing(null)} style={{ padding: '4px 10px', background: '#0d0d1a', border: '1px solid #1e1e2e', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>✕</button>
                               </>
                             ) : (
@@ -167,7 +167,7 @@ function EnvManager() {
               </div>
               <div style={{ display: 'flex', gap: '10px', marginTop: '18px' }}>
                 <button onClick={() => setShowAdd(false)} style={{ flex: 1, padding: '9px', background: '#0d0d1a', border: '1px solid #1e1e2e', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', fontSize: '13px' }}>Cancel</button>
-                <button onClick={handleAdd} disabled={saving} style={{ flex: 2, padding: '9px', background: '#e2e8f0', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontSize: '13px', fontWeight: '600' }}>Add Variable</button>
+                <button onClick={handleAdd} disabled={saving} style={{ flex: 2, padding: '9px', background: '#6c63ff', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontFamily: 'inherit', fontSize: '13px', fontWeight: '600' }}>Add Variable</button>
               </div>
             </div>
           </div>
@@ -183,6 +183,7 @@ function EnvManager() {
   );
 }
 
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(EnvManager);
+
+export const getServerSideProps = async () => ({ props: {} });

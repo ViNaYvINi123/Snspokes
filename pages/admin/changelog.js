@@ -123,6 +123,7 @@ function AdminChangelog() {
     </>
   );
 }
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminChangelog);
+
+export const getServerSideProps = async () => ({ props: {} });

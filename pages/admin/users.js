@@ -219,6 +219,7 @@ function AdminUsers() {
   );
 }
 
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminUsers);
+
+export const getServerSideProps = async () => ({ props: {} });

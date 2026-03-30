@@ -69,6 +69,7 @@ function PlansPage() {
     </AdminLayout>
   );
 }
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(PlansPage);
+
+export const getServerSideProps = async () => ({ props: {} });

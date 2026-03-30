@@ -56,7 +56,7 @@ function AIDebug() {
               <p style={{ fontSize: '12px', fontWeight: '600', color: '#6b6b8a', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '10px' }}>Context</p>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {CONTEXT_TYPES.map(c => (
-                  <button key={c.value} onClick={() => setContextType(c.value)} style={{ padding: '6px 14px', borderRadius: '8px', border: '1px solid', cursor: 'pointer', fontFamily: 'inherit', fontSize: '13px', fontWeight: '500', background: contextType === c.value ? '#e2e8f0' : '#0d0d1a', borderColor: contextType === c.value ? '#e2e8f0' : '#1e1e2e', color: contextType === c.value ? '#fff' : '#9999bb', transition: 'all 0.15s' }} title={c.desc}>
+                  <button key={c.value} onClick={() => setContextType(c.value)} style={{ padding: '6px 14px', borderRadius: '8px', border: '1px solid', cursor: 'pointer', fontFamily: 'inherit', fontSize: '13px', fontWeight: '500', background: contextType === c.value ? '#6c63ff' : '#0d0d1a', borderColor: contextType === c.value ? '#6c63ff' : '#1e1e2e', color: contextType === c.value ? '#fff' : '#9999bb', transition: 'all 0.15s' }} title={c.desc}>
                     {c.label}
                   </button>
                 ))}
@@ -75,7 +75,7 @@ function AIDebug() {
                 style={{ width: '100%', padding: '10px 12px', border: '1px solid #1e1e2e', borderRadius: '8px', fontSize: '14px', fontFamily: 'inherit', outline: 'none', resize: 'vertical', color: '#e2e8f0' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
                 <span style={{ fontSize: '11px', color: '#9ca3af' }}>⌘+Enter to send</span>
-                <button onClick={handleAsk} disabled={loading || !question.trim()} style={{ padding: '8px 20px', background: loading || !question.trim() ? '#9ca3af' : '#e2e8f0', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '13px', fontWeight: '600', cursor: loading || !question.trim() ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <button onClick={handleAsk} disabled={loading || !question.trim()} style={{ padding: '8px 20px', background: loading || !question.trim() ? '#4b5563' : '#6c63ff', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '13px', fontWeight: '600', cursor: loading || !question.trim() ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   {loading && <div style={{ width: '12px', height: '12px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', animation: 'spin 0.6s linear infinite' }} />}
                   {loading ? 'Thinking...' : '🤖 Ask AI'}
                 </button>
@@ -143,6 +143,7 @@ function AIDebug() {
   );
 }
 
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AIDebug);
+
+export const getServerSideProps = async () => ({ props: {} });

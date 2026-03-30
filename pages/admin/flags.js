@@ -10,7 +10,7 @@ function Toggle({ enabled, onChange, loading }) {
   return (
     <button onClick={onChange} disabled={loading} style={{
       width: '40px', height: '22px', borderRadius: '11px',
-      background: enabled ? '#6c63ff' : '#d1d5db',
+      background: enabled ? '#6c63ff' : '#333',
       border: 'none', cursor: loading ? 'wait' : 'pointer',
       position: 'relative', transition: 'background 0.2s', flexShrink: 0,
     }}>
@@ -115,7 +115,7 @@ function AdminFlags() {
             <span style={{ fontSize: '13px', color: '#6b6b8a' }}>{enabledCount}/{flags.length} enabled</span>
           </div>
           <button onClick={() => { setEditFlag(null); setForm(EMPTY); setShowModal(true); }}
-            style={{ padding: '8px 16px', background: '#e2e8f0', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '13px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>
+            style={{ padding: '8px 16px', background: '#6c63ff', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '13px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit' }}>
             + New Flag
           </button>
         </div>
@@ -188,7 +188,7 @@ function AdminFlags() {
               </div>
               <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
                 <button onClick={() => setShowModal(false)} style={{ flex: 1, padding: '10px', background: '#0d0d1a', border: '1px solid #1e1e2e', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit', fontSize: '14px', color: '#9999bb' }}>Cancel</button>
-                <button onClick={handleSave} disabled={saving} style={{ flex: 2, padding: '10px', background: '#e2e8f0', border: 'none', borderRadius: '8px', color: '#fff', cursor: saving ? 'wait' : 'pointer', fontFamily: 'inherit', fontSize: '14px', fontWeight: '600' }}>
+                <button onClick={handleSave} disabled={saving} style={{ flex: 2, padding: '10px', background: '#6c63ff', border: 'none', borderRadius: '8px', color: '#fff', cursor: saving ? 'wait' : 'pointer', fontFamily: 'inherit', fontSize: '14px', fontWeight: '600' }}>
                   {saving ? 'Saving...' : editFlag ? 'Update Flag' : 'Create Flag'}
                 </button>
               </div>
@@ -207,6 +207,7 @@ function AdminFlags() {
   );
 }
 
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminFlags);
+
+export const getServerSideProps = async () => ({ props: {} });

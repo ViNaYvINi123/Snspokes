@@ -62,6 +62,7 @@ function SpokeVersionsPage() {
     </AdminLayout>
   );
 }
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(SpokeVersionsPage);
+
+export const getServerSideProps = async () => ({ props: {} });

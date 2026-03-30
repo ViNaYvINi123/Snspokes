@@ -103,6 +103,7 @@ function AnalyzerPage() {
     </AdminLayout>
   );
 }
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AnalyzerPage);
+
+export const getServerSideProps = async () => ({ props: {} });

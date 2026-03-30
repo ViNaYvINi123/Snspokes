@@ -28,7 +28,7 @@ function SH({ title, action }) {
 
 function Btn({ onClick, children, variant='primary', small=false, disabled=false }) {
   const styles = {
-    primary:  { background:'#e2e8f0',color:'#fff',border:'none' },
+    primary:  { background:'#6c63ff',color:'#fff',border:'none' },
     secondary:{ background:'#0d0d1a',color:'#9999bb',border:'1px solid #1e1e2e' },
     danger:   { background:'#2d0a0a',color:'#dc2626',border:'1px solid #fecaca' },
     success:  { background:'#052e16',color:'#16a34a',border:'1px solid #bbf7d0' },
@@ -176,7 +176,7 @@ function APIConnectors() {
         <div style={{ display:'flex',gap:'0',marginBottom:'20px',background:'#0f0f1a',border:'1px solid #1e1e2e',borderRadius:'10px',padding:'4px',width:'fit-content' }}>
           {[['list','🔌 Connectors'],['webhooks','📡 Webhooks']].map(([v,l]) => (
             <button key={v} onClick={() => { setView(v); if (v==='webhooks') fetchWebhooks(); }}
-              style={{ padding:'7px 16px',borderRadius:'7px',border:'none',fontSize:'13px',fontWeight:'600',cursor:'pointer',fontFamily:'inherit',background: view===v ? '#e2e8f0' : 'transparent',color: view===v ? '#fff' : '#6b7280',transition:'all 0.12s' }}>{l}</button>
+              style={{ padding:'7px 16px',borderRadius:'7px',border:'none',fontSize:'13px',fontWeight:'600',cursor:'pointer',fontFamily:'inherit',background: view===v ? '#6c63ff' : 'transparent',color: view===v ? '#fff' : '#6b7280',transition:'all 0.12s' }}>{l}</button>
           ))}
         </div>
 
@@ -196,7 +196,7 @@ function APIConnectors() {
                         onMouseEnter={e => e.currentTarget.style.background='#0d0d1a'}
                         onMouseLeave={e => e.currentTarget.style.background= selected?.id===c.id ? '#0d0d1a' : 'transparent'}
                       >
-                        <div style={{ width:'8px',height:'8px',borderRadius:'50%',background: c.is_active ? '#22c55e' : '#d1d5db',flexShrink:0 }} />
+                        <div style={{ width:'8px',height:'8px',borderRadius:'50%',background: c.is_active ? '#22c55e' : '#4b5563',flexShrink:0 }} />
                         <div style={{ flex:1,minWidth:0 }}>
                           <div style={{ fontSize:'13px',fontWeight:'600',color:'#e2e8f0',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{c.name}</div>
                           <div style={{ fontSize:'11px',color:'#9ca3af',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{c.base_url}</div>
@@ -425,6 +425,7 @@ function APIConnectors() {
   );
 }
 
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(APIConnectors);
+
+export const getServerSideProps = async () => ({ props: {} });

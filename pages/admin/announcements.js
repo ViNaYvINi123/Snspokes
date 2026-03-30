@@ -8,6 +8,7 @@ const TYPE_COLORS = { info:'#2563eb', warning:'#d97706', success:'#16a34a', prom
 const EMPTY = { title:'', message:'', type:'info', target:'all', cta_text:'', cta_url:'', ends_at:'' };
 
 function AdminAnnouncements() {
+  const h = { 'Content-Type':'application/json', 'x-admin-token': typeof window !== 'undefined' ? localStorage.getItem('admin_token') || '' : '' };
   const [announcements, setAnnouncements] = useState([]);
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
@@ -71,7 +72,7 @@ function AdminAnnouncements() {
                 <div><label style={lbl}>CTA URL</label><input style={inp} value={form.cta_url} onChange={e=>setForm(f=>({...f,cta_url:e.target.value}))} placeholder="/tools/query-builder" /></div>
               </div>
               <div><label style={lbl}>Expires At (optional)</label><input style={inp} type="datetime-local" value={form.ends_at} onChange={e=>setForm(f=>({...f,ends_at:e.target.value}))} /></div>
-              <button onClick={save} disabled={saving} style={{ padding:'10px', background:'#e2e8f0', border:'none', borderRadius:'8px', color:'#fff', fontSize:'13px', fontWeight:'600', cursor:'pointer', fontFamily:'inherit' }}>
+              <button onClick={save} disabled={saving} style={{ padding:'10px', background:'#6c63ff', border:'none', borderRadius:'8px', color:'#fff', fontSize:'13px', fontWeight:'600', cursor:'pointer', fontFamily:'inherit' }}>
                 {saving ? 'Saving...' : '📢 Publish Announcement'}
               </button>
             </div>
@@ -115,6 +116,7 @@ function AdminAnnouncements() {
   );
 }
 
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminAnnouncements);
+
+export const getServerSideProps = async () => ({ props: {} });

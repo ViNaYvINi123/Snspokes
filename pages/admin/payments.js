@@ -121,6 +121,7 @@ function AdminPayments() {
   );
 }
 
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminPayments);
+
+export const getServerSideProps = async () => ({ props: {} });

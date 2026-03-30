@@ -213,6 +213,7 @@ function SpokeSeeder() {
   );
 }
 
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(SpokeSeeder);
+
+export const getServerSideProps = async () => ({ props: {} });

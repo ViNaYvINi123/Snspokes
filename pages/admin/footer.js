@@ -392,6 +392,7 @@ function FooterAdmin() {
   );
 }
 
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(FooterAdmin);
+
+export const getServerSideProps = async () => ({ props: {} });

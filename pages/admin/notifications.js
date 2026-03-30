@@ -83,6 +83,7 @@ function NotificationsPage() {
     </AdminLayout>
   );
 }
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(NotificationsPage);
+
+export const getServerSideProps = async () => ({ props: {} });

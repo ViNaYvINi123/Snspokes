@@ -113,6 +113,7 @@ function AdminPromoCodes() {
     </>
   );
 }
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminPromoCodes);
+
+export const getServerSideProps = async () => ({ props: {} });

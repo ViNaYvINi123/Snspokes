@@ -56,6 +56,7 @@ function AdminAuditLog() {
     </>
   );
 }
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(AdminAuditLog);
+
+export const getServerSideProps = async () => ({ props: {} });

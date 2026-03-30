@@ -265,6 +265,7 @@ function CommandCenter() {
   );
 }
 
-export const getServerSideProps = async () => ({ props: {} });
 
 export default withAdminPage(CommandCenter);
+
+export const getServerSideProps = async () => ({ props: {} });
