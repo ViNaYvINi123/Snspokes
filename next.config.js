@@ -2,9 +2,6 @@ const nextConfig = {
   images: { domains: ['store.servicenow.com', 'logo.clearbit.com'] },
   reactStrictMode: true,
   poweredByHeader: false,
-  experimental: {
-    serverComponentsExternalPackages: ['redis', 'winston', 'pg', 'bcryptjs', 'nodemailer'],
-  },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
