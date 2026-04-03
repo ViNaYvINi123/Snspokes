@@ -2,6 +2,50 @@
 -- Safe to run multiple times (IF NOT EXISTS)
 BEGIN;
 
+-- ── Users (CRITICAL — must be first, everything references it) ──
+CREATE TABLE IF NOT EXISTS sn_users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(200),
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255),
+  image TEXT,
+  provider VARCHAR(50) DEFAULT 'credentials',
+  provider_id VARCHAR(255),
+  plan VARCHAR(50) DEFAULT 'free',
+  role VARCHAR(50),
+  search_count INT DEFAULT 0,
+  is_banned BOOLEAN DEFAULT false,
+  ban_reason TEXT,
+  is_active BOOLEAN DEFAULT true,
+  onboarded BOOLEAN DEFAULT false,
+  referral_code VARCHAR(50),
+  referred_by INT,
+  last_login TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Add missing columns to sn_users if table already exists
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS onboarded BOOLEAN DEFAULT false;
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS role VARCHAR(50);
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN DEFAULT false;
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS ban_reason TEXT;
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS plan VARCHAR(50) DEFAULT 'free';
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS search_count INT DEFAULT 0;
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS provider VARCHAR(50) DEFAULT 'credentials';
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS provider_id VARCHAR(255);
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS image TEXT;
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS referral_code VARCHAR(50);
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP;
+
+-- Add missing columns to sn_spokes if needed
+ALTER TABLE sn_spokes ADD COLUMN IF NOT EXISTS search_count INT DEFAULT 0;
+ALTER TABLE sn_spokes ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
+ALTER TABLE sn_spokes ADD COLUMN IF NOT EXISTS use_cases JSONB;
+ALTER TABLE sn_spokes ADD COLUMN IF NOT EXISTS code_examples JSONB;
+
+
 CREATE TABLE IF NOT EXISTS sn_announcements (
   id SERIAL PRIMARY KEY,
   title VARCHAR(255) NOT NULL,

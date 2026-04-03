@@ -1,5 +1,4 @@
 import NextAuth from 'next-auth';
-import GithubProvider from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
@@ -12,10 +11,6 @@ const PLAN_REFRESH_INTERVAL = 5 * 60; // seconds
 
 export const authOptions = {
   providers: [
-    GithubProvider({
-      clientId:     process.env.GITHUB_CLIENT_ID || '',
-      clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
-    }),
     GoogleProvider({
       clientId:     process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
@@ -62,7 +57,7 @@ export const authOptions = {
   callbacks: {
     async signIn({ user, account }) {
       try {
-        if (account?.provider === 'github' || account?.provider === 'google') {
+        if (account?.provider === 'google') {
           const existing = await query('SELECT * FROM sn_users WHERE email=$1', [user.email]);
 
           if (existing.rows.length === 0) {

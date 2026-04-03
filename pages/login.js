@@ -4,12 +4,6 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 
-const GithubIcon = () => (
-  <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/>
-  </svg>
-);
-
 const GoogleIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24">
     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -70,51 +64,37 @@ export default function Login() {
     }
   };
 
-  const handleOAuth = async (provider) => {
-    setOauthLoading(provider);
-    await signIn(provider, { callbackUrl });
-  };
-
   return (
     <>
       <Head>
         <title>Sign In — snspokes</title>
         <meta name="description" content="Sign in to your snspokes account" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
       </Head>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } } .spin { animation: spin 0.6s linear infinite; }`}</style>
+
       <div style={s.page}>
-
-        {/* Logo */}
-        <Link href="/" style={{ textDecoration:'none', marginBottom:'32px', display:'flex', alignItems:'center', gap:'10px' }}>
-          <div style={{ width:'36px', height:'36px', background:'linear-gradient(135deg,#6c63ff,#a855f7)', borderRadius:'10px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px', fontWeight:'800', color:'#fff' }}>S</div>
-          <span style={{ fontSize:'20px', fontWeight:'800', color:'#fff', letterSpacing:'-0.03em' }}>snspokes<span style={{ color:'#6c63ff' }}>.com</span></span>
-        </Link>
-
         <div style={s.card}>
-          <h1 style={{ color:'#fff', fontSize:'22px', fontWeight:'800', marginBottom:'6px', letterSpacing:'-0.02em' }}>Welcome back</h1>
-          <p style={{ color:'#6b7280', fontSize:'14px', marginBottom:'24px' }}>Sign in to your account to continue</p>
-
-          {/* Banned error */}
-          {isBanned && (
-            <div style={{ ...s.error, marginBottom:'16px' }}>
-              🚫 Your account has been suspended. Contact support if you think this is a mistake.
-            </div>
-          )}
-
-          {/* OAuth */}
-          <div style={{ display:'flex', flexDirection:'column', gap:'10px', marginBottom:'20px' }}>
-            {[
-              { id:'github', label:'Continue with GitHub', Icon: GithubIcon },
-              { id:'google', label:'Continue with Google', Icon: GoogleIcon },
-            ].map(({ id, label, Icon }) => (
-              <button key={id} onClick={() => handleOAuth(id)} disabled={!!oauthLoading || loading}
-                style={{ ...s.oauth, opacity: oauthLoading === id ? 0.7 : 1 }}
-                onMouseEnter={e => { e.currentTarget.style.background='#252540'; e.currentTarget.style.borderColor='#6c63ff44'; }}
-                onMouseLeave={e => { e.currentTarget.style.background='#1a1a2e'; e.currentTarget.style.borderColor='#2a2a3e'; }}>
-                {oauthLoading === id ? <div className="spin" style={{ width:'18px', height:'18px', border:'2px solid #4b4b6a', borderTopColor:'#6c63ff', borderRadius:'50%' }} /> : <Icon />}
-                {oauthLoading === id ? 'Redirecting...' : label}
-              </button>
-            ))}
+          <div style={{ textAlign:'center', marginBottom:'28px' }}>
+            <Link href="/" style={{ textDecoration:'none', display:'inline-flex', alignItems:'center', gap:'10px' }}>
+              <img src="/logo.svg" alt="snspokes" width="32" height="32" style={{ borderRadius:'8px' }} />
+              <span style={{ fontSize:'20px', fontWeight:'800', color:'#e2e8f0', letterSpacing:'-0.3px' }}>snspokes<span style={{ color:'#6c63ff' }}>.com</span></span>
+            </Link>
+            <h1 style={{ fontSize:'22px', fontWeight:'700', color:'#e2e8f0', margin:'16px 0 6px' }}>Welcome back</h1>
+            <p style={{ color:'#6b7280', fontSize:'14px', margin:0 }}>Sign in to continue</p>
           </div>
+
+          {isBanned && <div style={{ ...s.error, marginBottom:'20px' }}>Your account has been suspended. Contact support for help.</div>}
+
+          <button onClick={() => { setOauthLoading('google'); signIn('google', { callbackUrl }); }} disabled={!!oauthLoading}
+            style={{ ...s.oauth, opacity: oauthLoading === 'google' ? 0.7 : 1 }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor='#6c63ff'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor='#2a2a3e'; }}>
+            {oauthLoading === 'google'
+              ? <div className="spin" style={{ width:'16px', height:'16px', border:'2px solid rgba(255,255,255,0.3)', borderTopColor:'#fff', borderRadius:'50%' }} />
+              : <GoogleIcon />}
+            Continue with Google
+          </button>
 
           <div style={s.divider}><div style={s.divLine}/><span style={s.divTxt}>or with email</span><div style={s.divLine}/></div>
 
@@ -126,8 +106,7 @@ export default function Login() {
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.com" required
                 style={s.input}
                 onFocus={e => { e.target.style.borderColor='#6c63ff'; e.target.style.boxShadow='0 0 0 3px rgba(108,99,255,0.12)'; }}
-                onBlur={e  => { e.target.style.borderColor='#2a2a3e'; e.target.style.boxShadow='none'; }}
-              />
+                onBlur={e  => { e.target.style.borderColor='#2a2a3e'; e.target.style.boxShadow='none'; }} />
             </div>
             <div>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'6px' }}>
@@ -138,15 +117,13 @@ export default function Login() {
                 <input type={showPwd?'text':'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required
                   style={{ ...s.input, paddingRight:'44px' }}
                   onFocus={e => { e.target.style.borderColor='#6c63ff'; e.target.style.boxShadow='0 0 0 3px rgba(108,99,255,0.12)'; }}
-                  onBlur={e  => { e.target.style.borderColor='#2a2a3e'; e.target.style.boxShadow='none'; }}
-                />
+                  onBlur={e  => { e.target.style.borderColor='#2a2a3e'; e.target.style.boxShadow='none'; }} />
                 <button type="button" onClick={() => setShowPwd(v => !v)}
                   style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', color:'#6b7280', cursor:'pointer', padding:'2px', display:'flex' }}>
                   <EyeIcon open={showPwd} />
                 </button>
               </div>
             </div>
-
             <button type="submit" disabled={loading}
               style={{ ...s.btn, opacity: loading ? 0.7 : 1 }}
               onMouseEnter={e => { if (!loading) e.currentTarget.style.opacity='0.9'; }}
@@ -161,7 +138,7 @@ export default function Login() {
           </form>
 
           <p style={{ color:'#6b7280', fontSize:'13px', textAlign:'center', marginTop:'20px' }}>
-            Don't have an account?{' '}
+            {"Don't have an account? "}
             <Link href="/register" style={{ color:'#6c63ff', fontWeight:'700', textDecoration:'none' }}>Sign up free</Link>
           </p>
         </div>
