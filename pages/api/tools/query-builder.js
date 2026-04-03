@@ -6,7 +6,7 @@ import { apiError } from '../../../lib/validate';
 import { withTrace } from '../../../lib/requestTrace';
 import crypto from 'crypto';
 import { checkRateLimit } from '../../../lib/redis';
-import { getClientIp } from '../../../lib/security';
+import { getClientIp, setSecurityHeaders } from '../../../lib/security';
 
 async function handler(req, res) {
   setSecurityHeaders(res);

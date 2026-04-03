@@ -2,7 +2,7 @@ import { query } from '../../../lib/db';
 import { withTrace } from '../../../lib/requestTrace';
 import { apiError } from '../../../lib/validate';
 import { checkRateLimit } from '../../../lib/redis';
-import { getClientIp } from '../../../lib/security';
+import { getClientIp, setSecurityHeaders } from '../../../lib/security';
 
 const SN_VERSIONS = ['New York','Orlando','Paris','Quebec','Rome','San Diego','Tokyo','Utah','Vancouver','Washington','Xanadu','Yokohama'];
 
