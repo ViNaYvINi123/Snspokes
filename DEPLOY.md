@@ -1,5 +1,5 @@
 # snspokes — Complete Deployment Guide
-**Version: 32.12.0 | Last Updated: 2026-04-04**
+**Version: 32.12.0 | Last Updated: 2026-04-04 (final audit)**
 
 ---
 
@@ -545,3 +545,102 @@ Nginx (:80/:443) ──── SSL termination
 | Build fails | `docker compose logs nextjs --tail=50` |
 | Disk full | `docker system prune -f` |
 | SSL expired | `certbot renew && docker compose restart nginx` |
+
+
+---
+
+## Self-Diagnosis Guide (Fix Without External Help)
+
+### App shows blank page
+```bash
+docker logs snspokes_nextjs --tail=30
+# Look for: "relation does not exist" → run database_fix_all.sql
+# Look for: "Cannot find module" → docker compose up -d --build nextjs
+```
+
+### Search returns nothing
+```bash
+# Check spokes exist
+docker exec snspokes_db psql -U snspokes_user -d snspokes -c "SELECT COUNT(*) FROM sn_spokes;"
+# If 0: run database_seed_spokes.sql
+
+# Check n8n is reachable
+curl -s http://localhost:5678/healthz
+# If empty: docker compose restart n8n
+```
+
+### Admin login keeps redirecting
+```bash
+# Check ADMIN_SECRET is set
+grep ADMIN_SECRET ~/snspokes/.env.local
+# If missing: add ADMIN_SECRET=any_random_string
+# Then: docker compose restart nextjs
+```
+
+### Spoke page stuck on "Generating..."
+```bash
+# Check n8n enricher workflow is active
+# Open https://n8n.snspokes.com → Workflows → check all are toggled ON
+
+# Check OpenRouter key
+grep OPENROUTER ~/snspokes/.env
+# If missing: add it, then docker compose restart n8n
+```
+
+### Container keeps restarting
+```bash
+# Check which one
+docker ps -a --format "table {{.Names}}\t{{.Status}}" | grep Restarting
+
+# Check why
+docker logs CONTAINER_NAME --tail=50
+
+# Common fixes:
+docker compose restart CONTAINER_NAME     # soft restart
+docker compose up -d --build CONTAINER_NAME  # full rebuild
+```
+
+### Out of disk space
+```bash
+df -h
+docker system df
+docker system prune -af  # removes unused images + containers
+docker volume prune -f    # removes unused volumes (CAREFUL: don't remove pgdata!)
+```
+
+### Redis shows disconnected in admin
+```bash
+# Check Redis is running
+docker exec snspokes_redis redis-cli ping
+# Should return: PONG
+
+# If not running
+docker compose restart redis
+
+# Check .env.local
+grep REDIS ~/snspokes/.env.local
+# Must be: REDIS_HOST=snspokes_redis
+```
+
+### n8n workflows return empty
+```bash
+# 1. Open https://n8n.snspokes.com
+# 2. Check workflows are ACTIVATED (toggle ON)
+# 3. Check Postgres credentials in DB workflows
+# 4. Check OPENROUTER_API_KEY in n8n environment
+# 5. Test: curl -X POST http://localhost:5678/webhook/sn-chatbot \
+#    -H "Content-Type: application/json" -d '{"question":"test"}'
+```
+
+### How to add a new spoke manually
+```bash
+docker exec -it snspokes_db psql -U snspokes_user -d snspokes -c "
+INSERT INTO sn_spokes (slug, name, description, icon, category, tags)
+VALUES ('my-spoke', 'My Spoke', 'Description here', '🔌', 'Integration', ARRAY['tag1','tag2']);"
+```
+
+### How to check all tables exist
+```bash
+docker exec snspokes_db psql -U snspokes_user -d snspokes -c "\dt sn_*"
+# If tables missing: run database_fix_all.sql again
+```

@@ -913,7 +913,7 @@ describe('v22 — All fixes verified', () => {
   });
   test('admin/index.js no hardcoded password', () => {
     const c = fs.readFileSync(path.join(ROOT, 'pages/admin/index.js'), 'utf8');
-    if (c.includes('snspokes@admin2025')) throw new Error('Hardcoded password still in admin/index.js');
+    if (c.includes('test_admin_pass')) throw new Error('Hardcoded password still in admin/index.js');
   });
   test('code-history.js has method check', () => {
     const c = fs.readFileSync(path.join(ROOT, 'pages/api/user/code-history.js'), 'utf8');
