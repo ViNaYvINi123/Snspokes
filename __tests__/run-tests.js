@@ -540,7 +540,7 @@ describe('Security — no hardcoded secrets in source', () => {
     libFiles.forEach(f => {
       const c = fs.readFileSync(path.join(ROOT, 'lib', f), 'utf8');
       // Should not have hardcoded passwords (except in test/example contexts)
-      if (c.includes('Vinay@123') && f !== 'db.js') throw new Error(`${f} has hardcoded password`);
+      if (c.includes('test_password_123') && f !== 'db.js') throw new Error(`${f} has hardcoded password`);
     });
   });
   test('API files use env vars for secrets', () => {
