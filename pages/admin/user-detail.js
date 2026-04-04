@@ -13,7 +13,7 @@ function UserDetailPage() {
   const [tab, setTab] = useState('timeline');
   const [msg, setMsg] = useState(null);
 
-  useEffect(() => { if (id) fetch(`/api/admin/user-detail?id=${id}`, { headers: { 'x-admin-token': localStorage.getItem('admin_token') || '' } }).then(r => r.json()).then(d => { if (d.success) setData(d); }).finally(() => setLoading(false)); }, [id]);
+  useEffect(() => { if (id) fetch(`/api/admin/user-detail?id=${id}`, { headers: { 'x-admin-token': localStorage.getItem('admin_token') || '' } }).then(r => r.json()).then(d => { if (d.success) setData(d); }).catch(()=>{}).finally(() => setLoading(false)); }, [id]);
 
   const showMsg = (text, type = 'success') => { setMsg({ text, type }); setTimeout(() => setMsg(null), 3000); };
 

@@ -12,7 +12,7 @@ function AdminPromoCodes() {
   const headers = { 'Content-Type':'application/json', 'x-admin-token': localStorage.getItem('admin_token') || '' };
 
   useEffect(() => {
-    fetch('/api/admin/promo-codes', { headers }).then(r => r.json()).then(d => { if (d.success) setCodes(d.codes); }).finally(() => setLoading(false));
+    fetch('/api/admin/promo-codes', { headers }).then(r => r.json()).then(d => { if (d.success) setCodes(d.codes); }).catch(()=>{}).finally(() => setLoading(false));
   }, []);
 
   const showMsg = (text, type = 'success') => { setMsg({ text, type }); setTimeout(() => setMsg(null), 3000); };

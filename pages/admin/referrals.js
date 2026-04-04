@@ -9,7 +9,7 @@ function AdminReferrals() {
   const h = { 'x-admin-token': localStorage.getItem('admin_token')||'' };
 
   useEffect(() => {
-    fetch('/api/admin/referrals', { headers: h }).then(r=>r.json()).then(d=>{ if(d.success) setData(d); }).finally(()=>setLoading(false));
+    fetch('/api/admin/referrals', { headers: h }).then(r=>r.json()).then(d=>{ if(d.success) setData(d); }).catch(()=>{}).finally(()=>setLoading(false));
   }, []);
 
   return (

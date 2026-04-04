@@ -12,7 +12,7 @@ function AdminChatbotLogs() {
   const load = (q='') => {
     setLoading(true);
     fetch(`/api/admin/chatbot-logs${q?`?search=${encodeURIComponent(q)}`:''}`, { headers: h })
-      .then(r=>r.json()).then(d=>{ if(d.success) setData(d); }).finally(()=>setLoading(false));
+      .then(r=>r.json()).then(d=>{ if(d.success) setData(d); }).catch(()=>{}).finally(()=>setLoading(false));
   };
 
   useEffect(() => { load(); }, []);

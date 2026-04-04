@@ -14,7 +14,7 @@ function AdminErrorEncyclopedia() {
 
   useEffect(() => {
     fetch(`/api/admin/error-encyclopedia${search ? `?search=${encodeURIComponent(search)}` : ''}`, { headers: { 'x-admin-token': localStorage.getItem('admin_token') || '' } })
-      .then(r => r.json()).then(d => { if (d.success) { setErrors(d.errors); setTotal(d.total); } });
+      .then(r => r.json()).then(d => { if (d.success) { setErrors(d.errors); setTotal(d.total); } }).catch(()=>{});
   }, [search]);
 
   const save = async () => {
@@ -26,7 +26,7 @@ function AdminErrorEncyclopedia() {
     setForm({ error_pattern:'', title:'', description:'', root_cause:'', fix_steps:'', category:'', severity:'medium', verified:true });
     // Refresh
     fetch('/api/admin/error-encyclopedia', { headers: { 'x-admin-token': localStorage.getItem('admin_token') || '' } })
-      .then(r => r.json()).then(d => { if (d.success) setErrors(d.errors); });
+      .then(r => r.json()).then(d => { if (d.success) setErrors(d.errors); }).catch(()=>{});
   };
 
   const del = async (id) => {

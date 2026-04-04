@@ -10,7 +10,7 @@ function AdminRatings() {
 
   useEffect(() => {
     fetch(`/api/admin/ratings${filter ? `?spoke_slug=${filter}` : ''}`, { headers: { 'x-admin-token': localStorage.getItem('admin_token') || '' } })
-      .then(r => r.json()).then(d => { if (d.success) setData(d); }).finally(() => setLoading(false));
+      .then(r => r.json()).then(d => { if (d.success) setData(d); }).catch(()=>{}).finally(() => setLoading(false));
   }, [filter]);
 
   const deleteRating = async (id) => {

@@ -15,7 +15,7 @@ function AdminChangelog() {
 
   const load = () =>
     fetch('/api/changelog', { headers: h }).then(r => r.json())
-      .then(d => setEntries(d.entries || []));
+      .then(d => setEntries(d.entries || [])).catch(()=>{});
 
   useEffect(() => { load(); }, []);
   const showMsg = (t, type='success') => { setMsg({t,type}); setTimeout(()=>setMsg(null),3000); };

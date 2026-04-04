@@ -14,8 +14,8 @@ function AdminIpBlock() {
   const headers = { 'Content-Type':'application/json', 'x-admin-token': localStorage.getItem('admin_token') || '' };
 
   useEffect(() => {
-    fetch('/api/admin/ip-block?view=blocked', { headers }).then(r => r.json()).then(d => { if (d.success) setBlocked(d.blocked); });
-    fetch('/api/admin/ip-block?view=suspicious', { headers }).then(r => r.json()).then(d => { if (d.success) { setSuspicious(d.suspicious); setBruteForce(d.brute_force); } });
+    fetch('/api/admin/ip-block?view=blocked', { headers }).then(r => r.json()).then(d => { if (d.success) setBlocked(d.blocked); }).catch(()=>{});
+    fetch('/api/admin/ip-block?view=suspicious', { headers }).then(r => r.json()).then(d => { if (d.success) { setSuspicious(d.suspicious); setBruteForce(d.brute_force); } }).catch(()=>{});
   }, []);
 
   const blockIp = async () => {

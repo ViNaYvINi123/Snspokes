@@ -10,7 +10,7 @@ function AdminChurn() {
   const headers = { 'x-admin-token': localStorage.getItem('admin_token') || '' };
 
   useEffect(() => {
-    fetch('/api/admin/churn', { headers }).then(r => r.json()).then(d => { if (d.success) setData(d); }).finally(() => setLoading(false));
+    fetch('/api/admin/churn', { headers }).then(r => r.json()).then(d => { if (d.success) setData(d); }).catch(()=>{}).finally(() => setLoading(false));
   }, []);
 
   // Simple bar chart

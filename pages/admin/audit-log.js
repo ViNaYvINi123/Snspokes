@@ -11,7 +11,7 @@ function AdminAuditLog() {
 
   useEffect(() => {
     fetch(`/api/admin/audit-log${filter ? `?action=${filter}` : ''}`, { headers })
-      .then(r => r.json()).then(d => { if (d.success) setData(d); }).finally(() => setLoading(false));
+      .then(r => r.json()).then(d => { if (d.success) setData(d); }).catch(()=>{}).finally(() => setLoading(false));
   }, [filter]);
 
   const ACTION_COLORS = { impersonate:'#FFB347', ban:'#f87171', unban:'#4ade80', refund:'#0ea5e9', broadcast_email:'#a855f7', bulk_import:'#6c63ff', plan_change:'#00D4AA' };

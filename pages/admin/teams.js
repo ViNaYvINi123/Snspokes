@@ -9,7 +9,7 @@ function AdminTeams() {
   const h = { 'x-admin-token': localStorage.getItem('admin_token')||'' };
 
   useEffect(() => {
-    fetch('/api/admin/teams', { headers: h }).then(r=>r.json()).then(d=>{ if(d.success) setTeams(d.teams); }).finally(()=>setLoading(false));
+    fetch('/api/admin/teams', { headers: h }).then(r=>r.json()).then(d=>{ if(d.success) setTeams(d.teams); }).catch(()=>{}).finally(()=>setLoading(false));
   }, []);
 
   return (

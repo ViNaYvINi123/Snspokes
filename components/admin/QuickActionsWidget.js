@@ -74,7 +74,7 @@ export default function QuickActionsWidget() {
 
           {/* Divider + navigate */}
           <div className="w-full h-px bg-gray-700 my-1" />
-          <a href="/admin/command-center"
+          <a href="/admin/dashboard"
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-purple-600 hover:bg-purple-700 text-white shadow-lg">
             🎯 Command Center
           </a>
