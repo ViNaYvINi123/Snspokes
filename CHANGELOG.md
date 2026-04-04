@@ -1,5 +1,27 @@
 # Changelog
 
+## v32.11.0 (2026-04-04)
+
+### 🔴 Critical Fixes
+- .dockerignore created (builds 10x faster, no node_modules in context)
+- Hardcoded DB password removed from docker-compose (uses env var now)
+- n8n port 5678 no longer exposed to internet (internal only via nginx)
+- Portainer port 8000 removed (only 9443 for UI)
+- Dockerfile: non-root user, healthcheck, production-only deps
+
+### 🟠 Warnings Fixed
+- nginx: portainer SSL config fixed (removed missing file refs)
+- nginx: security headers added (X-Frame-Options, HSTS, etc.)
+- nginx: WebSocket support added to main proxy
+- docker-compose: YAML anchor placement fixed
+
+### 🟢 Improvements
+- nextjs container healthcheck (auto-restart on failure)
+- Memory limits (nextjs: 1G, n8n: 512M)
+- Log rotation on all containers (20MB max, 3 files)
+- Admin panel simplified (removed 7 redundant pages)
+- Admin nav reorganized (44 → 30 items, cleaner groups)
+
 ## v32.10.0 (2026-04-04)
 
 ### Admin CRUD

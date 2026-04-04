@@ -6,16 +6,24 @@ networks:
   external:
     driver: bridge
 
+# Log rotation — prevents disk fill
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "3"
+
 services:
 
   db:
     image: postgres:15-alpine
     container_name: snspokes_db
+    logging: *default-logging
     restart: always
     environment:
       POSTGRES_DB: snspokes
       POSTGRES_USER: snspokes_user
-      POSTGRES_PASSWORD: Vinay@123
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks: [internal]
@@ -28,6 +36,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: snspokes_redis
+    logging: *default-logging
     restart: always
     command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --save ""
     networks: [internal]
@@ -40,10 +49,10 @@ services:
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer
+    logging: *default-logging
     restart: always
     ports:
-      - "8000:8000"
-      - "9443:9443"
+      - "9443:9443"  # Portainer UI only
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
@@ -52,7 +61,12 @@ services:
   n8n:
     image: n8nio/n8n:latest
     container_name: snspokes_n8n
+    logging: *default-logging
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     environment:
       - WEBHOOK_URL=https://n8n.snspokes.com
       - N8N_PROTOCOL=https
@@ -66,13 +80,13 @@ services:
       - DB_POSTGRESDB_PORT=5432
       - DB_POSTGRESDB_DATABASE=snspokes
       - DB_POSTGRESDB_USER=snspokes_user
-      - DB_POSTGRESDB_PASSWORD=Vinay@123
+      - DB_POSTGRESDB_PASSWORD=${DB_PASSWORD:-changeme}
       - EXECUTIONS_PROCESS=main
       - QUEUE_BULL_REDIS_HOST=redis
       - QUEUE_BULL_REDIS_PORT=6379
       - GENERIC_TIMEZONE=UTC
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
-    ports: ["5678:5678"]
+    # ports: ["5678:5678"]  # Accessed via nginx (n8n.snspokes.com)
     depends_on:
       db:
         condition: service_healthy
@@ -86,7 +100,12 @@ services:
       dockerfile: Dockerfile
       target: runner
     container_name: snspokes_nextjs
+    logging: *default-logging
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
     env_file: .env.local
     depends_on:
       db:
@@ -95,10 +114,17 @@ services:
         condition: service_healthy
     networks: [internal, external]
     ports: ["3001:3001"]
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
   nginx:
     image: nginx:alpine
     container_name: snspokes_nginx
+    logging: *default-logging
     restart: always
     ports: ["80:80", "443:443"]
     volumes:

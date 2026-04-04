@@ -48,7 +48,7 @@ export default async function handler(req, res) {
   const response = {
     maintenance_mode: maintenanceMode,
     status: allOk ? 'ok' : 'degraded',
-    version: '32.10.0',
+    version: '32.11.0',
     uptime_seconds: Math.floor((Date.now() - startTime) / 1000),
     timestamp: new Date().toISOString(),
     checks: {
