@@ -1,0 +1,37 @@
+{
+  "name": "snspokes — List Spokes",
+  "nodes": [
+    {
+      "parameters": { "path": "sn-list-spokes", "httpMethod": "=POST", "responseMode": "responseNode" },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT slug, name, description, icon, category, tags, view_count FROM sn_spokes WHERE is_active=true ORDER BY view_count DESC LIMIT 100"
+      },
+      "name": "List DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [470, 300],
+      "credentials": { "postgres": { "id": "1", "name": "snspokes DB" } }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, spokes: $input.all().map(i => i.json), total: $input.all().length }) }}"
+      },
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [690, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "List DB", "type": "main", "index": 0 }]] },
+    "List DB": { "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] }
+  }
+}

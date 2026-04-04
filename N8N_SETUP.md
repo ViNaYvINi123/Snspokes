@@ -1,77 +1,47 @@
-# snspokes v12 — n8n Workflow Setup Guide
+# n8n Workflow Setup
 
-## All AI now runs through n8n → OpenRouter (free models)
+## Quick Setup
 
-### Architecture
+1. Open n8n: `https://n8n.snspokes.com`
+2. Go to **Workflows** → **Import from File**
+3. Import these 6 files (one at a time):
+   - `n8n_workflow_search.json` — Search spokes (DB)
+   - `n8n_workflow_chatbot.json` — AI Chatbot (OpenRouter)
+   - `n8n_workflow_spoke_enricher.json` — Generate spoke content (OpenRouter)
+   - `n8n_workflow_tools.json` — Code gen, linter, error analyzer, query optimizer (OpenRouter)
+   - `n8n_workflow_ai_debug.json` — Admin AI debug (OpenRouter)
+   - `n8n_workflow_list_spokes.json` — List all spokes (DB)
+4. For DB workflows: Set up Postgres credentials:
+   - Host: `snspokes_db`
+   - Database: `snspokes`
+   - User: `snspokes_user`
+   - Password: (from your .env.local)
+5. **Activate ALL workflows** (toggle ON in top right of each)
+
+## OpenRouter API Key
+
+The OpenRouter API key is passed to n8n via the `OPENROUTER_API_KEY` environment variable in docker-compose.yml.
+
+Set it in your `.env.local`:
 ```
-User Request
-    ↓
-Next.js API Route
-    ↓
-n8n Webhook (primary)     ← OpenRouter free model
-    ↓ (if n8n fails)
-Direct OpenRouter/Ollama  ← fallback
-```
-
-## Import All Workflows
-
-1. Open n8n at http://77.42.71.149:5678
-2. Go to Workflows → Import
-3. Import each JSON file in order:
-
-| File | Webhook Path | Purpose |
-|------|-------------|---------|
-| workflow1_search.json | sn-search-spokes | Spoke search |
-| workflow4_chatbot.json | sn-chatbot | ← REPLACED by workflow13 |
-| workflow5_spoke_enricher.json | sn-enrich-spoke | AI spoke generation |
-| workflow6_error_processor.json | (scheduled) | Auto-process errors |
-| workflow7_query_optimizer.json | sn-optimize-query | Query optimization |
-| workflow8_self_healing.json | (scheduled) | Error spike alerts |
-| workflow9_code_generator.json | sn-generate-code | ✨ AI Code Generator |
-| workflow10_script_linter.json | sn-lint-script | ✨ Script Linter |
-| workflow11_error_analyzer.json | sn-analyze-error | ✨ Error Analysis |
-| workflow12_ai_debug.json | sn-ai-debug | ✨ AI Debug |
-| workflow13_chatbot.json | sn-chatbot | ✨ Chatbot (OpenRouter) |
-
-## Required n8n Credentials
-
-### 1. Postgres Credential
-- Name: `Postgres snspokes`
-- Host: `snspokes_db`
-- Port: `5432`
-- Database: `snspokes`
-- User: `snspokes_user`
-- Password: `Vinay@123`
-
-### 2. Environment Variables in n8n
-Go to Settings → Environment Variables → Add:
-```
-OPENROUTER_API_KEY = sk-or-v1-your-key-here
+OPENROUTER_API_KEY=sk-or-v1-your-key-here
 ```
 
-## OpenRouter Free Models Used
-- `meta-llama/llama-3.1-8b-instruct:free` — fast, good quality
-- Alternative: `mistralai/mistral-7b-instruct:free`
-- Alternative: `google/gemma-2-9b-it:free`
+Get a free key at: https://openrouter.ai/keys
 
-## How Fallback Works
-Every API endpoint tries n8n first:
-1. Calls n8n webhook with 90s timeout
-2. If n8n returns success → use that result
-3. If n8n fails/timeout → fallback to direct OpenRouter or Ollama
-4. Response includes `via: "n8n"` or `via: "direct"` so you know which path was used
+Free models used:
+- `mistralai/mistral-7b-instruct:free` (default)
 
-## Check which path is being used
-```bash
-# Test chatbot
-curl -X POST http://localhost:3001/api/chatbot \
-  -H "Content-Type: application/json" \
-  -d '{"question":"what is GlideRecord?"}'
+## Webhook Paths
 
-# Response will include: "via":"n8n" or "via":"direct"
-```
-
-## Monitoring
-- View all n8n executions: http://77.42.71.149:5678/executions
-- Each execution shows: input, output, timing, errors
-- n8n auto-retries on failure
+| Path | Workflow | Purpose |
+|------|----------|---------|
+| `sn-search-spokes` | Search | DB text search |
+| `sn-chatbot` | Chatbot | AI answers |
+| `sn-enrich-spoke` | Spoke Enricher | Generate spoke docs |
+| `sn-generate-code` | AI Tools | Code generation |
+| `sn-lint-script` | AI Tools | Script review |
+| `sn-analyze-error` | AI Tools | Error analysis |
+| `sn-optimize-query` | AI Tools | Query optimization |
+| `sn-ai-debug` | AI Debug | Admin debugging |
+| `sn-list-spokes` | List Spokes | Get all spokes |

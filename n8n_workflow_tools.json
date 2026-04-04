@@ -1,0 +1,62 @@
+{
+  "name": "snspokes — AI Tools",
+  "nodes": [
+    { "parameters": { "path": "sn-generate-code", "httpMethod": "POST", "responseMode": "responseNode" }, "name": "Code Webhook", "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [250, 200] },
+    { "parameters": { "path": "sn-lint-script", "httpMethod": "POST", "responseMode": "responseNode" }, "name": "Lint Webhook", "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [250, 400] },
+    { "parameters": { "path": "sn-analyze-error", "httpMethod": "POST", "responseMode": "responseNode" }, "name": "Error Webhook", "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [250, 600] },
+    { "parameters": { "path": "sn-optimize-query", "httpMethod": "POST", "responseMode": "responseNode" }, "name": "Query Webhook", "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [250, 800] },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst prompts = {\n  code: `Generate ServiceNow ${input.code_type || 'GlideRecord'} code for: ${input.prompt}. Return only the code, no markdown.`,\n  lint: `Review this ServiceNow script for bugs, performance issues, and best practices. Script type: ${input.script_type || 'server'}\\n\\n${input.script}\\n\\nReturn JSON: {issues: [{severity, message, fix}], score: 0-100, summary: string}`,\n  error: `Analyze this ServiceNow error: ${input.error_message}\\nContext: ${input.context || 'none'}\\n\\nReturn JSON: {title, description, root_cause, fix_steps: [string], severity, category}`,\n  query: `Optimize this ServiceNow GlideRecord query for better performance:\\n${input.script}\\nTable: ${input.table_name || 'unknown'}\\n\\nReturn the optimized code and explain what you changed.`\n};\nconst type = input.prompt ? 'code' : input.script && input.script_type ? 'lint' : input.error_message ? 'error' : 'query';\nreturn [{ json: { type, prompt: prompts[type], original: input } }];"
+      },
+      "name": "Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [500, 500]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "Authorization", "value": "Bearer {{ $env.OPENROUTER_API_KEY }}" },
+          { "name": "Content-Type", "value": "application/json" }
+        ]},
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'mistralai/mistral-7b-instruct:free', messages: [{ role: 'system', content: 'You are a ServiceNow expert developer. Be precise and practical.' }, { role: 'user', content: $json.prompt }], max_tokens: 2000, temperature: 0.3 }) }}",
+        "options": { "timeout": 60000 }
+      },
+      "name": "Ask OpenRouter",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [730, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ai = $input.first().json;\nconst prev = $('Build Prompt').first().json;\nconst content = ai.choices?.[0]?.message?.content || '';\nconst type = prev.type;\nlet result = { success: true, model: ai.model };\ntry {\n  if (type === 'code') result.code = content;\n  else if (type === 'error') {\n    const parsed = JSON.parse(content.replace(/```json\\n?/g,'').replace(/```/g,'').trim());\n    Object.assign(result, parsed);\n  } else if (type === 'lint') {\n    const parsed = JSON.parse(content.replace(/```json\\n?/g,'').replace(/```/g,'').trim());\n    Object.assign(result, parsed);\n  } else result.optimized = content;\n} catch(e) {\n  if (type === 'code') result.code = content;\n  else result.answer = content;\n}\nreturn [{ json: result }];"
+      },
+      "name": "Parse Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [960, 500]
+    },
+    {
+      "parameters": { "respondWith": "json", "responseBody": "={{ JSON.stringify($json) }}" },
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1180, 500]
+    }
+  ],
+  "connections": {
+    "Code Webhook": { "main": [[{ "node": "Build Prompt", "type": "main", "index": 0 }]] },
+    "Lint Webhook": { "main": [[{ "node": "Build Prompt", "type": "main", "index": 0 }]] },
+    "Error Webhook": { "main": [[{ "node": "Build Prompt", "type": "main", "index": 0 }]] },
+    "Query Webhook": { "main": [[{ "node": "Build Prompt", "type": "main", "index": 0 }]] },
+    "Build Prompt": { "main": [[{ "node": "Ask OpenRouter", "type": "main", "index": 0 }]] },
+    "Ask OpenRouter": { "main": [[{ "node": "Parse Result", "type": "main", "index": 0 }]] },
+    "Parse Result": { "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] }
+  }
+}

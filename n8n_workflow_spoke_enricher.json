@@ -1,0 +1,57 @@
+{
+  "name": "snspokes — Spoke Enricher",
+  "nodes": [
+    {
+      "parameters": { "path": "sn-enrich-spoke", "httpMethod": "POST", "responseMode": "responseNode" },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer {{ $env.OPENROUTER_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'mistralai/mistral-7b-instruct:free', messages: [{ role: 'system', content: 'You are a ServiceNow Integration Hub expert. Generate comprehensive spoke documentation. Return ONLY valid JSON with these fields: ai_description (string, 2-3 paragraphs), setup_steps (array of {step, title, description}), actions (array of {name, description, inputs, outputs}), common_errors (array of {error, cause, fix}), use_cases (array of strings), code_examples (array of {title, code, description}). No markdown, no backticks, pure JSON only.' }, { role: 'user', content: 'Generate complete documentation for the ServiceNow Integration Hub spoke: ' + $json.name + ' (slug: ' + $json.slug + ', category: ' + $json.category + '). Include setup steps, all available actions, code examples, and common errors.' }], max_tokens: 3000, temperature: 0.5 }) }}",
+        "options": { "timeout": 90000 }
+      },
+      "name": "Generate Content",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst webhook = $('Webhook').first().json;\ntry {\n  let content = input.choices?.[0]?.message?.content || '{}';\n  content = content.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  const data = JSON.parse(content);\n  return [{ json: { success: true, spoke: { slug: webhook.slug, name: webhook.name, category: webhook.category, ...data }, model: input.model } }];\n} catch(e) {\n  return [{ json: { success: true, spoke: { slug: webhook.slug, name: webhook.name, category: webhook.category, ai_description: input.choices?.[0]?.message?.content || 'Content generation failed', setup_steps: [], actions: [], common_errors: [], use_cases: [], code_examples: [] }, model: input.model } }];\n}"
+      },
+      "name": "Parse JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}"
+      },
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [910, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Generate Content", "type": "main", "index": 0 }]] },
+    "Generate Content": { "main": [[{ "node": "Parse JSON", "type": "main", "index": 0 }]] },
+    "Parse JSON": { "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] }
+  }
+}

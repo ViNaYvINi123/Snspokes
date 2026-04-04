@@ -1,0 +1,37 @@
+{
+  "name": "snspokes — Search",
+  "nodes": [
+    {
+      "parameters": { "path": "sn-search-spokes", "httpMethod": "POST", "responseMode": "responseNode" },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT slug, name, description, icon, category, tags, view_count FROM sn_spokes WHERE is_active=true AND (LOWER(name) LIKE '%' || LOWER('{{ $json.query }}') || '%' OR LOWER(description) LIKE '%' || LOWER('{{ $json.query }}') || '%' OR LOWER(category) LIKE '%' || LOWER('{{ $json.query }}') || '%' OR '{{ $json.query }}' = ANY(tags)) ORDER BY view_count DESC LIMIT 20"
+      },
+      "name": "Search DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [470, 300],
+      "credentials": { "postgres": { "id": "1", "name": "snspokes DB" } }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, results: $input.all().map(i => i.json), total: $input.all().length }) }}"
+      },
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [690, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Search DB", "type": "main", "index": 0 }]] },
+    "Search DB": { "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] }
+  }
+}

@@ -71,6 +71,7 @@ services:
       - QUEUE_BULL_REDIS_HOST=redis
       - QUEUE_BULL_REDIS_PORT=6379
       - GENERIC_TIMEZONE=UTC
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
     ports: ["5678:5678"]
     depends_on:
       db:
@@ -89,6 +90,8 @@ services:
     env_file: .env.local
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks: [internal, external]
     ports: ["3001:3001"]
