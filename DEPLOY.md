@@ -1,5 +1,5 @@
 # snspokes — Complete Deployment Guide
-**Version: 32.11.0 | Last Updated: 2026-04-04**
+**Version: 32.12.0 | Last Updated: 2026-04-04**
 
 ---
 

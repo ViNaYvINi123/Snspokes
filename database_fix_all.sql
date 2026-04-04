@@ -346,4 +346,261 @@ CREATE TABLE IF NOT EXISTS sn_payments (
 ALTER TABLE sn_payments ADD COLUMN IF NOT EXISTS subscription_id VARCHAR(255);
 ALTER TABLE sn_payments ADD COLUMN IF NOT EXISTS provider VARCHAR(50) DEFAULT 'razorpay';
 
+
+
+-- ══════════════════════════════════════
+-- Additional tables referenced in code
+-- ══════════════════════════════════════
+
+-- Query Builder — ServiceNow table reference
+CREATE TABLE IF NOT EXISTS sn_table_reference (
+  id SERIAL PRIMARY KEY,
+  table_name VARCHAR(200) UNIQUE NOT NULL,
+  label VARCHAR(200),
+  description TEXT,
+  category VARCHAR(100),
+  fields JSONB DEFAULT '[]',
+  state_values JSONB DEFAULT '{}',
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Version Matrix
+CREATE TABLE IF NOT EXISTS sn_version_matrix (
+  id SERIAL PRIMARY KEY,
+  feature_name VARCHAR(200) NOT NULL,
+  feature_type VARCHAR(50) DEFAULT 'api',
+  description TEXT,
+  category VARCHAR(100),
+  versions JSONB DEFAULT '{}',
+  deprecated_in VARCHAR(50),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Lint results
+CREATE TABLE IF NOT EXISTS sn_lint_results (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES sn_users(id) ON DELETE SET NULL,
+  script TEXT,
+  script_type VARCHAR(50),
+  issues JSONB,
+  score INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Password resets
+CREATE TABLE IF NOT EXISTS sn_password_resets (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  token VARCHAR(255) UNIQUE NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  used BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Login attempts (rate limiting)
+CREATE TABLE IF NOT EXISTS sn_login_attempts (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255),
+  ip VARCHAR(45),
+  success BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Health snapshots (system monitoring)
+CREATE TABLE IF NOT EXISTS sn_health_snapshots (
+  id SERIAL PRIMARY KEY,
+  db_ok BOOLEAN DEFAULT true,
+  redis_ok BOOLEAN DEFAULT true,
+  n8n_ok BOOLEAN DEFAULT true,
+  response_time_ms INT,
+  error_count INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Request traces (API performance)
+CREATE TABLE IF NOT EXISTS sn_request_traces (
+  id SERIAL PRIMARY KEY,
+  path VARCHAR(500),
+  method VARCHAR(10),
+  status_code INT,
+  duration_ms INT,
+  user_id INT,
+  ip VARCHAR(45),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Webhook events
+CREATE TABLE IF NOT EXISTS sn_webhook_events (
+  id SERIAL PRIMARY KEY,
+  webhook_id INT REFERENCES sn_webhooks(id) ON DELETE CASCADE,
+  event_type VARCHAR(100),
+  payload JSONB,
+  status VARCHAR(50) DEFAULT 'sent',
+  response_code INT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Revenue events
+CREATE TABLE IF NOT EXISTS sn_revenue_events (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES sn_users(id) ON DELETE SET NULL,
+  event_type VARCHAR(50),
+  amount INT DEFAULT 0,
+  plan VARCHAR(50),
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Promo code uses
+CREATE TABLE IF NOT EXISTS sn_promo_uses (
+  id SERIAL PRIMARY KEY,
+  promo_id INT REFERENCES sn_promo_codes(id) ON DELETE CASCADE,
+  user_id INT REFERENCES sn_users(id) ON DELETE SET NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Admin notifications
+CREATE TABLE IF NOT EXISTS sn_admin_notifications (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(255),
+  message TEXT,
+  type VARCHAR(50) DEFAULT 'info',
+  read_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Backup logs
+CREATE TABLE IF NOT EXISTS sn_backup_logs (
+  id SERIAL PRIMARY KEY,
+  filename VARCHAR(500),
+  size_bytes BIGINT,
+  status VARCHAR(50) DEFAULT 'success',
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Add missing columns to sn_saved_queries
+ALTER TABLE sn_saved_queries ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT false;
+ALTER TABLE sn_saved_queries ADD COLUMN IF NOT EXISTS conditions JSONB;
+ALTER TABLE sn_saved_queries ADD COLUMN IF NOT EXISTS order_by VARCHAR(200);
+ALTER TABLE sn_saved_queries ADD COLUMN IF NOT EXISTS order_dir VARCHAR(10) DEFAULT 'ASC';
+ALTER TABLE sn_saved_queries ADD COLUMN IF NOT EXISTS limit_rows INT DEFAULT 10;
+ALTER TABLE sn_saved_queries ADD COLUMN IF NOT EXISTS table_name VARCHAR(200);
+ALTER TABLE sn_saved_queries ADD COLUMN IF NOT EXISTS script TEXT;
+ALTER TABLE sn_saved_queries ADD COLUMN IF NOT EXISTS encoded_query TEXT;
+ALTER TABLE sn_saved_queries ADD COLUMN IF NOT EXISTS use_count INT DEFAULT 0;
+
+-- Seed ServiceNow tables for Query Builder
+INSERT INTO sn_table_reference (table_name, label, category, fields, state_values) VALUES
+('incident', 'Incident', 'ITSM', '["number","short_description","description","state","priority","urgency","impact","category","subcategory","assigned_to","assignment_group","caller_id","opened_by","opened_at","resolved_at","closed_at","sys_created_on","sys_updated_on"]', '{"1":"New","2":"In Progress","3":"On Hold","6":"Resolved","7":"Closed","8":"Cancelled"}'),
+('change_request', 'Change Request', 'ITSM', '["number","short_description","description","state","type","priority","risk","impact","assignment_group","assigned_to","start_date","end_date","sys_created_on"]', '{"1":"New","2":"Assess","3":"Authorize","4":"Scheduled","5":"Implement","6":"Review","7":"Closed","8":"Cancelled"}'),
+('problem', 'Problem', 'ITSM', '["number","short_description","description","state","priority","urgency","impact","assigned_to","assignment_group","known_error","workaround"]', '{"1":"New","2":"Assess","3":"Root Cause Analysis","4":"Fix in Progress","5":"Resolved","6":"Closed"}'),
+('sc_request', 'Service Request', 'Catalog', '["number","short_description","description","state","priority","requested_for","opened_by","assignment_group","stage"]', '{"1":"Pending Approval","2":"Approved","3":"Closed Complete","4":"Closed Incomplete"}'),
+('sys_user', 'User', 'Platform', '["user_name","first_name","last_name","email","active","department","company","manager","title","phone","mobile_phone","vip"]', '{}'),
+('cmdb_ci', 'Configuration Item', 'CMDB', '["name","sys_class_name","category","subcategory","operational_status","assigned_to","support_group","install_status","manufacturer","model_id"]', '{"1":"Operational","2":"Non-Operational","3":"Repair in Progress","4":"DR Standby"}'),
+('kb_knowledge', 'Knowledge Article', 'Knowledge', '["number","short_description","text","kb_category","workflow_state","author","published","sys_created_on"]', '{}'),
+('sys_user_group', 'Group', 'Platform', '["name","description","email","manager","type","active"]', '{}'),
+('task', 'Task', 'Platform', '["number","short_description","description","state","priority","assigned_to","assignment_group","sys_created_on"]', '{}'),
+('sc_cat_item', 'Catalog Item', 'Catalog', '["name","short_description","description","category","active","price","recurring_price"]', '{}')
+ON CONFLICT (table_name) DO NOTHING;
+
+-- Seed Version Matrix data
+INSERT INTO sn_version_matrix (feature_name, feature_type, description, category, versions) VALUES
+('GlideRecord', 'api', 'Server-side database query API', 'Data Access', '{"New York":"Full","Orlando":"Full","Paris":"Full","Quebec":"Full","Rome":"Full","San Diego":"Full","Tokyo":"Full","Utah":"Full","Vancouver":"Full","Washington":"Full","Xanadu":"Full","Yokohama":"Full"}'),
+('GlideAggregate', 'api', 'Aggregation queries (COUNT, SUM, AVG)', 'Data Access', '{"New York":"Full","Orlando":"Full","Paris":"Full","Quebec":"Full","Rome":"Full","San Diego":"Full","Tokyo":"Full","Utah":"Full","Vancouver":"Full","Washington":"Full","Xanadu":"Full","Yokohama":"Full"}'),
+('Flow Designer', 'feature', 'Visual workflow builder', 'Automation', '{"New York":"Beta","Orlando":"GA","Paris":"GA","Quebec":"GA","Rome":"Enhanced","San Diego":"Enhanced","Tokyo":"Enhanced","Utah":"Enhanced","Vancouver":"Enhanced","Washington":"Enhanced","Xanadu":"Enhanced","Yokohama":"Enhanced"}'),
+('Integration Hub', 'feature', 'Spoke-based integrations', 'Integration', '{"Orlando":"Beta","Paris":"GA","Quebec":"GA","Rome":"GA","San Diego":"GA","Tokyo":"GA","Utah":"Enhanced","Vancouver":"Enhanced","Washington":"Enhanced","Xanadu":"Enhanced","Yokohama":"Enhanced"}'),
+('Next Experience', 'feature', 'Polaris UI framework', 'UI', '{"San Diego":"Beta","Tokyo":"GA","Utah":"GA","Vancouver":"Enhanced","Washington":"Enhanced","Xanadu":"Enhanced","Yokohama":"Enhanced"}'),
+('Virtual Agent', 'feature', 'AI-powered chatbot', 'AI', '{"Quebec":"Beta","Rome":"GA","San Diego":"GA","Tokyo":"Enhanced","Utah":"Enhanced","Vancouver":"Enhanced","Washington":"Enhanced","Xanadu":"Enhanced","Yokohama":"Enhanced"}'),
+('Predictive Intelligence', 'feature', 'ML-based predictions', 'AI', '{"Orlando":"Beta","Paris":"GA","Quebec":"GA","Rome":"Enhanced","San Diego":"Enhanced","Tokyo":"Enhanced","Utah":"Enhanced","Vancouver":"Enhanced","Washington":"Enhanced","Xanadu":"Enhanced","Yokohama":"Enhanced"}'),
+('ATF (Automated Testing)', 'feature', 'Automated test framework', 'DevOps', '{"New York":"GA","Orlando":"GA","Paris":"GA","Quebec":"Enhanced","Rome":"Enhanced","San Diego":"Enhanced","Tokyo":"Enhanced","Utah":"Enhanced","Vancouver":"Enhanced","Washington":"Enhanced","Xanadu":"Enhanced","Yokohama":"Enhanced"}'),
+('App Engine Studio', 'feature', 'Low-code app builder', 'Development', '{"Tokyo":"Beta","Utah":"GA","Vancouver":"GA","Washington":"Enhanced","Xanadu":"Enhanced","Yokohama":"Enhanced"}'),
+('REST API', 'api', 'RESTful web services', 'Integration', '{"New York":"Full","Orlando":"Full","Paris":"Full","Quebec":"Full","Rome":"Full","San Diego":"Full","Tokyo":"Full","Utah":"Full","Vancouver":"Full","Washington":"Full","Xanadu":"Full","Yokohama":"Full"}'),
+('GraphQL API', 'api', 'GraphQL query support', 'Integration', '{"San Diego":"Beta","Tokyo":"GA","Utah":"GA","Vancouver":"GA","Washington":"GA","Xanadu":"GA","Yokohama":"GA"}'),
+('Workspace', 'feature', 'Configurable workspaces', 'UI', '{"Utah":"Beta","Vancouver":"GA","Washington":"GA","Xanadu":"Enhanced","Yokohama":"Enhanced"}'),
+('CMDB Health', 'feature', 'CMDB data quality dashboard', 'CMDB', '{"Rome":"Beta","San Diego":"GA","Tokyo":"GA","Utah":"Enhanced","Vancouver":"Enhanced","Washington":"Enhanced","Xanadu":"Enhanced","Yokohama":"Enhanced"}'),
+('Service Graph Connector', 'plugin', 'Discovery integrations', 'CMDB', '{"Tokyo":"Beta","Utah":"GA","Vancouver":"GA","Washington":"Enhanced","Xanadu":"Enhanced","Yokohama":"Enhanced"}')
+ON CONFLICT DO NOTHING;
+
+
+
+-- ══════════════════════════════════════
+-- Final missing tables
+-- ══════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS sn_admin_notes (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES sn_users(id) ON DELETE CASCADE,
+  note TEXT,
+  created_by VARCHAR(200) DEFAULT 'admin',
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS sn_api_exec_logs (
+  id SERIAL PRIMARY KEY,
+  connector_id INT,
+  endpoint_id INT,
+  method VARCHAR(10),
+  url VARCHAR(500),
+  status_code INT,
+  response_time_ms INT,
+  error TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS sn_email_queue (
+  id SERIAL PRIMARY KEY,
+  to_email VARCHAR(255) NOT NULL,
+  subject VARCHAR(500),
+  body TEXT,
+  status VARCHAR(50) DEFAULT 'pending',
+  sent_at TIMESTAMP,
+  error TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS sn_referral_uses (
+  id SERIAL PRIMARY KEY,
+  referral_code VARCHAR(50),
+  referrer_id INT REFERENCES sn_users(id) ON DELETE SET NULL,
+  referred_id INT REFERENCES sn_users(id) ON DELETE SET NULL,
+  reward_type VARCHAR(50),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS sn_search_cache (
+  id SERIAL PRIMARY KEY,
+  query_hash VARCHAR(64) UNIQUE,
+  query_text TEXT,
+  results JSONB,
+  expires_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS sn_team_invites (
+  id SERIAL PRIMARY KEY,
+  team_id INT REFERENCES sn_teams(id) ON DELETE CASCADE,
+  email VARCHAR(255),
+  token VARCHAR(255) UNIQUE,
+  role VARCHAR(50) DEFAULT 'member',
+  status VARCHAR(50) DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS sn_user_bookmarks (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES sn_users(id) ON DELETE CASCADE,
+  spoke_slug VARCHAR(200),
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, spoke_slug)
+);
+
+CREATE TABLE IF NOT EXISTS sn_version (
+  id SERIAL PRIMARY KEY,
+  version VARCHAR(50),
+  description TEXT,
+  release_date DATE,
+  is_current BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
 COMMIT;

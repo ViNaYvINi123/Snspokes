@@ -242,3 +242,60 @@ REDIS_PORT=6379
 | `Access Denied (Google)` | Wrong redirect URI | Set `https://snspokes.com/api/auth/callback/google` in Google Console |
 | `Backup failed` | pg_dump not installed | Dockerfile includes postgresql-client |
 | `Rate limit exceeded` | Too many requests | Wait or increase limit in Redis rate limiter |
+
+
+## Database Tables — Complete List
+
+### Core
+- `sn_users` — User accounts
+- `sn_spokes` — Spoke reference data
+- `sn_related_spokes` — Spoke relationships
+
+### Content
+- `sn_error_encyclopedia` — Error database
+- `sn_code_generations` — Generated code history
+- `sn_lint_results` — Script linting history
+- `sn_table_reference` — ServiceNow table metadata (Query Builder)
+- `sn_version_matrix` — Feature version compatibility
+- `sn_saved_queries` — User saved GlideRecord queries
+- `sn_changelog` — Version changelog
+- `sn_spoke_submissions` — User-submitted spokes
+
+### Analytics
+- `sn_search_analytics` — Search queries
+- `sn_search_history` — Search history
+- `sn_dev_activity` — Developer activity
+- `sn_api_logs` — API request logs
+- `sn_request_traces` — Performance traces
+- `sn_health_snapshots` — System health over time
+
+### Users & Auth
+- `sn_bookmarks` — User spoke bookmarks
+- `sn_spoke_ratings` — Spoke ratings
+- `sn_teams` / `sn_team_members` / `sn_team_invitations` — Teams
+- `sn_referrals` — Referral tracking
+- `sn_password_resets` — Password reset tokens
+- `sn_login_attempts` — Login attempt tracking
+
+### Payments
+- `sn_plans` — Subscription plans
+- `sn_subscriptions` — Active subscriptions
+- `sn_payments` — Payment records
+- `sn_promo_codes` / `sn_promo_uses` — Promo codes
+- `sn_revenue_events` — Revenue tracking
+
+### Admin
+- `sn_system_properties` — System config
+- `sn_feature_flags` — Feature toggles
+- `sn_announcements` — Banner announcements
+- `sn_admin_logs` — Admin action logs
+- `sn_audit_logs` — Security audit trail
+- `sn_admin_notifications` — Admin alerts
+- `sn_backup_logs` — Backup history
+- `sn_error_logs` — Error tracking
+- `sn_ip_blocks` — Blocked IPs
+- `sn_webhooks` / `sn_webhook_events` — Webhook config
+- `sn_api_connectors` / `sn_api_endpoints` — API connectors
+- `sn_footer_config` — Footer customization
+- `sn_cookie_consents` — Cookie consent records
+- `sn_api_keys` — User API keys

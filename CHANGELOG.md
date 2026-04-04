@@ -1,5 +1,22 @@
 # Changelog
 
+## v32.12.0 (2026-04-04)
+
+### Database (CRITICAL)
+- Added 12 missing tables (sn_table_reference, sn_version_matrix, sn_lint_results, sn_password_resets, sn_login_attempts, sn_health_snapshots, sn_request_traces, sn_webhook_events, sn_revenue_events, sn_promo_uses, sn_admin_notifications, sn_backup_logs)
+- Added missing columns to sn_saved_queries (is_public, conditions, script, etc.)
+- Seeded sn_table_reference with 10 ServiceNow tables (Query Builder works immediately)
+- Seeded sn_version_matrix with 14 features across 12 versions (Version Matrix works immediately)
+
+### Tools
+- Query Builder: now works — tables, fields, encoded query generation all functional
+- Version Matrix: now works — seeded with real ServiceNow version data
+- Error Finder: removed pg_trgm dependency (causes crash if extension missing)
+
+### Admin
+- Removed command-center page (dashboard already covers this)
+- Total admin pages: 35 (from original 44)
+
 ## v32.11.0 (2026-04-04)
 
 ### 🔴 Critical Fixes
