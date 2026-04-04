@@ -1,0 +1,45 @@
+{
+  "name": "snspokes — Property Assist",
+  "nodes": [
+    {
+      "parameters": { "path": "sn-property-assist", "httpMethod": "POST", "responseMode": "responseNode" },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [
+          { "name": "Authorization", "value": "Bearer {{ $env.OPENROUTER_API_KEY }}" },
+          { "name": "Content-Type", "value": "application/json" }
+        ]},
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'mistralai/mistral-7b-instruct:free', messages: [{ role: 'system', content: 'You are a ServiceNow system administrator. Explain what this system property does and suggest the best value. Be concise.' }, { role: 'user', content: 'Property: ' + $json.name + '\\nCurrent value: ' + ($json.value || 'not set') + '\\nExplain this property and suggest the optimal value.' }], max_tokens: 500, temperature: 0.3 }) }}",
+        "options": { "timeout": 30000 }
+      },
+      "name": "Ask AI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, answer: $json.choices?.[0]?.message?.content || 'No suggestion available' }) }}"
+      },
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [690, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Ask AI", "type": "main", "index": 0 }]] },
+    "Ask AI": { "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] }
+  }
+}

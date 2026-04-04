@@ -39,6 +39,12 @@ async function handler(req, res) {
     return res.status(200).json({ success: true });
   }
 
+  if (req.method === 'DELETE') {
+    const { id } = req.query;
+    if (!id) return res.status(400).json({ success: false, error: 'ID required' });
+    await query('DELETE FROM sn_spoke_submissions WHERE id=$1', [id]);
+    return res.status(200).json({ success: true });
+  }
   return res.status(405).end();
 }
 

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Head from 'next/head';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
@@ -13,6 +13,8 @@ export default function ErrorFinder() {
   const [category, setCategory] = useState('');
   const [results, setResults] = useState([]);
   const [aiResult, setAiResult] = useState(null);
+  const [n8nStatus, setN8nStatus] = useState('checking');
+  useEffect(() => { fetch('/api/health').then(r=>r.json()).then(d=>setN8nStatus(d.checks?.n8n_ai?.ok ? 'ok' : 'down')).catch(()=>setN8nStatus('down')); }, []);
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [context, setContext] = useState('');

@@ -32,5 +32,11 @@ export default withAdminAuth(async function handler(req, res) {
     }
   }
 
+  if (req.method === 'DELETE') {
+    const { id } = req.query;
+    if (!id) return res.status(400).json({ success: false, error: 'Plan ID required' });
+    await query('DELETE FROM sn_plans WHERE id=$1', [id]);
+    return res.status(200).json({ success: true });
+  }
   return res.status(405).json({ error: 'Method not allowed' });
 });

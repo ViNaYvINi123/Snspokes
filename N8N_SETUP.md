@@ -11,6 +11,7 @@
    - `n8n_workflow_tools.json` — Code gen, linter, error analyzer, query optimizer (OpenRouter)
    - `n8n_workflow_ai_debug.json` — Admin AI debug (OpenRouter)
    - `n8n_workflow_list_spokes.json` — List all spokes (DB)
+   - `n8n_workflow_property_assist.json` — AI property suggestions (OpenRouter)
 4. For DB workflows: Set up Postgres credentials:
    - Host: `snspokes_db`
    - Database: `snspokes`
@@ -45,3 +46,4 @@ Free models used:
 | `sn-optimize-query` | AI Tools | Query optimization |
 | `sn-ai-debug` | AI Debug | Admin debugging |
 | `sn-list-spokes` | List Spokes | Get all spokes |
+| `sn-property-assist` | Property Assist | AI property suggestions |

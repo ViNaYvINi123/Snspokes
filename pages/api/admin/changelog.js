@@ -15,6 +15,12 @@ async function handler(req, res) {
       return res.status(200).json({ success:true });
     } catch(err) { return res.status(500).json({ success:false, error:err.message }); }
   }
+  if (req.method === 'DELETE') {
+    const { id } = req.query;
+    if (!id) return res.status(400).json({ success: false, error: 'ID required' });
+    await query('DELETE FROM sn_changelog WHERE id=$1', [id]);
+    return res.status(200).json({ success: true });
+  }
   return res.status(405).json({ success:false, error:'Method not allowed' });
 }
 export default withAdminAuth(handler);

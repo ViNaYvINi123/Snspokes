@@ -4,7 +4,15 @@ import { setSecurityHeaders } from '../../../lib/security';
 
 async function handler(req, res) {
   setSecurityHeaders(res);
-  if (req.method !== 'GET') return res.status(405).json({ success:false });
+  if (req.method !== 'GET') if (req.method === 'DELETE') {
+    const { id } = req.query;
+    if (!id) return res.status(400).json({ success: false, error: 'Team ID required' });
+    await query('DELETE FROM sn_team_members WHERE team_id=$1', [id]);
+    await query('DELETE FROM sn_team_invitations WHERE team_id=$1', [id]);
+    await query('DELETE FROM sn_teams WHERE id=$1', [id]);
+    return res.status(200).json({ success: true });
+  }
+  return res.status(405).json({ success:false });
   try {
     const teams = await query(`
       SELECT t.id, t.name, t.created_at,

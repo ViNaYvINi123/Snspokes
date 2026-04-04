@@ -133,3 +133,112 @@ Ensure `REDIS_HOST=snspokes_redis` in `.env.local` (not `localhost`).
 4. User plan updated in `sn_users` + `sn_subscriptions`
 5. Session refreshes with new plan
 6. Rate limits adjust based on plan
+
+
+## Adding or Removing Tools
+
+### Add a new tool
+1. Create frontend page: `pages/tools/my-tool.js`
+2. Create API route: `pages/api/tools/my-tool.js`
+3. Add n8n webhook path to `lib/n8n.js`: `export const n8nMyTool = (input) => callN8n('sn-my-tool', { input }, 60000);`
+4. Add webhook node in n8n workflow
+5. Add link to Navbar and Footer
+
+### Remove a tool
+1. Delete `pages/tools/my-tool.js`
+2. Delete `pages/api/tools/my-tool.js`
+3. Remove from Navbar links
+4. Remove from Footer links
+
+## Admin Panel — Full Feature List
+
+| Page | Purpose | API |
+|------|---------|-----|
+| /admin/dashboard | Overview stats | /api/admin/dashboard |
+| /admin/users | User management (CRUD) | /api/admin/users |
+| /admin/spokes | Spoke management (CRUD) | /api/admin/spokes |
+| /admin/properties | System properties + AI assist | /api/admin/properties |
+| /admin/flags | Feature flags on/off | /api/admin/flags |
+| /admin/announcements | Banner announcements (CRUD) | /api/admin/announcements |
+| /admin/plans | Subscription plans | /api/admin/plans |
+| /admin/payments | Payment history | /api/admin/payments |
+| /admin/analytics | Search & usage analytics | /api/admin/analytics |
+| /admin/system | System health + Redis + DB | /api/admin/system |
+| /admin/backup | Database backup | /api/admin/backup |
+| /admin/logs | Error & API logs | /api/admin/logs |
+| /admin/ai-debug | AI debugging assistant | /api/admin/ai-debug |
+| /admin/teams | Team management | /api/admin/teams |
+| /admin/changelog | Version changelog | /api/admin/changelog |
+| /admin/submissions | User-submitted spokes | /api/admin/submissions |
+
+## Subscription System Flow
+
+```
+User clicks "Upgrade" on /pricing
+  → Frontend calls POST /api/payment { action: 'create_subscription', plan_id: 'pro' }
+  → Backend creates Razorpay plan + subscription
+  → Returns checkout URL
+  → User completes payment on Razorpay
+  → Frontend calls POST /api/payment { action: 'verify', razorpay_payment_id, razorpay_subscription_id, razorpay_signature }
+  → Backend verifies cryptographic signature
+  → Updates sn_users.plan + sn_payments.status
+  → Invalidates plan cache (Redis)
+  → Sends upgrade email
+  → User session refreshes with new plan
+  → Rate limits adjust automatically
+```
+
+### Cancel subscription
+```
+User clicks "Cancel" in dashboard
+  → POST /api/payment { action: 'cancel' }
+  → Backend cancels Razorpay subscription
+  → Sets user plan back to 'free'
+  → Invalidates cache
+```
+
+### Webhook (automatic)
+Razorpay sends webhooks to `/api/payment` for:
+- `subscription.cancelled` → downgrades user to free
+- `subscription.completed` → downgrades user to free
+
+## Redis — Setup & Reconnection
+
+Redis is used for:
+- **Search caching** (TTL: 5 min)
+- **Rate limiting** (per IP/user)
+- **Plan caching** (TTL: 5 min)
+
+If Redis is down, the app falls back to in-memory `Map()` cache. No data loss.
+
+### Fix Redis connection
+```bash
+# Check Redis is running
+docker exec snspokes_redis redis-cli ping
+# Should return: PONG
+
+# Check from app container
+docker exec snspokes_nextjs sh -c "nc -z snspokes_redis 6379 && echo OK"
+
+# If Redis is down
+docker compose restart redis
+
+# Verify in .env.local
+REDIS_HOST=snspokes_redis
+REDIS_PORT=6379
+```
+
+## Error Reference
+
+| Error Message | Cause | Fix |
+|--------------|-------|-----|
+| `setSecurityHeaders is not defined` | Missing import | Add `import { setSecurityHeaders } from '../../lib/security'` |
+| `relation "sn_xxx" does not exist` | Table not created | Run `database_fix_all.sql` |
+| `ECONNREFUSED 127.0.0.1:5432` | DB_HOST is localhost | Set `DB_HOST=snspokes_db` in .env.local |
+| `ECONNREFUSED 127.0.0.1:6379` | REDIS_HOST is localhost | Set `REDIS_HOST=snspokes_redis` in .env.local |
+| `n8n webhook returns empty` | Workflow not activated | Open n8n → activate workflow |
+| `X-Forwarded-For error in n8n` | Missing proxy config | Add `N8N_PROXY_HOPS=1` to docker-compose |
+| `JWT invalid` | Secret mismatch | Ensure ADMIN_SECRET is same in .env.local |
+| `Access Denied (Google)` | Wrong redirect URI | Set `https://snspokes.com/api/auth/callback/google` in Google Console |
+| `Backup failed` | pg_dump not installed | Dockerfile includes postgresql-client |
+| `Rate limit exceeded` | Too many requests | Wait or increase limit in Redis rate limiter |

@@ -90,6 +90,14 @@ async function handler(req, res) {
     }
   }
 
+  if (req.method === 'PUT') {
+    const { id } = req.query;
+    const { name, email, plan, role, is_banned, ban_reason } = req.body;
+    if (!id) return res.status(400).json({ success: false, error: 'User ID required' });
+    await query('UPDATE sn_users SET name=COALESCE($1,name), email=COALESCE($2,email), plan=COALESCE($3,plan), role=COALESCE($4,role), is_banned=COALESCE($5,is_banned), ban_reason=COALESCE($6,ban_reason), updated_at=NOW() WHERE id=$7',
+      [name, email, plan, role, is_banned, ban_reason, id]);
+    return res.status(200).json({ success: true });
+  }
   return res.status(405).json({ success: false, error: 'Method not allowed' });
 }
 

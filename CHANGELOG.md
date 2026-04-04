@@ -1,5 +1,28 @@
 # Changelog
 
+## v32.10.0 (2026-04-04)
+
+### Admin CRUD
+- Teams API: added DELETE
+- Changelog API: added DELETE  
+- Submissions API: added DELETE
+- User-detail API: added PUT (update user)
+- Plans API: added DELETE
+
+### System Properties
+- Added AI assist endpoint (n8n-powered property suggestions)
+- Created 7th n8n workflow: property-assist
+
+### Tools
+- All AI tools show "n8n required" banner when n8n is down
+- Health check integrated into each tool page
+
+### Pages
+- Created /privacy and /terms pages
+
+### Documentation
+- TECHNICAL_GUIDE.md: added tools guide, admin features, subscription flow, Redis setup, full error reference
+
 ## v32.9.0 (2026-04-04)
 
 ### Infrastructure
