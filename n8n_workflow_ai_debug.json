@@ -19,7 +19,7 @@
         ]},
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'mistralai/mistral-7b-instruct:free', messages: [{ role: 'system', content: 'You are an expert full-stack developer debugging a SaaS platform. Stack: Next.js, PostgreSQL, Redis, n8n, Docker on Hetzner. Give concise, actionable advice with exact commands or code fixes.' }, { role: 'user', content: ($json.context_data ? 'Context:\\n' + $json.context_data + '\\n\\n' : '') + 'Question: ' + $json.question }], max_tokens: 1500, temperature: 0.3 }) }}",
+        "jsonBody": "={{ JSON.stringify({ model: 'meta-llama/llama-3.3-70b-instruct:free', messages: [{ role: 'system', content: 'You are an expert full-stack developer debugging a SaaS platform. Stack: Next.js, PostgreSQL, Redis, n8n, Docker on Hetzner. Give concise, actionable advice with exact commands or code fixes.' }, { role: 'user', content: ($json.context_data ? 'Context:\\n' + $json.context_data + '\\n\\n' : '') + 'Question: ' + $json.question }], max_tokens: 1500, temperature: 0.3 }) }}",
         "options": { "timeout": 60000 }
       },
       "name": "Ask OpenRouter",

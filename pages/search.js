@@ -6,81 +6,225 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
-import { SpokeCardSkeleton } from '../components/Skeleton';
 
-// Debounce hook — delays search while user types
-function useDebounce(value, delay = 400) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-  return debounced;
-}
-
-function LoadingMessages() {
+/* ─── Typewriter placeholder ─── */
+function useTypewriter(phrases, speed = 60, pause = 2000) {
+  const [text, setText] = useState('');
   const [idx, setIdx] = useState(0);
-  const msgs = [
-    '🔍 Searching the knowledge base...',
-    '🧠 Hang tight, finding the best results...',
-    '📡 Almost there, scanning all sources...',
-    '⚡ Crunching data from our AI engine...',
-    '🎯 Preparing your results...',
-  ];
+  const [charIdx, setCharIdx] = useState(0);
+  const [deleting, setDeleting] = useState(false);
   useEffect(() => {
-    const t = setInterval(() => setIdx(i => (i + 1) % msgs.length), 2200);
-    return () => clearInterval(t);
-  }, []);
-  return <p style={{ color: '#9999bb', fontSize: '14px', margin: 0 }}>{msgs[idx]}</p>;
+    const phrase = phrases[idx];
+    const timer = setTimeout(() => {
+      if (!deleting) {
+        setText(phrase.slice(0, charIdx + 1));
+        if (charIdx + 1 === phrase.length) setTimeout(() => setDeleting(true), pause);
+        else setCharIdx(c => c + 1);
+      } else {
+        setText(phrase.slice(0, charIdx));
+        if (charIdx === 0) { setDeleting(false); setIdx(i => (i + 1) % phrases.length); }
+        else setCharIdx(c => c - 1);
+      }
+    }, deleting ? 30 : speed);
+    return () => clearTimeout(timer);
+  }, [charIdx, deleting, idx]);
+  return text;
 }
 
+/* ─── Shimmer skeleton ─── */
+function ResultSkeleton() {
+  const shimmer = { background: 'linear-gradient(90deg, #111827 25%, #1a1a2e 50%, #111827 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite', borderRadius: '8px' };
+  return (
+    <div style={{ padding: '24px', borderRadius: '16px', background: '#0d0d18', border: '1px solid #1a1a2e', marginBottom: '12px' }}>
+      <div style={{ display: 'flex', gap: '14px' }}>
+        <div style={{ ...shimmer, width: '48px', height: '48px', borderRadius: '14px', flexShrink: 0 }} />
+        <div style={{ flex: 1 }}>
+          <div style={{ ...shimmer, height: '18px', width: '40%', marginBottom: '10px' }} />
+          <div style={{ ...shimmer, height: '14px', width: '90%', marginBottom: '6px' }} />
+          <div style={{ ...shimmer, height: '14px', width: '60%' }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AISkeleton() {
+  const shimmer = { background: 'linear-gradient(90deg, #0f1020 25%, #171730 50%, #0f1020 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite', borderRadius: '6px' };
+  return (
+    <div style={{ padding: '28px', borderRadius: '20px', background: 'linear-gradient(135deg, #0d0d1a 0%, #10101f 100%)', border: '1px solid rgba(108,99,255,0.2)', marginBottom: '28px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+        <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(108,99,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="spin" style={{ width: '16px', height: '16px', border: '2px solid rgba(108,99,255,0.3)', borderTopColor: '#6c63ff', borderRadius: '50%' }} />
+        </div>
+        <span style={{ color: '#6c63ff', fontSize: '13px', fontWeight: '600' }}>Generating answer...</span>
+      </div>
+      <div style={{ ...shimmer, height: '14px', width: '95%', marginBottom: '10px' }} />
+      <div style={{ ...shimmer, height: '14px', width: '80%', marginBottom: '10px' }} />
+      <div style={{ ...shimmer, height: '14px', width: '88%', marginBottom: '10px' }} />
+      <div style={{ ...shimmer, height: '14px', width: '45%' }} />
+    </div>
+  );
+}
+
+/* ─── AI Response with animated reveal ─── */
+function AIResponse({ answer, meta, onStream }) {
+  const [copied, setCopied] = useState(false);
+  if (!answer || answer.error) return null;
+  const copyCode = (code) => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000); };
+
+  return (
+    <div className="fade-in" style={{ padding: '28px', borderRadius: '20px', background: 'linear-gradient(135deg, #0d0d1a 0%, #10101f 100%)', border: '1px solid rgba(108,99,255,0.2)', marginBottom: '28px', position: 'relative', overflow: 'hidden' }}>
+      {/* Glow effect */}
+      <div style={{ position: 'absolute', top: '-50%', left: '-20%', width: '60%', height: '200%', background: 'radial-gradient(ellipse, rgba(108,99,255,0.04) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', position: 'relative' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>✨</div>
+          <span style={{ color: '#e2e8f0', fontSize: '14px', fontWeight: '700' }}>AI Answer</span>
+          {answer.confidence && (
+            <span style={{ fontSize: '11px', padding: '3px 10px', background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.15)', borderRadius: '20px', color: '#4ade80', fontWeight: '600' }}>
+              {Math.round(answer.confidence * 100)}% confident
+            </span>
+          )}
+        </div>
+        <div style={{ display: 'flex', gap: '6px' }}>
+          {meta?.cached && <span style={{ fontSize: '11px', padding: '3px 10px', background: 'rgba(250,204,21,0.08)', borderRadius: '20px', color: '#facc15' }}>⚡ cached</span>}
+          {meta?.model && <span style={{ fontSize: '11px', padding: '3px 10px', background: 'rgba(108,99,255,0.08)', borderRadius: '20px', color: '#8b85ff' }}>{meta.model}</span>}
+        </div>
+      </div>
+
+      <div style={{ color: '#c8c8e0', fontSize: '14px', lineHeight: '1.85', position: 'relative' }}>{answer.answer}</div>
+
+      {answer.code_example && (
+        <div style={{ position: 'relative', marginTop: '16px' }}>
+          <button onClick={() => copyCode(answer.code_example)}
+            style={{ position: 'absolute', top: '10px', right: '10px', padding: '4px 12px', background: 'rgba(108,99,255,0.15)', border: '1px solid rgba(108,99,255,0.25)', borderRadius: '6px', color: '#8b85ff', fontSize: '11px', cursor: 'pointer', zIndex: 2, fontFamily: 'inherit' }}>
+            {copied ? '✓ Copied!' : 'Copy'}
+          </button>
+          <pre style={{ fontFamily: 'JetBrains Mono, monospace', background: '#080812', border: '1px solid #1a1a2e', borderRadius: '12px', padding: '18px', fontSize: '13px', overflow: 'auto', color: '#a8b2d8', lineHeight: '1.6' }}>{answer.code_example}</pre>
+        </div>
+      )}
+
+      {answer.key_points?.length > 0 && (
+        <div style={{ marginTop: '18px', padding: '16px', background: 'rgba(108,99,255,0.04)', borderRadius: '12px', border: '1px solid rgba(108,99,255,0.1)' }}>
+          <p style={{ color: '#8b85ff', fontSize: '11px', fontWeight: '700', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Key Points</p>
+          {answer.key_points.map((pt, i) => (
+            <div key={i} className="fade-in" style={{ display: 'flex', gap: '10px', marginBottom: '8px', animationDelay: `${i * 0.1}s` }}>
+              <span style={{ color: '#6c63ff', fontSize: '8px', marginTop: '6px' }}>●</span>
+              <span style={{ color: '#a0a0c0', fontSize: '13px', lineHeight: '1.6' }}>{pt}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {onStream && (
+        <button onClick={onStream} style={{ marginTop: '16px', padding: '8px 18px', background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.25)', borderRadius: '10px', color: '#a855f7', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '600' }}>
+          ⚡ Get deeper answer (stream)
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* ─── Stream response ─── */
+function StreamResponse({ text, streaming }) {
+  const endRef = useRef(null);
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, [text]);
+  if (!text && !streaming) return null;
+  return (
+    <div className="fade-in" style={{ padding: '28px', borderRadius: '20px', background: 'linear-gradient(135deg, #0d0d1a 0%, #0f0f20 100%)', border: '1px solid rgba(168,85,247,0.25)', marginBottom: '28px', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: '-50%', right: '-20%', width: '50%', height: '200%', background: 'radial-gradient(ellipse, rgba(168,85,247,0.04) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+        <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'linear-gradient(135deg, #a855f7, #6c63ff)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>⚡</div>
+        <span style={{ color: '#e2e8f0', fontSize: '14px', fontWeight: '700' }}>Live Response</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '3px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', background: streaming ? 'rgba(168,85,247,0.12)' : 'rgba(74,222,128,0.1)', color: streaming ? '#c084fc' : '#4ade80' }}>
+          <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: streaming ? '#c084fc' : '#4ade80', animation: streaming ? 'pulse 1s infinite' : 'none' }} />
+          {streaming ? 'Streaming...' : 'Complete'}
+        </div>
+      </div>
+      <div style={{ color: '#c8c8e0', fontSize: '14px', lineHeight: '1.85', whiteSpace: 'pre-wrap' }}>
+        {text}
+        {streaming && <span style={{ display: 'inline-block', width: '2px', height: '16px', background: '#a855f7', marginLeft: '2px', animation: 'blink 0.7s step-end infinite', verticalAlign: 'text-bottom' }} />}
+        <div ref={endRef} />
+      </div>
+    </div>
+  );
+}
+
+/* ─── Spoke result card ─── */
+function SpokeCard({ spoke, index }) {
+  const colors = ['#6c63ff', '#a855f7', '#ec4899', '#14b8a6', '#f59e0b', '#3b82f6'];
+  const accent = colors[index % colors.length];
+  return (
+    <Link href={`/spoke/${spoke.slug}`} style={{ textDecoration: 'none' }}>
+      <div className="card-hover fade-in" style={{ padding: '22px', borderRadius: '16px', background: '#0d0d18', cursor: 'pointer', animationDelay: `${index * 0.06}s` }}>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: `${accent}15`, border: `1px solid ${accent}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', flexShrink: 0 }}>
+            {spoke.icon || '🔌'}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
+              <h3 style={{ color: '#f0f0f8', fontSize: '15px', fontWeight: '700' }}>{spoke.name}</h3>
+              {spoke.category && (
+                <span style={{ padding: '2px 10px', background: `${accent}12`, border: `1px solid ${accent}25`, borderRadius: '20px', fontSize: '11px', color: accent, fontWeight: '500' }}>{spoke.category}</span>
+              )}
+              {spoke.view_count > 0 && <span style={{ fontSize: '11px', color: '#555' }}>👁 {spoke.view_count}</span>}
+            </div>
+            <p style={{ color: '#8888aa', fontSize: '13px', lineHeight: '1.55', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+              {spoke.description}
+            </p>
+            {spoke.tags?.length > 0 && (
+              <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
+                {spoke.tags.slice(0, 4).map(t => (
+                  <span key={t} style={{ fontSize: '10px', padding: '2px 8px', background: '#111827', border: '1px solid #1e1e2e', borderRadius: '6px', color: '#6b6b8a' }}>{t}</span>
+                ))}
+              </div>
+            )}
+          </div>
+          <div style={{ color: accent, fontSize: '18px', opacity: 0.5 }}>→</div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+/* ═══════════════════════════════════════ */
+/*           MAIN SEARCH PAGE             */
+/* ═══════════════════════════════════════ */
 export default function Search() {
   const router = useRouter();
   const { q } = router.query;
   const { data: session } = useSession();
+  const inputRef = useRef(null);
+  const placeholder = useTypewriter(['Search Slack spoke setup...', 'How to configure OAuth 2.0...', 'GlideRecord best practices...', 'Error: ACL restricted...', 'Integration Hub actions...'], 50, 1800);
 
   const [queryText, setQueryText] = useState('');
-  const debouncedQ = useDebounce(queryText, 400);
   const [results, setResults] = useState([]);
   const [aiAnswer, setAiAnswer] = useState(null);
   const [streamedText, setStreamedText] = useState('');
   const [streaming, setStreaming] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
   const [searched, setSearched] = useState(false);
   const [meta, setMeta] = useState({});
+  const [focused, setFocused] = useState(false);
 
   useEffect(() => { if (q) { setQueryText(q); doSearch(q); } }, [q]);
-  // Only auto-search when user types (not when URL q param drives the search)
-  const isTyping = debouncedQ && debouncedQ !== q;
-  useEffect(() => { if (isTyping && debouncedQ.trim().length >= 2) doSearch(debouncedQ); }, [debouncedQ]);
 
   const doSearch = async (searchQuery) => {
     if (!searchQuery?.trim()) return;
     setLoading(true); setError(''); setSearched(true);
-    setResults([]); setAiAnswer(null); setStreamedText(''); 
+    setResults([]); setAiAnswer(null); setStreamedText('');
     const start = Date.now();
-
     try {
-      const res = await axios.post('/api/search', {
-        query: searchQuery.trim(),
-        user_id: session?.user?.id || null,
-      }, { timeout: 15000 });
-
+      const res = await axios.post('/api/search', { query: searchQuery.trim(), user_id: session?.user?.id || null }, { timeout: 15000 });
       if (res.data.success) {
         setResults(res.data.results || []);
         setAiAnswer(res.data.ai_answer);
         setMeta({ cached: res.data.cached, model: res.data.model, latency: res.data.latency_ms || (Date.now() - start) });
-      } else {
-        setError(res.data.error || 'Search failed');
-      }
+      } else { setError(res.data.error || 'Search failed'); }
     } catch (err) {
-      if (err.response?.status === 429) {
-        setError(`Rate limit exceeded. Please wait ${err.response.data.retry_after || 60} seconds.`);
-      } else {
-        setError('Search service unavailable. Please try again.');
-      }
+      setError(err.response?.status === 429 ? `Rate limit — wait ${err.response.data.retry_after || 60}s` : 'Search unavailable. Please retry.');
     } finally { setLoading(false); }
   };
 
@@ -88,16 +232,8 @@ export default function Search() {
     if (!queryText.trim() || streaming) return;
     setStreaming(true); setStreamedText(''); setError(''); setAiAnswer(null);
     try {
-      const res = await fetch('/api/stream', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: queryText.trim(), user_id: session?.user?.id }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        setError(err.error || 'Search failed');
-        setStreaming(false); return;
-      }
+      const res = await fetch('/api/stream', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: queryText.trim(), user_id: session?.user?.id }) });
+      if (!res.ok) { const e = await res.json(); setError(e.error || 'Stream failed'); setStreaming(false); return; }
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
@@ -105,8 +241,7 @@ export default function Search() {
         const { done, value } = await reader.read();
         if (done) break;
         buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
+        const lines = buffer.split('\n'); buffer = lines.pop() || '';
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
           try {
@@ -117,7 +252,7 @@ export default function Search() {
           } catch {}
         }
       }
-    } catch { setError('Streaming failed. Please try again.'); }
+    } catch { setError('Stream failed. Please retry.'); }
     finally { setStreaming(false); }
   };
 
@@ -128,165 +263,153 @@ export default function Search() {
     doSearch(queryText);
   };
 
-  const iStyle = { flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#fff', fontSize: '16px', fontFamily: 'Syne, sans-serif', padding: '8px 0' };
+  const quickSearch = (term) => { setQueryText(term); router.push(`/search?q=${encodeURIComponent(term)}`); doSearch(term); };
 
   return (
     <>
       <Head>
-        <title>{q ? `"${q}" — snspokes` : 'Search — snspokes'}</title>
-        <meta name="description" content="Search ServiceNow Integration Hub spokes" />
+        <title>{q ? `${q} — snspokes` : 'Search — snspokes'}</title>
+        <meta name="description" content="AI-powered ServiceNow spoke search" />
       </Head>
       <Navbar />
-      <main style={{ paddingTop: '100px', minHeight: '100vh' }}>
 
-        {/* Search Bar */}
-        <section style={{ padding: '40px 24px 32px', borderBottom: '1px solid #1e1e2e' }}>
-          <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      <main style={{ paddingTop: '80px', minHeight: '100vh' }}>
+        {/* ─── Hero Search ─── */}
+        <section className="hero-bg" style={{ padding: searched ? '32px 24px 24px' : '80px 24px 60px', transition: 'padding 0.4s ease' }}>
+          <div style={{ maxWidth: '760px', margin: '0 auto' }}>
+            {!searched && (
+              <div className="fade-in" style={{ textAlign: 'center', marginBottom: '36px' }}>
+                <h1 style={{ fontSize: '36px', fontWeight: '800', letterSpacing: '-0.5px', marginBottom: '10px' }}>
+                  <span className="gradient-text">Search anything.</span> Get instant answers.
+                </h1>
+                <p style={{ color: '#6b6b8a', fontSize: '15px' }}>Spokes, scripts, errors, APIs — AI-powered answers in seconds</p>
+              </div>
+            )}
+
+            {/* Search input */}
             <form onSubmit={handleSearch}>
-              <div style={{ display: 'flex', gap: '12px', padding: '8px', background: '#0f0f1a', border: '1px solid #1e1e2e', borderRadius: '16px', transition: 'border-color 0.2s' }}
-                onFocusCapture={e => e.currentTarget.style.borderColor = '#6c63ff'}
-                onBlurCapture={e => e.currentTarget.style.borderColor = '#1e1e2e'}
-              >
-                <span style={{ paddingLeft: '12px', display: 'flex', alignItems: 'center', fontSize: '20px' }}>🔍</span>
-                <input type="text" value={queryText} onChange={e => setQueryText(e.target.value)} placeholder="Search ServiceNow spokes, scripts, APIs..." autoFocus style={iStyle} />
+              <div style={{
+                display: 'flex', gap: '8px', padding: '6px', borderRadius: '18px',
+                background: focused ? 'rgba(15,15,26,0.95)' : 'rgba(15,15,26,0.8)',
+                border: `1.5px solid ${focused ? '#6c63ff' : '#1e1e2e'}`,
+                boxShadow: focused ? '0 0 30px rgba(108,99,255,0.12), 0 0 80px rgba(108,99,255,0.05)' : '0 4px 30px rgba(0,0,0,0.3)',
+                transition: 'all 0.3s ease', backdropFilter: 'blur(20px)',
+              }}>
+                <div style={{ paddingLeft: '16px', display: 'flex', alignItems: 'center' }}>
+                  {loading ? (
+                    <div className="spin" style={{ width: '18px', height: '18px', border: '2px solid #2a2a3e', borderTopColor: '#6c63ff', borderRadius: '50%' }} />
+                  ) : (
+                    <svg width="18" height="18" fill="none" stroke="#6b6b8a" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  )}
+                </div>
+                <input ref={inputRef} type="text" value={queryText} onChange={e => setQueryText(e.target.value)}
+                  onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+                  placeholder={queryText ? '' : placeholder} autoFocus
+                  style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#f0f0f8', fontSize: '15px', fontFamily: 'inherit', padding: '12px 8px' }}
+                />
+                {queryText && (
+                  <button type="button" onClick={() => { setQueryText(''); inputRef.current?.focus(); }}
+                    style={{ padding: '8px', background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center' }}>✕</button>
+                )}
                 <button type="button" onClick={doStream} disabled={streaming || !queryText.trim()} title="Stream AI response"
-                  style={{ padding: '10px 16px', background: streaming ? '#1e1e2e' : 'rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.3)', borderRadius: '8px', color: '#a855f7', fontSize: '13px', cursor: streaming ? 'not-allowed' : 'pointer', fontFamily: 'Syne, sans-serif', whiteSpace: 'nowrap' }}>
-                  {streaming ? '⏳' : '⚡ Stream'}
+                  style={{ padding: '10px 14px', background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: '12px', color: '#c084fc', fontSize: '13px', cursor: streaming ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '6px', opacity: queryText.trim() ? 1 : 0.4, transition: 'opacity 0.2s' }}>
+                  ⚡
                 </button>
-                <button type="submit" style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '10px', color: '#fff', fontSize: '14px', fontWeight: '600', cursor: 'pointer', fontFamily: 'Syne, sans-serif', whiteSpace: 'nowrap' }}>Search</button>
+                <button type="submit" disabled={loading}
+                  style={{ padding: '10px 22px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '12px', color: '#fff', fontSize: '14px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', transition: 'transform 0.15s, opacity 0.2s', opacity: queryText.trim() ? 1 : 0.5 }}
+                  onMouseDown={e => e.currentTarget.style.transform = 'scale(0.96)'}
+                  onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+                >Search</button>
               </div>
             </form>
 
-            {/* Meta info */}
-            {meta.latency && (
-              <div style={{ display: 'flex', gap: '16px', marginTop: '12px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '12px', color: '#6b6b8a' }}>⏱ {meta.latency}ms</span>
-                {meta.cached && <span style={{ fontSize: '12px', color: '#4ade80' }}>⚡ Cached</span>}
-                {meta.model && <span style={{ fontSize: '12px', color: '#6b6b8a' }}>🤖 {meta.model}</span>}
+            {/* Quick suggestions */}
+            {!searched && (
+              <div className="fade-in" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginTop: '24px' }}>
+                {['Slack spoke setup', 'OAuth 2.0 config', 'GlideRecord examples', 'REST message errors', 'Flow Designer tips'].map(s => (
+                  <button key={s} onClick={() => quickSearch(s)}
+                    style={{ padding: '7px 16px', background: 'rgba(108,99,255,0.06)', border: '1px solid rgba(108,99,255,0.15)', borderRadius: '20px', color: '#8b85ff', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(108,99,255,0.12)'; e.currentTarget.style.borderColor = 'rgba(108,99,255,0.3)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(108,99,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(108,99,255,0.15)'; }}
+                  >{s}</button>
+                ))}
+              </div>
+            )}
+
+            {/* Meta */}
+            {meta.latency && !loading && (
+              <div className="fade-in" style={{ display: 'flex', gap: '16px', marginTop: '14px', justifyContent: searched ? 'flex-start' : 'center' }}>
+                <span style={{ fontSize: '11px', color: '#555' }}>⏱ {meta.latency}ms</span>
+                {meta.cached && <span style={{ fontSize: '11px', color: '#4ade80' }}>⚡ cached</span>}
               </div>
             )}
           </div>
         </section>
 
-        {/* Results */}
-        <section style={{ padding: '32px 24px' }}>
-          <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        {/* ─── Results ─── */}
+        <section style={{ padding: '28px 24px 60px' }}>
+          <div style={{ maxWidth: '760px', margin: '0 auto' }}>
 
-            {/* Loading */}
+            {/* Loading skeletons */}
             {loading && (
-              <div style={{ textAlign: 'center', padding: '60px 0' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '3px solid #1e1e2e', borderTopColor: '#6c63ff', margin: '0 auto 16px', animation: 'spin 0.8s linear infinite' }} />
-                <LoadingMessages />
-              </div>
+              <>
+                <AISkeleton />
+                <ResultSkeleton />
+                <ResultSkeleton />
+                <ResultSkeleton />
+              </>
             )}
 
             {/* Error */}
             {error && !loading && (
-              <div style={{ padding: '16px 20px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '12px', color: '#f87171', marginBottom: '24px' }}>
+              <div className="fade-in" style={{ padding: '16px 20px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '14px', color: '#f87171', marginBottom: '24px', fontSize: '14px' }}>
                 ⚠️ {error}
               </div>
             )}
 
-            {/* Streamed Response */}
-            {(streamedText || streaming) && (
-              <div style={{ padding: '24px', background: '#0f0f1a', borderRadius: '16px', border: '1px solid rgba(168,85,247,0.3)', marginBottom: '24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                  <span style={{ fontSize: '16px' }}>⚡</span>
-                  <h3 style={{ color: '#a855f7', fontSize: '15px', fontWeight: '700' }}>Live AI Response</h3>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', background: streaming ? 'rgba(168,85,247,0.15)' : 'rgba(74,222,128,0.15)', color: streaming ? '#a855f7' : '#4ade80' }}>
-                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: streaming ? '#a855f7' : '#4ade80', animation: streaming ? 'pulse 0.8s infinite' : 'none' }} />
-                    {streaming ? 'Streaming...' : 'Complete'}
-                  </div>
-                </div>
-                <p style={{ color: '#c4c4e0', fontSize: '14px', lineHeight: '1.8', whiteSpace: 'pre-wrap' }}>
-                  {streamedText}
-                  {streaming && <span style={{ borderLeft: '2px solid #a855f7', marginLeft: '2px', animation: 'blink 1s infinite' }}>&nbsp;</span>}
-                </p>
-              </div>
-            )}
+            {/* Stream response */}
+            <StreamResponse text={streamedText} streaming={streaming} />
 
-            {/* AI Answer */}
-            {aiAnswer && !aiAnswer.error && !loading && (
-              <div style={{ padding: '24px', background: '#0f0f1a', borderRadius: '16px', border: '1px solid rgba(108,99,255,0.3)', marginBottom: '24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                  <span style={{ fontSize: '16px' }}>🤖</span>
-                  <h3 style={{ color: '#8b85ff', fontSize: '15px', fontWeight: '700' }}>AI Answer</h3>
-                  {aiAnswer.confidence && <span style={{ fontSize: '11px', padding: '2px 8px', background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.2)', borderRadius: '20px', color: '#4ade80' }}>{Math.round(aiAnswer.confidence * 100)}% confident</span>}
-                  {meta.cached && <span style={{ fontSize: '11px', padding: '2px 8px', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '20px', color: '#8b85ff' }}>⚡ Cached</span>}
-                </div>
-                <p style={{ color: '#c4c4e0', fontSize: '14px', lineHeight: '1.8', marginBottom: aiAnswer.code_example ? '16px' : 0 }}>{aiAnswer.answer}</p>
-                {aiAnswer.code_example && (
-                  <pre style={{ fontFamily: 'JetBrains Mono, monospace', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '8px', padding: '14px', fontSize: '13px', overflow: 'auto', color: '#a8b2d8', margin: '12px 0' }}>{aiAnswer.code_example}</pre>
-                )}
-                {aiAnswer.key_points && aiAnswer.key_points.length > 0 && (
-                  <div style={{ marginTop: '12px' }}>
-                    <p style={{ color: '#6b6b8a', fontSize: '12px', marginBottom: '8px', fontWeight: '600' }}>KEY POINTS</p>
-                    {aiAnswer.key_points.map((pt, i) => (
-                      <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
-                        <span style={{ color: '#6c63ff', flexShrink: 0 }}>→</span>
-                        <span style={{ color: '#9999bb', fontSize: '13px' }}>{pt}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {aiAnswer.manager_explanation && (
-                  <div style={{ marginTop: '16px', padding: '12px 16px', background: 'rgba(108,99,255,0.05)', borderRadius: '10px', border: '1px solid rgba(108,99,255,0.15)' }}>
-                    <p style={{ color: '#6b6b8a', fontSize: '11px', fontWeight: '600', marginBottom: '6px' }}>📋 MANAGER SUMMARY</p>
-                    <p style={{ color: '#9999bb', fontSize: '13px' }}>{aiAnswer.manager_explanation}</p>
-                  </div>
-                )}
-              </div>
-            )}
+            {/* AI answer */}
+            {!loading && <AIResponse answer={aiAnswer} meta={meta} onStream={!streamedText && queryText.trim() ? doStream : null} />}
 
-            {/* DB Results - Matching Spokes */}
+            {/* Spoke results */}
             {!loading && results.length > 0 && (
               <>
-                <p style={{ color: '#6b6b8a', fontSize: '14px', marginBottom: '16px' }}>
-                  Found <span style={{ color: '#fff', fontWeight: '600' }}>{results.length}</span> matching spoke{results.length !== 1 ? 's' : ''}
-                </p>
-                {results.map((spoke, i) => (
-                  <Link key={spoke.slug || i} href={`/spoke/${spoke.slug}`} style={{ textDecoration: 'none' }}>
-                    <div className="card-hover" style={{ padding: '20px', borderRadius: '16px', background: '#0f0f1a', marginBottom: '12px', cursor: 'pointer' }}>
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-                        <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 }}>{spoke.icon || '🔌'}</div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', flexWrap: 'wrap' }}>
-                            <h3 style={{ color: '#fff', fontSize: '16px', fontWeight: '700' }}>{spoke.name}</h3>
-                            {spoke.plugin_id && <code style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', color: '#6b6b8a', background: '#0a0a14', padding: '2px 6px', borderRadius: '4px', border: '1px solid #1e1e2e' }}>{spoke.plugin_id}</code>}
-                            {spoke.category && <span style={{ padding: '2px 8px', background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '10px', fontSize: '11px', color: '#8b85ff' }}>{spoke.category}</span>}
-                          </div>
-                          <p style={{ color: '#9999bb', fontSize: '13px', lineHeight: '1.5' }}>{spoke.description}</p>
-                        </div>
-                        <span style={{ color: '#6c63ff', fontSize: '18px' }}>→</span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                  <p style={{ color: '#6b6b8a', fontSize: '13px' }}>
+                    <span style={{ color: '#e2e8f0', fontWeight: '700' }}>{results.length}</span> spoke{results.length !== 1 ? 's' : ''} found
+                  </p>
+                </div>
+                {results.map((spoke, i) => <SpokeCard key={spoke.slug || i} spoke={spoke} index={i} />)}
               </>
             )}
 
-            {/* Empty */}
+            {/* Empty state */}
             {!loading && searched && results.length === 0 && !aiAnswer && !error && !streamedText && (
-              <div style={{ textAlign: 'center', padding: '60px 0' }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
-                <h3 style={{ color: '#fff', fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>No spokes found</h3>
-                <p style={{ color: '#6b6b8a' }}>Try a different search term or browse all spokes</p>
+              <div className="fade-in" style={{ textAlign: 'center', padding: '60px 0' }}>
+                <div style={{ width: '72px', height: '72px', borderRadius: '20px', background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', margin: '0 auto 20px' }}>🔍</div>
+                <h3 style={{ color: '#e2e8f0', fontSize: '18px', fontWeight: '700', marginBottom: '8px' }}>No results found</h3>
+                <p style={{ color: '#6b6b8a', fontSize: '14px', marginBottom: '20px' }}>Try a different query or browse all spokes</p>
+                <Link href="/spokes" style={{ padding: '10px 24px', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '12px', color: '#8b85ff', fontSize: '13px', textDecoration: 'none', fontWeight: '600' }}>Browse All Spokes</Link>
               </div>
             )}
 
-            {/* Initial state */}
+            {/* Initial state — before any search */}
             {!searched && !loading && (
-              <div style={{ textAlign: 'center', padding: '60px 0' }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔌</div>
-                <h3 style={{ color: '#fff', fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>ServiceNow AI Search</h3>
-                <p style={{ color: '#6b6b8a', marginBottom: '24px' }}>Powered by Redis caching + AI for instant results</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
-                  {['Slack spoke setup', 'GlideRecord examples', 'OAuth configuration', 'Business Rule tips', 'Flow Designer guide'].map(s => (
-                    <button key={s} onClick={() => { setQueryText(s); router.push(`/search?q=${encodeURIComponent(s)}`); doSearch(s); }}
-                      style={{ padding: '8px 16px', background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '20px', color: '#8b85ff', fontSize: '13px', cursor: 'pointer', fontFamily: 'Syne, sans-serif', transition: 'all 0.2s' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(108,99,255,0.15)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(108,99,255,0.08)'}
-                    >{s}</button>
+              <div className="fade-in" style={{ textAlign: 'center', padding: '40px 0' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', maxWidth: '520px', margin: '0 auto' }}>
+                  {[
+                    { icon: '🔌', label: 'Spoke Docs', desc: 'Setup guides for 200+ spokes' },
+                    { icon: '💻', label: 'Code Examples', desc: 'GlideRecord, REST, Flow Designer' },
+                    { icon: '🐛', label: 'Error Fixes', desc: 'AI-powered error analysis' },
+                    { icon: '⚡', label: 'AI Answers', desc: 'Instant answers to any question' },
+                  ].map(c => (
+                    <div key={c.label} style={{ padding: '20px 16px', borderRadius: '14px', background: '#0d0d18', border: '1px solid #1a1a2e', textAlign: 'center' }}>
+                      <div style={{ fontSize: '28px', marginBottom: '8px' }}>{c.icon}</div>
+                      <p style={{ color: '#e2e8f0', fontSize: '13px', fontWeight: '600', marginBottom: '4px' }}>{c.label}</p>
+                      <p style={{ color: '#555', fontSize: '11px' }}>{c.desc}</p>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -295,7 +418,6 @@ export default function Search() {
         </section>
       </main>
       <Footer />
-
     </>
   );
 }

@@ -25,7 +25,7 @@
         ]},
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'mistralai/mistral-7b-instruct:free', messages: [{ role: 'system', content: 'You are a ServiceNow expert developer. Be precise and practical.' }, { role: 'user', content: $json.prompt }], max_tokens: 2000, temperature: 0.3 }) }}",
+        "jsonBody": "={{ JSON.stringify({ model: 'meta-llama/llama-3.3-70b-instruct:free', messages: [{ role: 'system', content: 'You are a ServiceNow expert developer. Be precise and practical.' }, { role: 'user', content: $json.prompt }], max_tokens: 2000, temperature: 0.3 }) }}",
         "options": { "timeout": 60000 }
       },
       "name": "Ask OpenRouter",
