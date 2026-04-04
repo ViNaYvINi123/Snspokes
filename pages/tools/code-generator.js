@@ -66,7 +66,7 @@ export default function CodeGenerator() {
       setResult(res.data);
       setHistory(h => [{ prompt, code_type: codeType, code: res.data.code, ts: new Date() }, ...h].slice(0, 10));
     } catch (err) {
-      setError(err.response?.data?.error || 'Generation failed. Please try again.');
+      setError(err.response?.data?.error || 'AI service temporarily unavailable. Make sure n8n workflows are active.');
     } finally { setLoading(false); }
   };
 

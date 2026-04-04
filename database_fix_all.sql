@@ -332,12 +332,18 @@ ALTER TABLE sn_announcements ADD COLUMN IF NOT EXISTS target VARCHAR(50) DEFAULT
 CREATE TABLE IF NOT EXISTS sn_payments (
   id SERIAL PRIMARY KEY,
   user_id INT REFERENCES sn_users(id) ON DELETE SET NULL,
+  subscription_id VARCHAR(255),
+  payment_id VARCHAR(255),
   plan VARCHAR(50),
   amount INT DEFAULT 0,
   currency VARCHAR(10) DEFAULT 'INR',
-  payment_id VARCHAR(255),
   status VARCHAR(50) DEFAULT 'pending',
+  provider VARCHAR(50) DEFAULT 'razorpay',
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- Add columns if table already exists
+ALTER TABLE sn_payments ADD COLUMN IF NOT EXISTS subscription_id VARCHAR(255);
+ALTER TABLE sn_payments ADD COLUMN IF NOT EXISTS provider VARCHAR(50) DEFAULT 'razorpay';
 
 COMMIT;

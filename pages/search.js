@@ -193,7 +193,10 @@ export default function Search() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
                   <span style={{ fontSize: '16px' }}>⚡</span>
                   <h3 style={{ color: '#a855f7', fontSize: '15px', fontWeight: '700' }}>Live AI Response</h3>
-                  {streaming && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#a855f7', animation: 'pulse 0.8s infinite' }} />}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', background: streaming ? 'rgba(168,85,247,0.15)' : 'rgba(74,222,128,0.15)', color: streaming ? '#a855f7' : '#4ade80' }}>
+                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: streaming ? '#a855f7' : '#4ade80', animation: streaming ? 'pulse 0.8s infinite' : 'none' }} />
+                    {streaming ? 'Streaming...' : 'Complete'}
+                  </div>
                 </div>
                 <p style={{ color: '#c4c4e0', fontSize: '14px', lineHeight: '1.8', whiteSpace: 'pre-wrap' }}>
                   {streamedText}
