@@ -11,7 +11,7 @@ const SUGGESTED = [
 export default function Chatbot() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'assistant', text: "Hi! 👋 I'm your ServiceNow Integration Hub assistant. Ask me anything about spokes, setup guides, or configurations!" }
+    { role: 'assistant', text: "Hi! 👋 I'm your snspokes assistant. Ask me anything — spokes, setup guides, code help, or general questions!" }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);

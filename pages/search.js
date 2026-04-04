@@ -18,6 +18,22 @@ function useDebounce(value, delay = 400) {
   return debounced;
 }
 
+function LoadingMessages() {
+  const [idx, setIdx] = useState(0);
+  const msgs = [
+    '🔍 Searching the knowledge base...',
+    '🧠 Hang tight, finding the best results...',
+    '📡 Almost there, scanning all sources...',
+    '⚡ Crunching data from our AI engine...',
+    '🎯 Preparing your results...',
+  ];
+  useEffect(() => {
+    const t = setInterval(() => setIdx(i => (i + 1) % msgs.length), 2200);
+    return () => clearInterval(t);
+  }, []);
+  return <p style={{ color: '#9999bb', fontSize: '14px', margin: 0 }}>{msgs[idx]}</p>;
+}
+
 export default function Search() {
   const router = useRouter();
   const { q } = router.query;
@@ -31,7 +47,7 @@ export default function Search() {
   const [streaming, setStreaming] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [offTopic, setOffTopic] = useState(false);
+  
   const [searched, setSearched] = useState(false);
   const [meta, setMeta] = useState({});
 
@@ -43,7 +59,7 @@ export default function Search() {
   const doSearch = async (searchQuery) => {
     if (!searchQuery?.trim()) return;
     setLoading(true); setError(''); setSearched(true);
-    setResults([]); setAiAnswer(null); setStreamedText(''); setOffTopic(false);
+    setResults([]); setAiAnswer(null); setStreamedText(''); 
     const start = Date.now();
 
     try {
@@ -57,7 +73,7 @@ export default function Search() {
         setAiAnswer(res.data.ai_answer);
         setMeta({ cached: res.data.cached, model: res.data.model, latency: res.data.latency_ms || (Date.now() - start) });
       } else if (res.data.is_off_topic) {
-        setOffTopic(true);
+        
       } else {
         setError(res.data.error || 'Search failed');
       }
@@ -65,7 +81,7 @@ export default function Search() {
       if (err.response?.status === 429) {
         setError(`Rate limit exceeded. Please wait ${err.response.data.retry_after || 60} seconds.`);
       } else if (err.response?.status === 400 && err.response.data?.is_off_topic) {
-        setOffTopic(true);
+        
       } else {
         setError('Search service unavailable. Please try again.');
       }
@@ -83,8 +99,7 @@ export default function Search() {
       });
       if (!res.ok) {
         const err = await res.json();
-        if (err.is_off_topic) setOffTopic(true);
-        else setError(err.error || 'Stream failed');
+        setError(err.error || 'Search failed');
         setStreaming(false); return;
       }
       const reader = res.body.getReader();
@@ -165,24 +180,7 @@ export default function Search() {
             {loading && (
               <div style={{ textAlign: 'center', padding: '60px 0' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '3px solid #1e1e2e', borderTopColor: '#6c63ff', margin: '0 auto 16px', animation: 'spin 0.8s linear infinite' }} />
-                <p style={{ color: '#6b6b8a' }}>Searching across database and AI...</p>
-              </div>
-            )}
-
-            {/* Off Topic */}
-            {offTopic && !loading && (
-              <div style={{ padding: '24px', background: 'rgba(251,191,36,0.05)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '16px', marginBottom: '24px' }}>
-                <div style={{ fontSize: '32px', marginBottom: '12px' }}>🎯</div>
-                <h3 style={{ color: '#fbbf24', fontSize: '18px', fontWeight: '700', marginBottom: '8px' }}>ServiceNow Queries Only</h3>
-                <p style={{ color: '#9999bb', fontSize: '14px', marginBottom: '16px' }}>This platform is specifically designed for ServiceNow Integration Hub spokes, scripts, and configurations.</p>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {['How to setup Slack spoke?', 'GlideRecord addQuery example', 'Business rule not firing', 'OAuth spoke setup'].map(s => (
-                    <button key={s} onClick={() => { setQueryText(s); router.push(`/search?q=${encodeURIComponent(s)}`); doSearch(s); }}
-                      style={{ padding: '6px 12px', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '20px', color: '#8b85ff', fontSize: '12px', cursor: 'pointer', fontFamily: 'Syne, sans-serif' }}>
-                      {s}
-                    </button>
-                  ))}
-                </div>
+                <LoadingMessages />
               </div>
             )}
 

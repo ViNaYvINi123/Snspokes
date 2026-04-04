@@ -1,5 +1,4 @@
 import { checkRateLimit } from '../../lib/redis';
-import { isServiceNowQuery } from '../../lib/llm';
 import { n8nChatbot } from '../../lib/n8n';
 import { setSecurityHeaders } from '../../lib/security';
 
@@ -14,11 +13,6 @@ export default async function handler(req, res) {
   const id = user_id || req.headers['x-forwarded-for'] || 'anon';
   const rl = await checkRateLimit('stream:' + id, 10, 60);
   if (!rl.allowed) return res.status(429).json({ error: 'Rate limit exceeded. Try in ' + rl.resetIn + 's.' });
-
-  // Validate ServiceNow query
-  if (!isServiceNowQuery(q)) {
-    return res.status(400).json({ error: 'Only ServiceNow queries supported.', is_off_topic: true });
-  }
 
   // SSE headers
   res.writeHead(200, {
