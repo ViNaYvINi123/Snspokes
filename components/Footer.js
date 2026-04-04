@@ -78,7 +78,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg,#6c63ff,#a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', color: '#fff', fontSize: '14px' }}>S</div>
+              <img src="/logo.svg" alt="snspokes" width="32" height="32" style={{ borderRadius: '8px' }} />
               <span style={{ fontWeight: '800', color: '#fff', fontSize: '16px', letterSpacing: '-0.02em' }}>
                 snspokes<span style={{ color: '#6c63ff' }}>.com</span>
               </span>

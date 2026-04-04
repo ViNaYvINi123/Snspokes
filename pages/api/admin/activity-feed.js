@@ -23,10 +23,10 @@ async function handler(req, res) {
       const [users, searches, payments, errors, codeGens, submissions] = await Promise.all([
         query("SELECT 'signup' as type, name as label, email as sublabel, plan as meta, created_at FROM sn_users ORDER BY created_at DESC LIMIT 3").catch(() => ({ rows: [] })),
         query("SELECT 'search' as type, query as label, user_ip as sublabel, results::text as meta, created_at FROM sn_search_analytics ORDER BY created_at DESC LIMIT 3").catch(() => ({ rows: [] })),
-        query("SELECT 'payment' as type, plan as label, amount::text as meta, created_at FROM sn_payments WHERE status='active' ORDER BY created_at DESC LIMIT 2").catch(() => ({ rows: [] })),
+        query("SELECT 'payment' as type, plan as label, amount::text as meta, created_at FROM sn_subscriptions WHERE status='active' ORDER BY created_at DESC LIMIT 2").catch(() => ({ rows: [] })),
         query("SELECT 'error' as type, message as label, source as sublabel, 'unresolved' as meta, created_at FROM sn_error_logs WHERE resolved=false ORDER BY created_at DESC LIMIT 2").catch(() => ({ rows: [] })),
         query("SELECT 'codegen' as type, code_type as label, model as sublabel, created_at FROM sn_code_generations ORDER BY created_at DESC LIMIT 2").catch(() => ({ rows: [] })),
-        query("SELECT 'submission' as type, name as label, submitted_by as sublabel, status as meta, created_at FROM sn_spoke_submissions ORDER BY created_at DESC LIMIT 2").catch(() => ({ rows: [] })),
+        query("SELECT 'submission' as type, name as label, status as meta, created_at FROM sn_spoke_submissions ORDER BY created_at DESC LIMIT 2").catch(() => ({ rows: [] })),
       ]);
 
       const all = [

@@ -324,4 +324,20 @@ INSERT INTO sn_system_properties (name, value, category) VALUES
   ('site_name', 'snspokes', 'general')
 ON CONFLICT (name) DO NOTHING;
 
+
+-- Add missing columns
+ALTER TABLE sn_announcements ADD COLUMN IF NOT EXISTS target VARCHAR(50) DEFAULT 'all';
+
+-- Payments table (referenced by activity feed)
+CREATE TABLE IF NOT EXISTS sn_payments (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES sn_users(id) ON DELETE SET NULL,
+  plan VARCHAR(50),
+  amount INT DEFAULT 0,
+  currency VARCHAR(10) DEFAULT 'INR',
+  payment_id VARCHAR(255),
+  status VARCHAR(50) DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
 COMMIT;

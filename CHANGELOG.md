@@ -1,5 +1,29 @@
 # Changelog
 
+## v32.9.0 (2026-04-04)
+
+### Infrastructure
+- Redis: default host changed from localhost → snspokes_redis (fixes Redis disconnected in admin)
+- Dockerfile: added postgresql-client for DB backup feature
+- docker-compose: nextjs now depends on redis healthcheck
+- docker-compose: OPENROUTER_API_KEY passed to n8n container
+
+### Admin Panel
+- Backup: rewrote dbBackup.js to use pg_dump with connection params (not docker exec)
+- Activity Feed: fixed sn_payments → sn_subscriptions table reference
+- Announcements: added missing 'target' column to database migration
+- CookieBanner: now rendered in _app.js (was imported but not shown)
+
+### Frontend
+- Footer: replaced gradient 'S' box with actual logo.svg
+- Chatbot: added to all pages, welcome message open to all topics
+- Search: animated loading messages, removed off-topic restrictions entirely
+- Stream: removed ServiceNow-only restriction
+
+### Database
+- Added sn_payments table to migration
+- Added target column to sn_announcements
+
 ## v32.8.0 (2026-04-04)
 
 ### Critical Fixes

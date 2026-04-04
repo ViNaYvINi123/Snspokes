@@ -72,16 +72,12 @@ export default function Search() {
         setResults(res.data.results || []);
         setAiAnswer(res.data.ai_answer);
         setMeta({ cached: res.data.cached, model: res.data.model, latency: res.data.latency_ms || (Date.now() - start) });
-      } else if (res.data.is_off_topic) {
-        
       } else {
         setError(res.data.error || 'Search failed');
       }
     } catch (err) {
       if (err.response?.status === 429) {
         setError(`Rate limit exceeded. Please wait ${err.response.data.retry_after || 60} seconds.`);
-      } else if (err.response?.status === 400 && err.response.data?.is_off_topic) {
-        
       } else {
         setError('Search service unavailable. Please try again.');
       }
@@ -267,7 +263,7 @@ export default function Search() {
             )}
 
             {/* Empty */}
-            {!loading && searched && results.length === 0 && !aiAnswer && !offTopic && !error && !streamedText && (
+            {!loading && searched && results.length === 0 && !aiAnswer && !error && !streamedText && (
               <div style={{ textAlign: 'center', padding: '60px 0' }}>
                 <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
                 <h3 style={{ color: '#fff', fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>No spokes found</h3>

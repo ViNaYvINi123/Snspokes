@@ -87,6 +87,7 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
             <AnnouncementBanner />
             <Component {...pageProps} />
             <Chatbot />
+            <CookieBanner />
           </OnboardingGuard>
         </MaintenanceCheck>
       </SessionProvider>
