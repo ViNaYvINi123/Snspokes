@@ -1,4 +1,5 @@
 import { checkRateLimit } from '../../lib/redis';
+import { getAICachedResponse, setAICachedResponse } from '../../lib/aiCache';
 import { n8nChatbot } from '../../lib/n8n';
 import { setSecurityHeaders } from '../../lib/security';
 
@@ -33,6 +34,18 @@ export default async function handler(req, res) {
 
   send({ type: 'start', query: q });
 
+  // Check cache first
+  const cached = await getAICachedResponse(q.trim(), 'stream');
+  if (cached) {
+    const words = cached.answer.split(' ');
+    for (let i = 0; i < words.length; i += 3) {
+      send({ type: 'chunk', content: words.slice(i, i + 3).join(' ') + ' ' });
+    }
+    send({ type: 'done', model: (cached.model || 'cached') + ' (cached)' });
+    res.end();
+    return;
+  }
+
   try {
     // Route through n8n chatbot workflow
     const n8nResult = await n8nChatbot(q.trim(), []);
@@ -45,6 +58,7 @@ export default async function handler(req, res) {
         const chunk = words.slice(i, i + 3).join(' ') + ' ';
         send({ type: 'chunk', content: chunk });
       }
+      setAICachedResponse(q.trim(), answer, n8nResult.data.model || 'n8n', 'stream').catch(() => {});
       send({ type: 'done', model: n8nResult.data.model || 'n8n' });
     } else {
       send({ type: 'error', message: 'n8n AI workflow returned no answer. Check workflows are active.' });

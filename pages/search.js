@@ -31,6 +31,45 @@ function useTypewriter(phrases, speed = 60, pause = 2000) {
   return text;
 }
 
+
+/* ─── Render markdown in AI responses ─── */
+function FormatMessage({ text }) {
+  if (!text) return null;
+  const parts = text.split(/(```[\s\S]*?```)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('```')) {
+      const lines = part.slice(3, -3).split('\n');
+      const lang = lines[0].trim();
+      const code = (lang && !lang.includes(' ') ? lines.slice(1) : lines).join('\n').trim();
+      return <SearchCodeBlock key={i} code={code} lang={lang} />;
+    }
+    const formatted = part
+      .replace(/\*\*(.*?)\*\*/g, '<b style="color:#e2e8f0">$1</b>')
+      .replace(/^### (.*$)/gm, '<div style="font-size:15px;font-weight:700;color:#e2e8f0;margin:16px 0 8px">$1</div>')
+      .replace(/^## (.*$)/gm, '<div style="font-size:17px;font-weight:700;color:#e2e8f0;margin:20px 0 8px">$1</div>')
+      .replace(/^- (.*$)/gm, '<div style="display:flex;gap:8px;margin:4px 0;padding-left:4px"><span style="color:#6c63ff;flex-shrink:0">•</span><span>$1</span></div>')
+      .replace(/`([^`]+)`/g, '<code style="background:#1a1a2e;padding:2px 7px;border-radius:5px;font-family:JetBrains Mono,monospace;font-size:12px;color:#a8b2d8">$1</code>')
+      .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #1e1e2e;margin:16px 0"/>');
+    return <div key={i} dangerouslySetInnerHTML={{ __html: formatted }} />;
+  });
+}
+
+function SearchCodeBlock({ code, lang }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000); };
+  return (
+    <div style={{ position:'relative', margin:'12px 0', borderRadius:'12px', overflow:'hidden', border:'1px solid #1e1e2e' }}>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'8px 14px', background:'#111827', borderBottom:'1px solid #1e1e2e' }}>
+        <span style={{ fontSize:'11px', color:'#555', textTransform:'uppercase', fontWeight:'600' }}>{lang || 'code'}</span>
+        <button onClick={copy} style={{ padding:'3px 12px', background: copied ? 'rgba(74,222,128,0.15)' : 'rgba(108,99,255,0.1)', border:'1px solid ' + (copied ? 'rgba(74,222,128,0.2)' : 'rgba(108,99,255,0.15)'), borderRadius:'6px', color: copied ? '#4ade80' : '#8b85ff', fontSize:'11px', cursor:'pointer', fontFamily:'inherit', fontWeight:'600' }}>
+          {copied ? '✓ Copied' : 'Copy'}
+        </button>
+      </div>
+      <pre style={{ margin:0, padding:'14px', background:'#0a0a14', fontSize:'12px', fontFamily:"'JetBrains Mono', monospace", color:'#a8b2d8', lineHeight:'1.65', overflow:'auto', maxHeight:'300px' }}>{code}</pre>
+    </div>
+  );
+}
+
 /* ─── Shimmer skeleton ─── */
 function ResultSkeleton() {
   const shimmer = { background: 'linear-gradient(90deg, #111827 25%, #1a1a2e 50%, #111827 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite', borderRadius: '8px' };
@@ -93,7 +132,7 @@ function AIResponse({ answer, meta, onStream }) {
         </div>
       </div>
 
-      <div style={{ color: '#c8c8e0', fontSize: '14px', lineHeight: '1.85', position: 'relative' }}>{answer.answer}</div>
+      <div style={{ color: '#c8c8e0', fontSize: '14px', lineHeight: '1.85', position: 'relative' }}><FormatMessage text={answer.answer} /></div>
 
       {answer.code_example && (
         <div style={{ position: 'relative', marginTop: '16px' }}>
