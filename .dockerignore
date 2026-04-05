@@ -11,7 +11,6 @@ node_modules
 !tailwind.config.js
 !postcss.config.js
 __tests__
-mocks
 scripts
 ssl
 docs
