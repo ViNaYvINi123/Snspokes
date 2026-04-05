@@ -37,15 +37,15 @@ export default async function handler(req, res) {
 
       await query(
         `INSERT INTO sn_spoke_ratings (spoke_slug, user_id, rating)
-         VALUES ($1,$2,$3,$4,$5)
+         VALUES ($1,$2,$3)
          ON CONFLICT (spoke_slug, user_id) DO UPDATE SET rating=$3`,
-        [spokeId, user_id || null, ip, parseInt(rating), comment || '']
+        [slug, user_id || null, parseInt(rating)]
       );
 
       // Update spoke avg rating
       const stats = await query(
         'SELECT AVG(rating)::numeric(3,2) as avg, COUNT(*) as cnt FROM sn_spoke_ratings WHERE spoke_slug=$1',
-        [spokeId]
+        [slug]
       );
       await query('UPDATE sn_spokes SET avg_rating=$1, rating_count=$2 WHERE id=$3',
         [stats.rows[0].avg, stats.rows[0].cnt, spokeId]);
