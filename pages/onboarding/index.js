@@ -56,11 +56,10 @@ export default function Onboarding() {
       };
       const res = await fetch('/api/user/onboarding', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const data = await res.json();
-      if (data.success) {
-        // Force NextAuth session refresh so OnboardingGuard sees onboarded=true
-        await update({ onboarded: true });
-      }
+      // Always update session — even if API fails, let user through
+      await update({ onboarded: true });
     } catch {}
+    // Always redirect — don't trap user on onboarding
     router.push('/dashboard');
   }
 
@@ -81,7 +80,13 @@ export default function Onboarding() {
           <div style={{ width:'28px', height:'28px', background:'linear-gradient(135deg,#6c63ff,#a855f7)', borderRadius:'7px', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:'800', color:'#fff', fontSize:'13px' }}>S</div>
           <span style={{ fontWeight:'800', color:'#fff', fontSize:'15px' }}>snspokes<span style={{ color:'#6c63ff' }}>.com</span></span>
         </Link>
-        <button onClick={() => router.push('/dashboard')} style={{ background:'none', border:'none', color:'#6b7280', fontSize:'12px', cursor:'pointer', fontFamily:"'Syne', sans-serif" }}>Skip for now →</button>
+        <button onClick={async () => {
+          try {
+            await fetch('/api/user/onboarding', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'developer', sn_version: 'Yokohama', use_case: 'general' }) });
+            await update({ onboarded: true });
+          } catch {}
+          router.push('/dashboard');
+        }} style={{ background:'none', border:'none', color:'#6b7280', fontSize:'12px', cursor:'pointer', fontFamily:"'Syne', sans-serif" }}>Skip for now →</button>
       </div>
 
       <div style={{ ...S.page, paddingTop:'80px' }}>

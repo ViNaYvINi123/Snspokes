@@ -27,12 +27,13 @@ export default async function handler(req, res) {
     const cleanVersion = SN_VERSIONS.includes(sn_version) ? sn_version : null;
     const cleanUseCase = sanitizeString(use_case, 500);
 
-    if (!cleanRole)    return res.status(400).json({ success: false, error: `Invalid role. Must be one of: ${ROLES.join(', ')}` });
-    if (!cleanVersion) return res.status(400).json({ success: false, error: `Invalid version. Must be one of: ${SN_VERSIONS.join(', ')}` });
+    // Be forgiving — set defaults if missing
+    const finalRole = cleanRole || 'developer';
+    const finalVersion = cleanVersion || 'Yokohama';
 
     await query(
       'UPDATE sn_users SET onboarded=true, role=$1, sn_version=$2, use_case=$3, onboarded_at=NOW() WHERE id=$4',
-      [cleanRole, cleanVersion, cleanUseCase, uid]
+      [finalRole, finalVersion, cleanUseCase, uid]
     );
 
     // Invalidate plan cache so new session picks up changes

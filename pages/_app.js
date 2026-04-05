@@ -37,7 +37,7 @@ import Chatbot from '../components/Chatbot';
 import CommandPalette from '../components/CommandPalette';
 
 // Pages that don't need the onboarding check
-const PUBLIC_PAGES = ['/login', '/register', '/onboarding', '/forgot-password', '/404', '/join-team'];
+const PUBLIC_PAGES = ['/login', '/register', '/onboarding', '/forgot-password', '/404', '/join-team', '/privacy', '/terms'];
 
 function OnboardingGuard({ children }) {
   const { data: session, status } = useSession();
@@ -45,10 +45,8 @@ function OnboardingGuard({ children }) {
 
   useEffect(() => {
     if (status !== 'authenticated') return;
-    if (PUBLIC_PAGES.some(p => router.pathname.startsWith(p))) return;
-    if (router.pathname.startsWith('/api')) return;
-    // Redirect to onboarding if user hasn't completed it
-    if (session?.user?.onboarded === false && router.pathname !== '/onboarding') {
+    // Only redirect to onboarding from /dashboard — don't block other pages
+    if (router.pathname === '/dashboard' && session?.user?.onboarded === false) {
       router.push('/onboarding');
     }
   }, [status, session, router.pathname]);

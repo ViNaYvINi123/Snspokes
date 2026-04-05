@@ -104,10 +104,10 @@ export const authOptions = {
         token.planRefreshed = Math.floor(Date.now() / 1000);
       }
 
-      // Manual session update (called after plan upgrade)
-      if (trigger === 'update' && sessionUpdate?.plan) {
-        token.plan          = sessionUpdate.plan;
-        token.onboarded     = sessionUpdate.onboarded ?? token.onboarded;
+      // Manual session update (called after plan upgrade OR onboarding)
+      if (trigger === 'update' && sessionUpdate) {
+        if (sessionUpdate.plan) token.plan = sessionUpdate.plan;
+        if (sessionUpdate.onboarded !== undefined) token.onboarded = sessionUpdate.onboarded;
         token.planRefreshed = Math.floor(Date.now() / 1000);
         return token;
       }
