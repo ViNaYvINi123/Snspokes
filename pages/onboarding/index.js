@@ -77,8 +77,8 @@ export default function Onboarding() {
       {/* Minimal header with back link */}
       <div style={{ position:'fixed', top:0, left:0, right:0, height:'56px', background:'rgba(8,8,16,0.9)', backdropFilter:'blur(12px)', borderBottom:'1px solid #1e1e2e', display:'flex', alignItems:'center', padding:'0 24px', justifyContent:'space-between', zIndex:50 }}>
         <Link href="/" style={{ textDecoration:'none', display:'flex', alignItems:'center', gap:'8px' }}>
-          <div style={{ width:'28px', height:'28px', background:'linear-gradient(135deg,#6c63ff,#a855f7)', borderRadius:'7px', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:'800', color:'#fff', fontSize:'13px' }}>S</div>
-          <span style={{ fontWeight:'800', color:'#fff', fontSize:'15px' }}>snspokes<span style={{ color:'#6c63ff' }}>.com</span></span>
+          <img src="/logo.svg" alt="snspokes" width="28" height="28" style={{ borderRadius:'8px' }} />
+          <span style={{ fontWeight:'800', color:'#e2e8f0', fontSize:'15px', letterSpacing:'-0.3px' }}>snspokes<span style={{ color:'#6c63ff' }}>.com</span></span>
         </Link>
         <button onClick={async () => {
           try {

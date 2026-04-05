@@ -77,8 +77,8 @@ export default function ForgotPassword() {
       <Head><title>Reset Password — snspokes</title></Head>
       <div style={S.page}>
         <Link href="/" style={{ textDecoration:'none', marginBottom:'28px', display:'flex', alignItems:'center', gap:'10px' }}>
-          <div style={{ width:'36px', height:'36px', background:'linear-gradient(135deg,#6c63ff,#a855f7)', borderRadius:'10px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px', fontWeight:'800', color:'#fff' }}>S</div>
-          <span style={{ fontSize:'20px', fontWeight:'800', color:'#fff', letterSpacing:'-0.03em' }}>snspokes<span style={{ color:'#6c63ff' }}>.com</span></span>
+          <img src="/logo.svg" alt="snspokes" width="32" height="32" style={{ borderRadius:'8px' }} />
+          <span style={{ fontSize:'20px', fontWeight:'800', color:'#e2e8f0', letterSpacing:'-0.3px' }}>snspokes<span style={{ color:'#6c63ff' }}>.com</span></span>
         </Link>
         <div style={S.card}>
 
