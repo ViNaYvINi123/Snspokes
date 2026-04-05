@@ -33,6 +33,105 @@ function FormatCode({ text }) {
   });
 }
 
+
+/* ─── Dynamic loading messages while generating ─── */
+function GeneratingAnimation({ codeType }) {
+  const [msgIdx, setMsgIdx] = useState(0);
+  const [dots, setDots] = useState('');
+
+  const MESSAGES = {
+    business_rule: [
+      'Analyzing trigger conditions…',
+      'Structuring server-side logic…',
+      'Adding error handling & guards…',
+      'Writing GlideRecord operations…',
+      'Optimizing for performance…',
+      'Finalizing your Business Rule…',
+    ],
+    script_include: [
+      'Designing class structure…',
+      'Building reusable methods…',
+      'Adding JSDoc documentation…',
+      'Implementing error handling…',
+      'Optimizing for reusability…',
+    ],
+    client_script: [
+      'Setting up form handlers…',
+      'Building UI interaction logic…',
+      'Adding field validations…',
+      'Handling edge cases…',
+      'Making it user-friendly…',
+    ],
+    scheduled_job: [
+      'Configuring schedule logic…',
+      'Building batch operations…',
+      'Adding safety limits…',
+      'Implementing logging…',
+      'Optimizing for large datasets…',
+    ],
+    rest_api: [
+      'Designing endpoint structure…',
+      'Building request handlers…',
+      'Adding authentication checks…',
+      'Formatting JSON response…',
+      'Adding error responses…',
+    ],
+    transform_map: [
+      'Analyzing field mappings…',
+      'Building transform logic…',
+      'Adding data validation…',
+      'Handling edge cases…',
+      'Finalizing import script…',
+    ],
+    flow_script: [
+      'Designing flow actions…',
+      'Building input/output schema…',
+      'Writing execution logic…',
+      'Adding error handling…',
+      'Optimizing flow performance…',
+    ],
+  };
+
+  const messages = MESSAGES[codeType] || MESSAGES.business_rule;
+
+  useEffect(() => {
+    const t1 = setInterval(() => setMsgIdx(i => (i + 1) % messages.length), 2500);
+    const t2 = setInterval(() => setDots(d => d.length >= 3 ? '' : d + '.'), 400);
+    return () => { clearInterval(t1); clearInterval(t2); };
+  }, [messages.length]);
+
+  const TIPS = [
+    'Pro tip: Use setWorkflow(false) for bulk updates',
+    'Pro tip: Always null-check reference fields',
+    'Pro tip: Use GlideAggregate for counting records',
+    'Pro tip: Avoid current.update() in Before rules',
+  ];
+
+  return (
+    <div style={{ padding: '32px 24px', borderRadius: '16px', background: 'linear-gradient(135deg, #0d0d1a, #10101f)', border: '1px solid rgba(108,99,255,0.2)', textAlign: 'center' }}>
+      <div style={{ position: 'relative', width: '56px', height: '56px', margin: '0 auto 20px' }}>
+        <div style={{ width: '56px', height: '56px', borderRadius: '50%', border: '3px solid #1e1e2e', borderTopColor: '#6c63ff', borderRightColor: '#a855f7', animation: 'spin 1s linear infinite' }} />
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>⚡</div>
+      </div>
+      <p style={{ color: '#e2e8f0', fontSize: '15px', fontWeight: '600', marginBottom: '8px', transition: 'opacity 0.3s' }}>
+        {messages[msgIdx]}{dots}
+      </p>
+      <div style={{ width: '200px', height: '3px', background: '#1e1e2e', borderRadius: '2px', margin: '16px auto', overflow: 'hidden' }}>
+        <div style={{ height: '100%', background: 'linear-gradient(90deg, #6c63ff, #a855f7)', borderRadius: '2px', animation: 'progress 2.5s ease-in-out infinite' }} />
+      </div>
+      <p style={{ color: '#555', fontSize: '11px', fontStyle: 'italic', marginTop: '16px' }}>{TIPS[msgIdx % TIPS.length]}</p>
+    </div>
+  );
+}
+
+/* Add progress animation inline */
+const _progressStyle = typeof document !== 'undefined' && !document.getElementById('gen-styles') && (() => {
+  const s = document.createElement('style');
+  s.id = 'gen-styles';
+  s.textContent = '@keyframes progress{0%{width:0}50%{width:80%}100%{width:100%}} @keyframes spin{to{transform:rotate(360deg)}} .fade-in{animation:fadeInUp 0.3s ease}';
+  document.head.appendChild(s);
+})();
+
 const CODE_TYPE_CONFIG = {
   business_rule:  { icon: '⚡', color: '#8b85ff', label: 'Business Rule' },
   script_include: { icon: '📦', color: '#0ea5e9', label: 'Script Include' },
@@ -188,8 +287,9 @@ export default function CodeGenerator() {
               </div>
             )}
             {/* Result */}
-              {result && (
-                <div style={{ background: '#0f0f1a', border: '1px solid #1e1e2e', borderRadius: '12px', overflow: 'hidden' }}>
+              {loading && <GeneratingAnimation codeType={codeType} />}
+              {!loading && result && (
+                <div className="fade-in" style={{ background: '#0f0f1a', border: '1px solid #1e1e2e', borderRadius: '12px', overflow: 'hidden' }}>
                   <div style={{ padding: '12px 16px', background: '#0a0a0f', borderBottom: '1px solid #1e1e2e', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span>{cfg.icon}</span>
