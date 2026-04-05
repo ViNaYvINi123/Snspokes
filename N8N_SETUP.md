@@ -31,7 +31,7 @@ OPENROUTER_API_KEY=sk-or-v1-your-key-here
 Get a free key at: https://openrouter.ai/keys
 
 Free models used:
-- `meta-llama/llama-3.3-70b-instruct:free` (default)
+- `openrouter/free` (default)
 
 ## Webhook Paths
 

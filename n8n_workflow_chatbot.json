@@ -1,12 +1,19 @@
 {
-  "name": "snspokes — Chatbot",
+  "name": "snspokes \u2014 Chatbot",
   "nodes": [
     {
-      "parameters": { "path": "sn-chatbot", "httpMethod": "POST", "responseMode": "responseNode" },
+      "parameters": {
+        "path": "sn-chatbot",
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      },
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [250, 300]
+      "position": [
+        250,
+        300
+      ]
     },
     {
       "parameters": {
@@ -15,19 +22,31 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Authorization", "value": "Bearer {{ $env.OPENROUTER_API_KEY }}" },
-            { "name": "Content-Type", "value": "application/json" }
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.OPENROUTER_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
           ]
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'meta-llama/llama-3.3-70b-instruct:free', messages: [ { role: 'system', content: 'You are an expert ServiceNow developer and architect. You help users with Integration Hub spokes, GlideRecord scripting, Flow Designer, REST APIs, and any ServiceNow question. Rules: 1) Always give practical, working code examples when relevant. 2) Format answers clearly with sections. 3) If you include code, use proper GlideRecord/Flow Designer syntax. 4) Be concise but thorough — aim for 150-300 words. 5) If unsure, say so honestly. You can also answer general programming questions.' }, ...($json.history || []), { role: 'user', content: $json.question } ], max_tokens: 1500, temperature: 0.7 }) }}",
-        "options": { "timeout": 60000 }
+        "jsonBody": "={{ JSON.stringify({ model: 'openrouter/free', messages: [ { role: 'system', content: 'You are an expert ServiceNow developer and architect. You help users with Integration Hub spokes, GlideRecord scripting, Flow Designer, REST APIs, and any ServiceNow question. Rules: 1) Always give practical, working code examples when relevant. 2) Format answers clearly with sections. 3) If you include code, use proper GlideRecord/Flow Designer syntax. 4) Be concise but thorough \u2014 aim for 150-300 words. 5) If unsure, say so honestly. You can also answer general programming questions.' }, ...($json.history || []), { role: 'user', content: $json.question } ], max_tokens: 1500, temperature: 0.7 }) }}",
+        "options": {
+          "timeout": 60000
+        }
       },
       "name": "Ask OpenRouter",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [470, 300]
+      "position": [
+        470,
+        300
+      ],
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -37,11 +56,34 @@
       "name": "Respond",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [690, 300]
+      "position": [
+        690,
+        300
+      ]
     }
   ],
   "connections": {
-    "Webhook": { "main": [[{ "node": "Ask OpenRouter", "type": "main", "index": 0 }]] },
-    "Ask OpenRouter": { "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] }
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Ask OpenRouter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask OpenRouter": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   }
 }
