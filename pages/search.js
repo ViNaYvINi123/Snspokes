@@ -188,6 +188,70 @@ function SpokeCard({ spoke, index }) {
   );
 }
 
+
+/* ─── Follow-up questions (Perplexity-style) ─── */
+function FollowUpQuestions({ query, onSearch }) {
+  const suggestions = [
+    query.includes('spoke') ? 'How to set up authentication?' : 'Show me a code example',
+    query.includes('error') ? 'What causes this error?' : 'Best practices for this',
+    'Compare with alternatives',
+  ].filter(Boolean);
+  return (
+    <div className="fade-in" style={{ marginTop: '16px', padding: '16px', background: 'rgba(108,99,255,0.03)', borderRadius: '14px', border: '1px solid rgba(108,99,255,0.08)' }}>
+      <p style={{ color: '#555', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '10px' }}>Follow-up questions</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        {suggestions.map(q => (
+          <button key={q} onClick={() => onSearch(query + ' - ' + q)}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: 'transparent', border: '1px solid #1a1a2e', borderRadius: '10px', color: '#9999bb', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#6c63ff40'; e.currentTarget.style.color = '#b0b0d0'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#1a1a2e'; e.currentTarget.style.color = '#9999bb'; }}>
+            <span style={{ color: '#6c63ff', fontSize: '12px' }}>→</span> {q}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Feedback buttons ─── */
+function FeedbackButtons() {
+  const [vote, setVote] = useState(null);
+  if (vote) return <span className="fade-in" style={{ fontSize: '12px', color: '#4ade80', padding: '4px 12px', background: 'rgba(74,222,128,0.08)', borderRadius: '20px' }}>Thanks for feedback!</span>;
+  return (
+    <div style={{ display: 'flex', gap: '6px' }}>
+      <button onClick={() => setVote('up')} style={{ padding: '4px 10px', background: 'rgba(74,222,128,0.06)', border: '1px solid rgba(74,222,128,0.15)', borderRadius: '8px', color: '#4ade80', fontSize: '13px', cursor: 'pointer' }} title="Helpful">👍</button>
+      <button onClick={() => setVote('down')} style={{ padding: '4px 10px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '8px', color: '#f87171', fontSize: '13px', cursor: 'pointer' }} title="Not helpful">👎</button>
+    </div>
+  );
+}
+
+/* ─── Related searches ─── */
+function RelatedSearches({ query, onSearch }) {
+  const base = query.split(' ')[0];
+  const related = [
+    base + ' spoke setup guide',
+    base + ' authentication config',
+    base + ' common errors',
+    base + ' code examples GlideRecord',
+    base + ' vs alternatives',
+  ].filter(r => r !== query);
+  return (
+    <div className="fade-in" style={{ marginTop: '32px', padding: '20px', background: '#0a0a14', borderRadius: '16px', border: '1px solid #141420' }}>
+      <p style={{ color: '#555', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '12px' }}>Related searches</p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+        {related.map(r => (
+          <button key={r} onClick={() => onSearch(r)}
+            style={{ padding: '7px 14px', background: 'rgba(108,99,255,0.05)', border: '1px solid #1e1e2e', borderRadius: '20px', color: '#8888aa', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#6c63ff40'; e.currentTarget.style.background = 'rgba(108,99,255,0.1)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#1e1e2e'; e.currentTarget.style.background = 'rgba(108,99,255,0.05)'; }}>
+            🔍 {r}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════ */
 /*           MAIN SEARCH PAGE             */
 /* ═══════════════════════════════════════ */
@@ -208,6 +272,18 @@ export default function Search() {
   const [searched, setSearched] = useState(false);
   const [meta, setMeta] = useState({});
   const [focused, setFocused] = useState(false);
+
+  // "/" shortcut to focus search
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === '/' && !e.ctrlKey && !e.metaKey && document.activeElement?.tagName !== 'INPUT') {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   useEffect(() => { if (q) { setQueryText(q); doSearch(q); } }, [q]);
 
@@ -373,6 +449,14 @@ export default function Search() {
             {/* AI answer */}
             {!loading && <AIResponse answer={aiAnswer} meta={meta} onStream={!streamedText && queryText.trim() ? doStream : null} />}
 
+            {/* Follow-up questions */}
+            {!loading && aiAnswer && !aiAnswer.error && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                <FeedbackButtons />
+              </div>
+            )}
+            {!loading && aiAnswer && !aiAnswer.error && <FollowUpQuestions query={queryText} onSearch={quickSearch} />}
+
             {/* Spoke results */}
             {!loading && results.length > 0 && (
               <>
@@ -384,6 +468,9 @@ export default function Search() {
                 {results.map((spoke, i) => <SpokeCard key={spoke.slug || i} spoke={spoke} index={i} />)}
               </>
             )}
+
+            {/* Related searches */}
+            {!loading && searched && results.length > 0 && <RelatedSearches query={queryText} onSearch={quickSearch} />}
 
             {/* Empty state */}
             {!loading && searched && results.length === 0 && !aiAnswer && !error && !streamedText && (

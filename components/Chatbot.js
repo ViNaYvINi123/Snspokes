@@ -2,10 +2,11 @@ import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 
 const SUGGESTED = [
-  'How do I setup the Slack spoke?',
-  'What actions does the Jira spoke support?',
-  'How to authenticate AWS spoke?',
-  'What credential type does Teams spoke need?',
+  '🔌 How do I setup the Slack spoke?',
+  '💻 Write a GlideRecord script for incidents',
+  '🐛 Fix: ACL restricts access to this record',
+  '📊 Build an encoded query for active changes',
+  '⚡ What\'s new in Yokohama release?',
 ];
 
 export default function Chatbot() {

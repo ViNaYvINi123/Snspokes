@@ -149,3 +149,31 @@ select:focus {
   background: rgba(108,99,255,0.3);
   color: #fff;
 }
+
+/* ── Tooltips ─── */
+[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 10px;
+  background: #1a1a2e;
+  border: 1px solid #2a2a3e;
+  border-radius: 6px;
+  font-size: 11px;
+  color: #9999bb;
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* ── Focus ring ─── */
+:focus-visible {
+  outline: 2px solid rgba(108,99,255,0.5);
+  outline-offset: 2px;
+}
+
+/* ── Smooth page transitions ─── */
+.page-enter { opacity: 0; transform: translateY(8px); }
+.page-enter-active { opacity: 1; transform: none; transition: all 0.3s ease; }
