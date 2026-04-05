@@ -272,6 +272,23 @@ export default function Search() {
   const [searched, setSearched] = useState(false);
   const [meta, setMeta] = useState({});
   const [focused, setFocused] = useState(false);
+  const [searchHistory, setSearchHistory] = useState([]);
+
+  // Load search history from localStorage
+  useEffect(() => {
+    try { setSearchHistory(JSON.parse(localStorage.getItem('sn_search_history') || '[]')); } catch {}
+  }, []);
+
+  // Save search to history
+  const saveToHistory = (q) => {
+    try {
+      const history = JSON.parse(localStorage.getItem('sn_search_history') || '[]');
+      const filtered = history.filter(h => h !== q);
+      const updated = [q, ...filtered].slice(0, 10);
+      localStorage.setItem('sn_search_history', JSON.stringify(updated));
+      setSearchHistory(updated);
+    } catch {}
+  };
 
   // "/" shortcut to focus search
   useEffect(() => {
@@ -289,6 +306,7 @@ export default function Search() {
 
   const doSearch = async (searchQuery) => {
     if (!searchQuery?.trim()) return;
+    saveToHistory(searchQuery.trim());
     setLoading(true); setError(''); setSearched(true);
     setResults([]); setAiAnswer(null); setStreamedText('');
     const start = Date.now();
@@ -479,6 +497,23 @@ export default function Search() {
                 <h3 style={{ color: '#e2e8f0', fontSize: '18px', fontWeight: '700', marginBottom: '8px' }}>No results found</h3>
                 <p style={{ color: '#6b6b8a', fontSize: '14px', marginBottom: '20px' }}>Try a different query or browse all spokes</p>
                 <Link href="/spokes" style={{ padding: '10px 24px', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '12px', color: '#8b85ff', fontSize: '13px', textDecoration: 'none', fontWeight: '600' }}>Browse All Spokes</Link>
+              </div>
+            )}
+
+            {/* Search history */}
+            {!searched && !loading && searchHistory.length > 0 && (
+              <div className="fade-in" style={{ marginBottom: '20px' }}>
+                <p style={{ color: '#555', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '10px' }}>Recent searches</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {searchHistory.slice(0, 5).map(h => (
+                    <button key={h} onClick={() => quickSearch(h)}
+                      style={{ padding: '6px 14px', background: '#0d0d18', border: '1px solid #1a1a2e', borderRadius: '20px', color: '#8888aa', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = '#6c63ff40'}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = '#1a1a2e'}>
+                      🕐 {h}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 

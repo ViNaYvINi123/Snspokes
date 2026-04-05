@@ -10,6 +10,7 @@ const QUICK_ACTIONS = [
   { id: 'matrix', icon: '🔖', label: 'Version Matrix', href: '/tools/version-matrix' },
   { id: 'snippets', icon: '📋', label: 'Snippet Library', href: '/tools/snippets' },
   { id: 'cheatsheet', icon: '📖', label: 'Cheatsheet', href: '/tools/cheatsheet' },
+  { id: 'formatter', icon: '✨', label: 'Script Formatter', href: '/tools/formatter' },
   { id: 'spokes', icon: '🔌', label: 'Browse All Spokes', href: '/spokes' },
   { id: 'dash', icon: '📊', label: 'Dashboard', href: '/dashboard' },
   { id: 'pricing', icon: '💳', label: 'Pricing', href: '/pricing' },

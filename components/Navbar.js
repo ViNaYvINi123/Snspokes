@@ -11,6 +11,7 @@ const TOOLS = [
   { href: '/tools/version-matrix', icon: '🔖', label: 'Version Matrix',  desc: 'SN compatibility' },
   { href: '/tools/snippets',       icon: '📋', label: 'Snippets',        desc: 'Copy-paste templates' },
   { href: '/tools/cheatsheet',     icon: '📖', label: 'Cheatsheet',      desc: 'Quick reference' },
+  { href: '/tools/formatter',      icon: '✨', label: 'Formatter',        desc: 'Auto-indent scripts' },
 ];
 
 const NAV_LINKS = [

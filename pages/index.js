@@ -24,6 +24,7 @@ const TOOLS = [
   { href:'/tools/version-matrix', icon:'🔖', name:'Version Matrix', desc:'Feature compatibility across SN releases', accent:'#ec4899' },
   { href:'/tools/snippets', icon:'📋', name:'Snippet Library', desc:'22+ ready-to-copy GlideRecord templates', accent:'#06b6d4' },
   { href:'/tools/cheatsheet', icon:'📖', name:'Cheatsheet', desc:'Every GlideRecord & g_form method on one page', accent:'#84cc16' },
+  { href:'/tools/formatter', icon:'✨', name:'Script Formatter', desc:'Auto-indent and cleanup with best practice hints', accent:'#f97316' },
 ];
 
 function useTypewriter(phrases, speed = 55, pause = 2200) {

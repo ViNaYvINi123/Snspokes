@@ -652,4 +652,31 @@ CREATE TABLE IF NOT EXISTS sn_ai_cache (
 
 CREATE INDEX IF NOT EXISTS idx_ai_cache_query ON sn_ai_cache(normalized_query, type);
 
+
+-- Seed common ServiceNow errors (zero AI — instant lookup)
+INSERT INTO sn_error_encyclopedia (error_pattern, title, description, root_cause, fix_steps, category, severity) VALUES
+('ACL restricts', 'ACL Restricts Record Access', 'User cannot access record due to Access Control List restriction', 'Missing role or ACL rule not configured for user/group', '["Check user roles in sys_user_has_role","Review ACL rules in sys_security_acl","Add required role to user or group","Test with elevated privileges first"]', 'Security', 'medium'),
+('Record not found', 'GlideRecord Returns No Results', 'gr.get() or gr.query() returns no records', 'Wrong sys_id, table name, or query conditions too restrictive', '["Verify sys_id exists in the table","Check encoded query syntax","Remove conditions one by one to isolate","Use gs.info to debug query"]', 'Scripting', 'low'),
+('Maximum execution time exceeded', 'Script Execution Timeout', 'Server-side script exceeds time limit', 'Unbounded loop, missing setLimit(), or querying large tables without filters', '["Add gr.setLimit() to all queries","Add specific conditions to narrow results","Use GlideAggregate instead of getRowCount()","Break large operations into batches"]', 'Performance', 'high'),
+('Circular reference', 'Circular Reference in Business Rule', 'Business rule triggers itself recursively', 'Update in After BR triggers Before BR which triggers After BR again', '["Add current.update() guard: if(current.operation() != update) return","Use setWorkflow(false) for programmatic updates","Check BR conditions to prevent re-triggering"]', 'Scripting', 'high'),
+('Cannot read property', 'Null Reference Error', 'Trying to access property of null/undefined object', 'GlideRecord field is empty or reference field has no value', '["Add null check: if (!gr.field.nil())","Use getValue() instead of direct access","Check if reference record exists before dot-walking"]', 'Scripting', 'medium'),
+('CSRF token', 'CSRF Token Validation Failed', 'Cross-site request forgery protection blocks request', 'Missing or expired CSRF token in AJAX/REST call', '["Add X-UserToken header from g_ck variable","Use GlideAjax instead of direct XMLHttpRequest","Check glide.security.use_csrf_token property"]', 'Security', 'medium'),
+('Table not in scope', 'Cross-Scope Access Denied', 'Cannot access table from scoped application', 'Table is in a different scope and cross-scope access is disabled', '["Add table to cross-scope access list","Use sys_scope_privilege table","Consider using a scoped API instead"]', 'Development', 'medium'),
+('Insufficient privileges', 'Insufficient Privileges Error', 'User lacks required permission for operation', 'Missing ACL, role, or elevated privilege', '["Check required roles in sys_security_acl","Grant role via sys_user_has_role","Review ACL debug log for specific denial"]', 'Security', 'medium')
+ON CONFLICT (error_pattern) DO NOTHING;
+
+
+-- Shareable script links (viral growth)
+CREATE TABLE IF NOT EXISTS sn_shared_scripts (
+  id SERIAL PRIMARY KEY,
+  share_id VARCHAR(20) UNIQUE NOT NULL,
+  title VARCHAR(200),
+  code TEXT NOT NULL,
+  language VARCHAR(50) DEFAULT 'javascript',
+  description VARCHAR(500),
+  view_count INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_shared_scripts_id ON sn_shared_scripts(share_id);
+
 COMMIT;
