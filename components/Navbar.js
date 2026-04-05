@@ -100,6 +100,15 @@ export default function Navbar() {
 
             {/* Right side */}
             <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+              {/* Command Palette */}
+              <button onClick={() => window.dispatchEvent(new KeyboardEvent('keydown',{key:'k',ctrlKey:true,bubbles:true}))}
+                style={{ display:'flex', alignItems:'center', gap:'6px', padding:'6px 12px', background:'rgba(108,99,255,0.06)', border:'1px solid #1e1e2e', borderRadius:'8px', color:'#6b6b8a', fontSize:'12px', cursor:'pointer', fontFamily:'inherit' }}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor='#6c63ff';e.currentTarget.style.color='#8b85ff'}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor='#1e1e2e';e.currentTarget.style.color='#6b6b8a'}}>
+                <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Search
+                <kbd style={{padding:'1px 5px',background:'#1a1a2e',borderRadius:'4px',fontSize:'10px',border:'1px solid #2a2a3e'}}>⌘K</kbd>
+              </button>
               {session ? (
                 <div ref={userRef} style={{ position:'relative' }}>
                   <button onClick={() => setUserOpen(o => !o)}

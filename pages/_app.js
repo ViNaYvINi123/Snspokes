@@ -34,6 +34,7 @@ import '../styles/globals.css';
 import AnnouncementBanner from '../components/AnnouncementBanner';
 import CookieBanner from '../components/CookieBanner';
 import Chatbot from '../components/Chatbot';
+import CommandPalette from '../components/CommandPalette';
 
 // Pages that don't need the onboarding check
 const PUBLIC_PAGES = ['/login', '/register', '/onboarding', '/forgot-password', '/404', '/join-team'];
@@ -86,6 +87,7 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
           <OnboardingGuard>
             <AnnouncementBanner />
             <Component {...pageProps} />
+            <CommandPalette />
             <Chatbot />
             <CookieBanner />
           </OnboardingGuard>
