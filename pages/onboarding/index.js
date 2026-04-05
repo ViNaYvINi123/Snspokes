@@ -27,7 +27,7 @@ const GOALS = [
 ];
 
 export default function Onboarding() {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const router = useRouter();
   const [step, setStep]       = useState(0);
   const [answers, setAnswers] = useState({ role: '', version: '', goals: [] });
@@ -48,9 +48,20 @@ export default function Onboarding() {
   async function finish() {
     setSaving(true);
     try {
-      await fetch('/api/user/onboarding', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(answers) });
+      // Map field names to what API expects + strip year from version
+      const payload = {
+        role: answers.role,
+        sn_version: (answers.version || '').split(' (')[0],  // "Yokohama (2025)" → "Yokohama"
+        use_case: (answers.goals || []).join(', '),
+      };
+      const res = await fetch('/api/user/onboarding', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const data = await res.json();
+      if (data.success) {
+        // Force NextAuth session refresh so OnboardingGuard sees onboarded=true
+        await update({ onboarded: true });
+      }
     } catch {}
-    setTimeout(() => router.push('/dashboard'), 300);
+    router.push('/dashboard');
   }
 
   const S = {

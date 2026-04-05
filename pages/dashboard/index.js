@@ -40,7 +40,7 @@ export default function Dashboard() {
 
   // Redirect to onboarding if not done yet
   useEffect(() => {
-    if (session?.user && session.user.onboarded === false) {
+    if (session?.user && session.user.onboarded === false && router.pathname !== '/onboarding') {
       router.push('/onboarding');
     }
   }, [session]);
