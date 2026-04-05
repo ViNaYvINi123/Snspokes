@@ -1,6 +1,7 @@
 import { checkRateLimit } from '../../lib/redis';
-import { getAICachedResponse, setAICachedResponse } from '../../lib/aiCache';
 import { n8nChatbot } from '../../lib/n8n';
+import { askAI } from '../../lib/ai';
+import { getAICachedResponse, setAICachedResponse } from '../../lib/aiCache';
 import { setSecurityHeaders } from '../../lib/security';
 
 export default async function handler(req, res) {
@@ -10,10 +11,9 @@ export default async function handler(req, res) {
   const { query: q, user_id } = req.body;
   if (!q?.trim()) return res.status(400).json({ error: 'Query required' });
 
-  // Rate limit
   const id = user_id || req.headers['x-forwarded-for'] || 'anon';
-  const rl = await checkRateLimit('stream:' + id, 10, 60);
-  if (!rl.allowed) return res.status(429).json({ error: 'Rate limit exceeded. Try in ' + rl.resetIn + 's.' });
+  const rl = await checkRateLimit('stream:' + id, 15, 60);
+  if (!rl.allowed) return res.status(429).json({ error: 'Rate limit. Try in ' + rl.resetIn + 's.' });
 
   // SSE headers
   res.writeHead(200, {
@@ -22,58 +22,61 @@ export default async function handler(req, res) {
     'Connection': 'keep-alive',
     'X-Accel-Buffering': 'no',
     'Access-Control-Allow-Origin': '*',
-    'Transfer-Encoding': 'chunked',
   });
 
-  const send = (data) => {
-    try {
-      res.write('data: ' + JSON.stringify(data) + '\n\n');
-      if (res.flush) res.flush();
-    } catch {}
-  };
-
+  const send = (data) => { try { res.write('data: ' + JSON.stringify(data) + '\n\n'); if (res.flush) res.flush(); } catch {} };
   send({ type: 'start', query: q });
 
-  // Check cache first
+  // 1. Check cache
   const cached = await getAICachedResponse(q.trim(), 'stream');
-  if (cached) {
+  if (cached && cached.answer && !cached.answer.includes('No response')) {
     const words = cached.answer.split(' ');
     for (let i = 0; i < words.length; i += 3) {
       send({ type: 'chunk', content: words.slice(i, i + 3).join(' ') + ' ' });
     }
-    send({ type: 'done', model: (cached.model || 'cached') + ' (cached)' });
+    send({ type: 'done', model: (cached.model || '') + ' (cached)' });
     res.end();
     return;
   }
 
-  try {
-    // Route through n8n chatbot workflow
-    const n8nResult = await n8nChatbot(q.trim(), []);
+  let answer = null;
+  let model = null;
 
-    if (n8nResult.success && n8nResult.data?.answer) {
-      const answer = n8nResult.data.answer;
-      // Simulate streaming by chunking the response
-      const words = answer.split(' ');
-      for (let i = 0; i < words.length; i += 3) {
-        const chunk = words.slice(i, i + 3).join(' ') + ' ';
-        send({ type: 'chunk', content: chunk });
-      }
-      if (answer && answer !== "No response from AI") setAICachedResponse(q.trim(), answer, n8nResult.data.model || 'n8n', 'stream').catch(() => {});
-      send({ type: 'done', model: n8nResult.data.model || 'n8n' });
-    } else {
-      send({ type: 'error', message: 'n8n AI workflow returned no answer. Check workflows are active.' });
+  // 2. Try n8n first
+  try {
+    const n8nResult = await n8nChatbot(q.trim(), []);
+    if (n8nResult.success && n8nResult.data?.answer && n8nResult.data.answer !== 'No response from AI') {
+      answer = n8nResult.data.answer;
+      model = n8nResult.data.model || 'n8n';
     }
-  } catch (err) {
-    send({ type: 'error', message: 'n8n AI unavailable. Make sure n8n is running.' });
+  } catch {}
+
+  // 3. Fallback: Direct OpenRouter (no n8n needed)
+  if (!answer) {
+    const aiResult = await askAI(q.trim());
+    if (aiResult.success) {
+      answer = aiResult.answer;
+      model = aiResult.model + ' (direct)';
+    } else {
+      answer = aiResult.answer; // Error message
+      model = 'error';
+    }
   }
 
+  // Stream the response
+  if (answer) {
+    const words = answer.split(' ');
+    for (let i = 0; i < words.length; i += 3) {
+      send({ type: 'chunk', content: words.slice(i, i + 3).join(' ') + ' ' });
+    }
+    // Cache successful responses only
+    if (model !== 'error') {
+      setAICachedResponse(q.trim(), answer, model, 'stream').catch(() => {});
+    }
+  }
+
+  send({ type: 'done', model: model || 'unknown' });
   res.end();
 }
 
-export const config = {
-  api: {
-    bodyParser: true,
-    responseLimit: false,
-    externalResolver: true,
-  },
-};
+export const config = { api: { bodyParser: true, responseLimit: false, externalResolver: true } };

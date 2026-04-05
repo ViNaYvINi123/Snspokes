@@ -1,4 +1,6 @@
 import { query } from '../../lib/db';
+import { askAI } from '../../lib/ai';
+import { getAICachedResponse, setAICachedResponse } from '../../lib/aiCache';
 import { cacheGet, cacheSet } from '../../lib/redis';
 import { checkSearchLimit } from '../../lib/plans';
 import { withTrace } from '../../lib/requestTrace';
@@ -55,7 +57,24 @@ async function handler(req, res) {
 
     if (q.trim()) query('INSERT INTO sn_search_analytics (query,user_id,results,user_ip) VALUES ($1,$2,$3,$4)', [q.trim().substring(0,200), userId, parseInt(countRes.rows[0].total), ip]).catch(() => {});
 
-    const result = { success: true, results: dataRes.rows, total: parseInt(countRes.rows[0].total), page, pages: Math.ceil(parseInt(countRes.rows[0].total) / limit), query: q.trim(), remaining: rl.remaining };
+    // Get AI answer (cached or fresh)
+    let ai_answer = null;
+    if (q.trim()) {
+      const cachedAI = await getAICachedResponse(q.trim(), 'search');
+      if (cachedAI && cachedAI.answer && !cachedAI.answer.includes('No response')) {
+        ai_answer = { answer: cachedAI.answer, model: cachedAI.model, cached: true };
+      } else {
+        try {
+          const aiResult = await askAI(q.trim(), { maxTokens: 800, timeout: 15000 });
+          if (aiResult.success) {
+            ai_answer = { answer: aiResult.answer, model: aiResult.model };
+            setAICachedResponse(q.trim(), aiResult.answer, aiResult.model, 'search').catch(() => {});
+          }
+        } catch {}
+      }
+    }
+
+    const result = { success: true, results: dataRes.rows, total: parseInt(countRes.rows[0].total), page, pages: Math.ceil(parseInt(countRes.rows[0].total) / limit), query: q.trim(), remaining: rl.remaining, ai_answer };
     await cacheSet(cacheKey, JSON.stringify(result), 300);
     res.setHeader('X-RateLimit-Limit', rl.limit || 50);
     res.setHeader('X-RateLimit-Remaining', rl.remaining || 0);
