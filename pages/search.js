@@ -299,6 +299,7 @@ export default function Search() {
   const { q } = router.query;
   const { data: session } = useSession();
   const inputRef = useRef(null);
+  const debounceTimer = useRef(null);
   const placeholder = useTypewriter(['Search Slack spoke setup...', 'How to configure OAuth 2.0...', 'GlideRecord best practices...', 'Error: ACL restricted...', 'Integration Hub actions...'], 50, 1800);
 
   const [queryText, setQueryText] = useState('');
@@ -307,6 +308,7 @@ export default function Search() {
   const [streamedText, setStreamedText] = useState('');
   const [streaming, setStreaming] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingPhase, setLoadingPhase] = useState('');
   const [error, setError] = useState('');
   const [searched, setSearched] = useState(false);
   const [meta, setMeta] = useState({});
@@ -346,7 +348,7 @@ export default function Search() {
   const doSearch = async (searchQuery) => {
     if (!searchQuery?.trim()) return;
     saveToHistory(searchQuery.trim());
-    setLoading(true); setError(''); setSearched(true);
+    setLoading(true); setError(''); setLoadingPhase('Searching database…'); setSearched(true);
     setResults([]); setAiAnswer(null); setStreamedText('');
     const start = Date.now();
     try {
@@ -358,7 +360,7 @@ export default function Search() {
       } else { setError(res.data.error || 'Search failed'); }
     } catch (err) {
       setError(err.response?.status === 429 ? `Rate limit — wait ${err.response.data.retry_after || 60}s` : 'Search unavailable. Please retry.');
-    } finally { setLoading(false); }
+    } finally { setLoading(false); setLoadingPhase(''); }
   };
 
   const doStream = async () => {

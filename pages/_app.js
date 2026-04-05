@@ -35,6 +35,7 @@ import AnnouncementBanner from '../components/AnnouncementBanner';
 import CookieBanner from '../components/CookieBanner';
 import Chatbot from '../components/Chatbot';
 import CommandPalette from '../components/CommandPalette';
+import { ToastProvider } from '../components/Toast';
 import { KeyboardHelp } from '../components/CommandPalette';
 
 // Pages that don't need the onboarding check
@@ -98,6 +99,7 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
     <ErrorBoundary>
       <SessionProvider session={session}>
         <MaintenanceCheck>
+          <ToastProvider>
           <OnboardingGuard>
             <AnnouncementBanner />
             <Component {...pageProps} />
@@ -106,6 +108,7 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
             <Chatbot />
             <CookieBanner />
           </OnboardingGuard>
+          </ToastProvider>
         </MaintenanceCheck>
       </SessionProvider>
     </ErrorBoundary>

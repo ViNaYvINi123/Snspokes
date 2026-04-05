@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useToast } from './Toast';
 import axios from 'axios';
 
 const SUGGESTED = [
@@ -74,6 +75,7 @@ export default function Chatbot() {
   const [loading, setLoading] = useState(false);
   const [sessionId] = useState(() => 's_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8));
   const [unread, setUnread] = useState(0);
+  const toast = useToast();
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 

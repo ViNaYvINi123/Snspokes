@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useToast } from '../../components/Toast';
 import Head from 'next/head';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
@@ -84,6 +85,7 @@ export default function CodeGenerator() {
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState('');
   const [copied, setCopied] = useState(false);
+  const toast = useToast();
   const [history, setHistory] = useState([]);
 
   const generate = async () => {
@@ -94,12 +96,15 @@ export default function CodeGenerator() {
       setResult(res.data);
       setHistory(h => [{ prompt, code_type: codeType, code: res.data.code, ts: new Date() }, ...h].slice(0, 10));
     } catch (err) {
-      setError(err.response?.data?.error || 'AI service temporarily unavailable. Please try again.');
+      const errMsg = err.response?.data?.error || 'AI service temporarily unavailable. Please try again.';
+      setError(errMsg);
+      if (toast) toast.error(errMsg);
     } finally { setLoading(false); }
   };
 
   const copy = () => {
     navigator.clipboard.writeText(result?.code || '');
+    if (toast) toast.success('Code copied to clipboard');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

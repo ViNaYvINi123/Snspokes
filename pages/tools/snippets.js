@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useToast } from '../../components/Toast';
 import Head from 'next/head';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
@@ -34,6 +35,7 @@ export default function Snippets() {
   const [search, setSearch] = useState('');
   const [cat, setCat] = useState('All');
   const [copied, setCopied] = useState(null);
+  const toast = useToast();
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -49,7 +51,7 @@ export default function Snippets() {
     return s.title.toLowerCase().includes(q) || s.tags.some(t => t.includes(q)) || s.code.toLowerCase().includes(q);
   });
 
-  const copy = (code, id) => { navigator.clipboard.writeText(code); setCopied(id); setTimeout(() => setCopied(null), 2000); };
+  const copy = (code, id) => { navigator.clipboard.writeText(code); setCopied(id); if (toast) toast.success('Copied to clipboard'); setTimeout(() => setCopied(null), 2000); };
 
   return (
     <>
