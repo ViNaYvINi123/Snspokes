@@ -16,6 +16,7 @@ export default function Chatbot() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sessionId, setSessionId] = useState(() => 's_' + Date.now() + '_' + Math.random().toString(36).slice(2,8));
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -30,6 +31,7 @@ export default function Chatbot() {
     setLoading(true);
     try {
       const res = await axios.post('/api/chatbot', {
+        session_id: sessionId,
         question,
         history: messages.slice(-6).map(m => ({ role: m.role, content: m.text }))
       }, { timeout: 120000 });

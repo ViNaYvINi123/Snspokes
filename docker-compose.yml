@@ -24,6 +24,7 @@ services:
       POSTGRES_DB: snspokes
       POSTGRES_USER: snspokes_user
       POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    command: postgres -c shared_buffers=256MB -c max_connections=200 -c work_mem=4MB -c effective_cache_size=1GB
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks: [internal]
@@ -38,7 +39,7 @@ services:
     container_name: snspokes_redis
     logging: *default-logging
     restart: always
-    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --save ""
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru --save ""
     networks: [internal]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]

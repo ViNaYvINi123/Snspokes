@@ -37,6 +37,7 @@ const NAV_GROUPS = [
     { href: '/admin/submissions',    label: '📥 Submissions' },
     { href: '/admin/ratings',        label: '⭐ Ratings' },
     { href: '/admin/chatbot-logs',   label: '🤖 Chatbot Logs' },
+    { href: '/admin/chatbot-sessions', label: '💬 Live Sessions' },
     { href: '/admin/changelog',      label: '📋 Changelog' },
   ]},
   { label: 'Revenue', items: [

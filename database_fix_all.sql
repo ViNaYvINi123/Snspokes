@@ -603,4 +603,37 @@ CREATE TABLE IF NOT EXISTS sn_version (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
+
+-- Chatbot sessions (live tracking)
+CREATE TABLE IF NOT EXISTS sn_chatbot_sessions (
+  id SERIAL PRIMARY KEY,
+  session_id VARCHAR(64) NOT NULL,
+  user_id INT REFERENCES sn_users(id) ON DELETE SET NULL,
+  user_ip VARCHAR(45),
+  user_agent TEXT,
+  status VARCHAR(20) DEFAULT 'active',
+  message_count INT DEFAULT 0,
+  last_question TEXT,
+  last_answer TEXT,
+  started_at TIMESTAMP DEFAULT NOW(),
+  last_active TIMESTAMP DEFAULT NOW(),
+  ended_at TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_chatbot_sessions_status ON sn_chatbot_sessions(status);
+CREATE INDEX IF NOT EXISTS idx_chatbot_sessions_active ON sn_chatbot_sessions(last_active);
+
+-- Chatbot messages (individual messages within a session)
+CREATE TABLE IF NOT EXISTS sn_chatbot_messages (
+  id SERIAL PRIMARY KEY,
+  session_id VARCHAR(64) NOT NULL,
+  role VARCHAR(20) NOT NULL,
+  content TEXT NOT NULL,
+  model VARCHAR(100),
+  latency_ms INT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_chatbot_messages_session ON sn_chatbot_messages(session_id);
+
 COMMIT;
