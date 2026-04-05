@@ -1,6 +1,5 @@
 -- snspokes — Fix All Missing Tables
 -- Safe to run multiple times (IF NOT EXISTS)
-BEGIN;
 
 -- ── Users (CRITICAL — must be first, everything references it) ──
 CREATE TABLE IF NOT EXISTS sn_users (
@@ -310,12 +309,12 @@ CREATE TABLE IF NOT EXISTS sn_spoke_versions (
 );
 
 -- Seed default plans if empty
-INSERT INTO sn_plans (name, price_monthly, price_yearly, search_limit, features, is_active)
+INSERT INTO sn_plans (name, slug, price, currency, interval, search_limit, features, is_active)
 VALUES
-  ('free', 0, 0, 10, '{"searches":10,"tools":true,"bookmarks":5}', true),
-  ('pro', 999, 9990, 100, '{"searches":100,"tools":true,"bookmarks":50,"api_access":true}', true),
-  ('enterprise', 4999, 49990, -1, '{"searches":-1,"tools":true,"bookmarks":-1,"api_access":true,"team":true}', true)
-ON CONFLICT (name) DO NOTHING;
+  ('Free', 'free', 0, 'INR', 'forever', 10, '["10 searches/day","Basic spoke info","AI chatbot"]', true),
+  ('Pro', 'pro', 799, 'INR', 'monthly', 100, '["Unlimited searches","Full spoke details","Code examples","Priority support"]', true),
+  ('Enterprise', 'enterprise', 4999, 'INR', 'monthly', -1, '["5 users","Unlimited searches","API access","Team features","Priority support"]', true)
+ON CONFLICT (slug) DO NOTHING;
 
 -- Seed default system properties
 INSERT INTO sn_system_properties (name, value, category) VALUES
@@ -679,4 +678,3 @@ CREATE TABLE IF NOT EXISTS sn_shared_scripts (
 );
 CREATE INDEX IF NOT EXISTS idx_shared_scripts_id ON sn_shared_scripts(share_id);
 
-COMMIT;
