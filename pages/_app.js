@@ -35,6 +35,7 @@ import AnnouncementBanner from '../components/AnnouncementBanner';
 import CookieBanner from '../components/CookieBanner';
 import Chatbot from '../components/Chatbot';
 import CommandPalette from '../components/CommandPalette';
+import { KeyboardHelp } from '../components/CommandPalette';
 
 // Pages that don't need the onboarding check
 const PUBLIC_PAGES = ['/login', '/register', '/onboarding', '/forgot-password', '/404', '/join-team', '/privacy', '/terms'];
@@ -77,6 +78,21 @@ function MaintenanceCheck({ children }) {
   return children;
 }
 
+function ShortcutHelp() {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === '?' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        setShow(s => !s);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+  return <KeyboardHelp open={show} onClose={() => setShow(false)} />;
+}
+
 export default function App({ Component, pageProps: { session, ...pageProps } }) {
   return (
     <ErrorBoundary>
@@ -86,6 +102,7 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
             <AnnouncementBanner />
             <Component {...pageProps} />
             <CommandPalette />
+            <ShortcutHelp />
             <Chatbot />
             <CookieBanner />
           </OnboardingGuard>

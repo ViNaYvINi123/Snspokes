@@ -18,8 +18,7 @@ const NAV_LINKS = [
   { href: '/spokes',  label: 'Spokes' },
   { href: '/search',  label: 'Search' },
   { href: '/pricing', label: 'Pricing' },
-  { href: '/changelog', label: 'Changelog' },
-  { href: '/docs',    label: 'Docs' },
+    { href: '/docs',    label: 'Docs' },
 ];
 
 export default function Navbar() {

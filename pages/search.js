@@ -405,9 +405,9 @@ export default function Search() {
                   <button type="button" onClick={() => { setQueryText(''); inputRef.current?.focus(); }}
                     style={{ padding: '8px', background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center' }}>✕</button>
                 )}
-                <button type="button" onClick={doStream} disabled={streaming || !queryText.trim()} title="Stream AI response"
-                  style={{ padding: '10px 14px', background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: '12px', color: '#c084fc', fontSize: '13px', cursor: streaming ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '6px', opacity: queryText.trim() ? 1 : 0.4, transition: 'opacity 0.2s' }}>
-                  ⚡
+                <button type="button" onClick={doStream} disabled={streaming || !queryText.trim()} title="Ask AI directly"
+                  style={{ padding: '10px 16px', background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: '12px', color: '#c084fc', fontSize: '12px', cursor: streaming ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '6px', opacity: queryText.trim() ? 1 : 0.4, transition: 'opacity 0.2s', fontWeight: '600' }}>
+                  ⚡ Ask AI
                 </button>
                 <button type="submit" disabled={loading}
                   style={{ padding: '10px 22px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '12px', color: '#fff', fontSize: '14px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', transition: 'transform 0.15s, opacity 0.2s', opacity: queryText.trim() ? 1 : 0.5 }}

@@ -1,3 +1,36 @@
+
+/* ─── Keyboard shortcuts overlay (press ?) ─── */
+export function KeyboardHelp({ open, onClose }) {
+  if (!open) return null;
+  const shortcuts = [
+    ['⌘K / Ctrl+K', 'Open command palette'],
+    ['/', 'Focus search input'],
+    ['Esc', 'Close modals'],
+    ['↑ ↓', 'Navigate results'],
+    ['Enter', 'Select / submit'],
+  ];
+  return (
+    <>
+      <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', backdropFilter:'blur(8px)', zIndex:9998 }} />
+      <div style={{ position:'fixed', top:'20%', left:'50%', transform:'translateX(-50%)', width:'100%', maxWidth:'400px', zIndex:9999, padding:'0 16px' }}>
+        <div style={{ background:'#111120', border:'1px solid #2a2a3e', borderRadius:'18px', padding:'24px', boxShadow:'0 40px 100px rgba(0,0,0,0.6)' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
+            <h3 style={{ color:'#e2e8f0', fontSize:'15px', fontWeight:'700' }}>Keyboard Shortcuts</h3>
+            <button onClick={onClose} style={{ background:'#1a1a2e', border:'1px solid #2a2a3e', borderRadius:'6px', color:'#666', width:'28px', height:'28px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px' }}>×</button>
+          </div>
+          {shortcuts.map(([key, desc]) => (
+            <div key={key} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'8px 0', borderBottom:'1px solid #1a1a2e' }}>
+              <span style={{ color:'#9999bb', fontSize:'13px' }}>{desc}</span>
+              <kbd style={{ padding:'3px 10px', background:'#1a1a2e', border:'1px solid #2a2a3e', borderRadius:'6px', fontSize:'12px', color:'#6b6b8a', fontFamily:'inherit' }}>{key}</kbd>
+            </div>
+          ))}
+          <p style={{ color:'#444', fontSize:'11px', textAlign:'center', marginTop:'16px' }}>Press <kbd style={{ padding:'1px 6px', background:'#1a1a2e', borderRadius:'4px', border:'1px solid #2a2a3e', fontSize:'11px', color:'#666' }}>?</kbd> to toggle</p>
+        </div>
+      </div>
+    </>
+  );
+}
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
 

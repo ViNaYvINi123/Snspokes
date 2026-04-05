@@ -30,7 +30,6 @@ const NAV_GROUPS = [
     { href: '/admin/users',          label: '👥 Users' },
     { href: '/admin/user-detail',    label: '🔍 User Detail' },
     { href: '/admin/teams',          label: '👥 Teams' },
-    { href: '/admin/broadcast',      label: '📨 Broadcast' },
   ]},
   { label: 'Content', items: [
     { href: '/admin/spokes',         label: '🔌 Spokes' },
