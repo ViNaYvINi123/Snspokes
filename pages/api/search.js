@@ -8,10 +8,11 @@ async function handler(req, res) {
   setSecurityHeaders(res);
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'GET') return res.status(405).json({ success: false, error: 'Method not allowed' });
+  if (req.method !== 'GET' && req.method !== 'POST') return res.status(405).json({ success: false, error: 'Method not allowed' });
 
   // Sanitize ALL inputs — prevents SQL injection
-  const q        = sanitizeString(req.query.q || '', 200);
+  const body = req.method === 'POST' ? (req.body || {}) : {};
+  const q        = sanitizeString(req.query.q || body.query || '', 200);
   const category = sanitizeString(req.query.category || '', 50);
   const version  = sanitizeString(req.query.version || '', 50);
   const sort     = sanitizeSortField(req.query.sort, ['relevance', 'popular', 'newest']);
@@ -47,7 +48,7 @@ async function handler(req, res) {
 
     const [countRes, dataRes] = await Promise.all([
       query(`SELECT COUNT(*) as total FROM sn_spokes s ${where}`, safeParams),
-      query(`SELECT s.id, s.slug, s.name, s.description, s.category, s.plugin_id, s.credential_type, s.min_version, s.view_count, s.avg_rating, s.tags, s.logo_url FROM sn_spokes s ${where} ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`, safeParams),
+      query(`SELECT s.id, s.slug, s.name, s.description, s.category, s.plugin_id, s.credential_type, s.min_version, s.view_count, s.icon, s.tags FROM sn_spokes s ${where} ORDER BY ${orderBy} LIMIT ${limit} OFFSET ${offset}`, safeParams),
     ]);
 
     if (q.trim()) query('INSERT INTO sn_search_analytics (query,user_id,results,user_ip) VALUES ($1,$2,$3,$4)', [q.trim().substring(0,200), userId, parseInt(countRes.rows[0].total), ip]).catch(() => {});

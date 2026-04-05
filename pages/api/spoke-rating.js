@@ -16,7 +16,7 @@ export default async function handler(req, res) {
           COUNT(CASE WHEN rating=-1 THEN 1 END) as downvotes,
           AVG(rating)::numeric(3,2) as avg_rating
          FROM sn_spoke_ratings sr
-         JOIN sn_spokes s ON sr.spoke_id=s.id
+         JOIN sn_spokes s ON sr.spoke_slug=s.slug
          WHERE s.slug=$1`,
         [slug]
       );
@@ -36,15 +36,15 @@ export default async function handler(req, res) {
       const spokeId = spokeRes.rows[0].id;
 
       await query(
-        `INSERT INTO sn_spoke_ratings (spoke_id, user_id, user_ip, rating, comment)
+        `INSERT INTO sn_spoke_ratings (spoke_slug, user_id, rating)
          VALUES ($1,$2,$3,$4,$5)
-         ON CONFLICT (spoke_id, user_ip) DO UPDATE SET rating=$4, comment=$5`,
+         ON CONFLICT (spoke_slug, user_id) DO UPDATE SET rating=$3`,
         [spokeId, user_id || null, ip, parseInt(rating), comment || '']
       );
 
       // Update spoke avg rating
       const stats = await query(
-        'SELECT AVG(rating)::numeric(3,2) as avg, COUNT(*) as cnt FROM sn_spoke_ratings WHERE spoke_id=$1',
+        'SELECT AVG(rating)::numeric(3,2) as avg, COUNT(*) as cnt FROM sn_spoke_ratings WHERE spoke_slug=$1',
         [spokeId]
       );
       await query('UPDATE sn_spokes SET avg_rating=$1, rating_count=$2 WHERE id=$3',
