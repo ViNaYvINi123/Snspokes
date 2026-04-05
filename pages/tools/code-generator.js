@@ -4,6 +4,34 @@ import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import axios from 'axios';
 
+
+function FormatCode({ text }) {
+  if (!text) return null;
+  const parts = text.split(/(```[\s\S]*?```)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('```')) {
+      const lines = part.slice(3, -3).split('\n');
+      const lang = lines[0].trim();
+      const code = (lang && !lang.includes(' ') ? lines.slice(1) : lines).join('\n').trim();
+      return (
+        <div key={i} style={{ position:'relative', margin:'10px 0', borderRadius:'10px', overflow:'hidden', border:'1px solid #1e1e2e' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', padding:'6px 12px', background:'#111827', borderBottom:'1px solid #1e1e2e' }}>
+            <span style={{ fontSize:'10px', color:'#555', textTransform:'uppercase' }}>{lang || 'javascript'}</span>
+          </div>
+          <pre style={{ margin:0, padding:'12px', background:'#0a0a14', fontSize:'12px', fontFamily:"'JetBrains Mono',monospace", color:'#a8b2d8', lineHeight:'1.65', overflow:'auto' }}>{code}</pre>
+        </div>
+      );
+    }
+    const formatted = part
+      .replace(/\*\*(.*?)\*\*/g, '<b style="color:#e2e8f0">$1</b>')
+      .replace(/^### (.*$)/gm, '<div style="font-size:14px;font-weight:700;color:#e2e8f0;margin:14px 0 6px">$1</div>')
+      .replace(/^## (.*$)/gm, '<div style="font-size:16px;font-weight:700;color:#e2e8f0;margin:16px 0 8px">$1</div>')
+      .replace(/^- (.*$)/gm, '<div style="display:flex;gap:8px;margin:3px 0"><span style="color:#6c63ff">•</span><span>$1</span></div>')
+      .replace(/`([^`]+)`/g, '<code style="background:#1a1a2e;padding:1px 6px;border-radius:4px;font-family:JetBrains Mono,monospace;font-size:12px;color:#a8b2d8">$1</code>');
+    return <div key={i} dangerouslySetInnerHTML={{ __html: formatted }} />;
+  });
+}
+
 const CODE_TYPE_CONFIG = {
   business_rule:  { icon: '⚡', color: '#8b85ff', label: 'Business Rule' },
   script_include: { icon: '📦', color: '#0ea5e9', label: 'Script Include' },
@@ -53,8 +81,6 @@ export default function CodeGenerator() {
   const [prompt, setPrompt] = useState('');
   const [config, setConfig] = useState({ tableName: 'incident', when: 'before' });
   const [result, setResult] = useState(null);
-  const [n8nStatus, setN8nStatus] = useState('checking');
-  useEffect(() => { fetch('/api/health').then(r=>r.json()).then(d=>setN8nStatus(d.checks?.n8n_ai?.ok ? 'ok' : 'down')).catch(()=>setN8nStatus('down')); }, []);
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState('');
   const [copied, setCopied] = useState(false);
@@ -68,7 +94,7 @@ export default function CodeGenerator() {
       setResult(res.data);
       setHistory(h => [{ prompt, code_type: codeType, code: res.data.code, ts: new Date() }, ...h].slice(0, 10));
     } catch (err) {
-      setError(err.response?.data?.error || 'AI service temporarily unavailable. Make sure n8n workflows are active.');
+      setError(err.response?.data?.error || 'AI service temporarily unavailable. Please try again.');
     } finally { setLoading(false); }
   };
 
@@ -169,9 +195,9 @@ export default function CodeGenerator() {
                       {copied ? '✅ Copied!' : '📋 Copy Code'}
                     </button>
                   </div>
-                  <pre style={{ padding: '16px', fontFamily: 'JetBrains Mono, monospace', fontSize: '12px', color: '#e2e8f0', background: '#0f172a', margin: 0, overflowX: 'auto', lineHeight: '1.7', maxHeight: '500px', overflowY: 'auto' }}>
-                    {result.code}
-                  </pre>
+                  <div style={{ padding: '16px', fontSize: '13px', color: '#c8c8e0', lineHeight: '1.7', maxHeight: '500px', overflowY: 'auto' }}>
+                    <FormatCode text={result.code} />
+                  </div>
                 </div>
               )}
             </div>

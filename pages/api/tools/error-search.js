@@ -1,4 +1,5 @@
 import { n8nAnalyzeError } from '../../../lib/n8n';
+import { askAI } from '../../../lib/ai';
 import { query } from '../../../lib/db';
 import { cacheGet, cacheSet } from '../../../lib/redis';
 import { withTrace } from '../../../lib/requestTrace';
@@ -52,7 +53,17 @@ async function handler(req, res) {
         return res.status(200).json({ success: true, ...n8nResult.data, via: 'n8n' });
       }
 
-      return res.status(200).json({ success: false, error: 'AI analysis unavailable. Check n8n error-analyzer workflow is active.' });
+      // Fallback: direct AI
+      const aiResult = await askAI(
+        'Analyze this ServiceNow error and provide: 1) Root cause, 2) Fix steps, 3) Prevention. Error: ' + error_message + (context ? ' Context: ' + context : ''),
+        { systemPrompt: 'You are a ServiceNow error analysis expert. For each error, provide: root_cause, fix_steps (numbered), prevention tips. Use markdown formatting.', maxTokens: 1000 }
+      );
+      if (aiResult.success) {
+        const data = { analysis: aiResult.answer, model: aiResult.model, source: 'direct' };
+        await cacheSet(cacheKey, JSON.stringify(data), 7200);
+        return res.status(200).json({ success: true, ...data });
+      }
+      return res.status(200).json({ success: false, error: 'AI analysis temporarily unavailable.' });
     }
 
     if (action === 'helpful') {

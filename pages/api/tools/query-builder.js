@@ -1,6 +1,7 @@
 import { query } from '../../../lib/db';
 import { buildScript, analyzeScript, SN_OPERATORS } from '../../../lib/glideQueryBuilder';
 import { callN8n } from '../../../lib/n8n';
+import { askAI } from '../../../lib/ai';
 import { cacheGet, cacheSet } from '../../../lib/redis';
 import { apiError } from '../../../lib/validate';
 import { withTrace } from '../../../lib/requestTrace';
@@ -65,7 +66,18 @@ async function handler(req, res) {
         const result = await callN8n('sn-optimize-query', { script: inputScript, table_name: tableName });
         await cacheSet(cacheKey, result, 3600);
         return res.status(200).json({ success: true, ...result, source: 'n8n+openrouter' });
-      } catch (err) { return apiError(res, 'AI optimization failed', 500); }
+      } catch {}
+      // Fallback: direct AI
+      try {
+        const aiResult = await askAI('Optimize this ServiceNow GlideRecord script for performance and best practices:\n```\n' + inputScript + '\n```',
+          { systemPrompt: 'You are a ServiceNow performance expert. Optimize the given script. Return the optimized code with explanations.', maxTokens: 1000 });
+        if (aiResult.success) {
+          const data = { optimized_script: aiResult.answer, model: aiResult.model };
+          await cacheSet(cacheKey, data, 3600);
+          return res.status(200).json({ success: true, ...data, source: 'direct' });
+        }
+      } catch {}
+      return apiError(res, 'AI optimization unavailable', 500);
     }
 
     if (action === 'save') {

@@ -1,4 +1,5 @@
 import { n8nLintScript } from '../../../lib/n8n';
+import { askAI } from '../../../lib/ai';
 import { lintScript } from '../../../lib/scriptLinter';
 import { query } from '../../../lib/db';
 import { apiError } from '../../../lib/validate';
@@ -37,7 +38,15 @@ async function handler(req, res) {
   query('INSERT INTO sn_lint_results (user_id,script,script_type,issues,score) VALUES ($1,$2,$3,$4,$5)',
     [user_id || null, script.substring(0, 5000), script_type, JSON.stringify(lintResult.issues || []), lintResult.score || 0]).catch(() => {});
 
-  return res.status(200).json({ success: true, ...lintResult, ai_review: null, via: 'local', lines });
+  // If AI review was requested, try direct
+  if (ai_review) {
+    try {
+      const aiResult = await askAI('Review this ServiceNow script for issues, performance, and best practices. Provide specific suggestions:\n```\n' + script.substring(0, 3000) + '\n```',
+        { systemPrompt: 'You are a ServiceNow code reviewer. Provide specific, actionable feedback. Use markdown.', maxTokens: 800 });
+      if (aiResult.success) lintResult.ai_review = aiResult.answer;
+    } catch {}
+  }
+  return res.status(200).json({ success: true, ...lintResult, via: 'local', lines });
   } catch (err) {
     return res.status(500).json({ success: false, error: 'Linter error: ' + err.message });
   }

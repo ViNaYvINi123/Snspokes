@@ -13,8 +13,6 @@ export default function ErrorFinder() {
   const [category, setCategory] = useState('');
   const [results, setResults] = useState([]);
   const [aiResult, setAiResult] = useState(null);
-  const [n8nStatus, setN8nStatus] = useState('checking');
-  useEffect(() => { fetch('/api/health').then(r=>r.json()).then(d=>setN8nStatus(d.checks?.n8n_ai?.ok ? 'ok' : 'down')).catch(()=>setN8nStatus('down')); }, []);
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [context, setContext] = useState('');
@@ -45,7 +43,14 @@ export default function ErrorFinder() {
     setAiError('');
     try {
       const res = await axios.post('/api/tools/error-search', { action: 'ai_analyze', error_message: query, context });
-      setAiResult(res.data);
+      // Handle both structured (n8n) and plain text (direct AI) responses
+      const d = res.data;
+      if (d.analysis && !d.title) {
+        // Direct AI response — wrap in structure
+        setAiResult({ title: 'AI Analysis', description: d.analysis, root_cause: null, fix_steps: [], source: d.source || 'ai', model: d.model });
+      } else {
+        setAiResult(d);
+      }
     } catch (err) {
       setAiError('AI analysis failed. Please try again.');
     } finally { setAiLoading(false); }
@@ -120,7 +125,7 @@ export default function ErrorFinder() {
               </div>
               <div style={{ padding: '18px 20px' }}>
                 <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#e2e8f0', marginBottom: '10px' }}>{aiResult.title}</h3>
-                <p style={{ fontSize: '14px', color: '#9999bb', lineHeight: '1.7', marginBottom: '14px' }}>{aiResult.description}</p>
+                <div style={{ fontSize: '14px', color: '#9999bb', lineHeight: '1.7', marginBottom: '14px', whiteSpace: 'pre-wrap' }} dangerouslySetInnerHTML={{ __html: (aiResult.description || '').replace(/\*\*(.*?)\*\*/g, '<b style="color:#e2e8f0">$1</b>').replace(/^### (.*$)/gm, '<div style="font-size:14px;font-weight:700;color:#e2e8f0;margin:10px 0 4px">$1</div>').replace(/^- (.*$)/gm, '<div style="display:flex;gap:6px;margin:2px 0"><span style="color:#6c63ff">•</span><span>$1</span></div>').replace(/`([^`]+)`/g, '<code style="background:#1a1a2e;padding:1px 5px;border-radius:3px;font-size:12px;color:#a8b2d8">$1</code>') }} />
                 <div style={{ padding: '12px 16px', background: '#1a1400', border: '1px solid #fde68a44', borderRadius: '8px', marginBottom: '16px' }}>
                   <p style={{ fontSize: '12px', fontWeight: '700', color: '#fbbf24', marginBottom: '4px' }}>🔍 Root Cause</p>
                   <p style={{ fontSize: '13px', color: '#fde68a', lineHeight: '1.6', margin: 0 }}>{aiResult.root_cause}</p>

@@ -54,8 +54,6 @@ export default function ScriptLinter() {
   const [scriptType, setScriptType] = useState('server');
   const [aiReview, setAiReview] = useState(false);
   const [result, setResult] = useState(null);
-  const [n8nStatus, setN8nStatus] = useState('checking');
-  useEffect(() => { fetch('/api/health').then(r=>r.json()).then(d=>setN8nStatus(d.checks?.n8n_ai?.ok ? 'ok' : 'down')).catch(()=>setN8nStatus('down')); }, []);
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState('');
 
