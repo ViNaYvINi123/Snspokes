@@ -78,7 +78,7 @@ export default function Login() {
           <div style={{ textAlign:'center', marginBottom:'28px' }}>
             <Link href="/" style={{ textDecoration:'none', display:'inline-flex', alignItems:'center', gap:'10px' }}>
               <img src="/logo.svg" alt="snspokes" width="32" height="32" style={{ borderRadius:'8px' }} />
-              <span style={{ fontSize:'20px', fontWeight:'800', color:'#e2e8f0', letterSpacing:'-0.3px' }}>snspokes<span style={{ color:'#6c63ff' }}>.com</span></span>
+              <span style={{ fontSize:'20px', fontWeight:'800', color:'#e2e8f0', letterSpacing:'-0.3px' }}>snspokes</span>
             </Link>
             <h1 style={{ fontSize:'22px', fontWeight:'700', color:'#e2e8f0', margin:'16px 0 6px' }}>Welcome back</h1>
             <p style={{ color:'#6b7280', fontSize:'14px', margin:0 }}>Sign in to continue</p>

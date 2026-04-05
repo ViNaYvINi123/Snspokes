@@ -80,7 +80,7 @@ export default function Footer() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
               <img src="/logo.svg" alt="snspokes" width="32" height="32" style={{ borderRadius: '8px' }} />
               <span style={{ fontWeight: '800', color: '#fff', fontSize: '16px', letterSpacing: '-0.02em' }}>
-                snspokes<span style={{ color: '#6c63ff' }}>.com</span>
+                snspokes
               </span>
             </div>
             <p style={{ color: '#6b6b8a', fontSize: '13px', lineHeight: '1.65', maxWidth: '200px' }}>

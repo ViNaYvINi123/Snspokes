@@ -68,7 +68,7 @@ export default async function handler(req, res) {
         [answer.substring(0, 500), sid]).catch(() => {});
 
       // Cache for future identical queries
-      setAICachedResponse(question.trim(), answer, n8nResult.data.model || 'n8n', 'chat').catch(() => {});
+      if (answer && !answer.includes('No response') && !answer.includes('unavailable')) setAICachedResponse(question.trim(), answer, n8nResult.data.model || 'n8n', 'chat').catch(() => {});
 
       return res.status(200).json({
         success: true, answer, model: n8nResult.data.model || 'n8n',

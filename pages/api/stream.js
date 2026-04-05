@@ -58,7 +58,7 @@ export default async function handler(req, res) {
         const chunk = words.slice(i, i + 3).join(' ') + ' ';
         send({ type: 'chunk', content: chunk });
       }
-      setAICachedResponse(q.trim(), answer, n8nResult.data.model || 'n8n', 'stream').catch(() => {});
+      if (answer && answer !== "No response from AI") setAICachedResponse(q.trim(), answer, n8nResult.data.model || 'n8n', 'stream').catch(() => {});
       send({ type: 'done', model: n8nResult.data.model || 'n8n' });
     } else {
       send({ type: 'error', message: 'n8n AI workflow returned no answer. Check workflows are active.' });
