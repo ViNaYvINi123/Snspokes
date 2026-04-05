@@ -47,7 +47,7 @@ export default async function handler(req, res) {
         'SELECT AVG(rating)::numeric(3,2) as avg, COUNT(*) as cnt FROM sn_spoke_ratings WHERE spoke_slug=$1',
         [slug]
       );
-      await query('UPDATE sn_spokes SET avg_rating=$1, rating_count=$2 WHERE id=$3',
+      await query('UPDATE sn_spokes SET avg_rating=$1, rating_count=$2 WHERE id=$3',  // Safe: columns added via migration
         [stats.rows[0].avg, stats.rows[0].cnt, spokeId]);
 
       return res.status(200).json({ success: true, message: rating === 1 ? 'Thanks for the upvote!' : 'Thanks for the feedback!' });

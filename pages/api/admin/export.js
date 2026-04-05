@@ -32,7 +32,7 @@ async function handler(req, res) {
       const result = await query('SELECT query,results,user_ip,created_at FROM sn_search_analytics ORDER BY created_at DESC LIMIT 5000');
       rows = result.rows; columns = ['query','results','user_ip','created_at']; filename = 'analytics';
     } else if (type === 'spokes') {
-      const result = await query('SELECT slug,name,category,view_count,avg_rating,rating_count,created_at FROM sn_spokes ORDER BY view_count DESC');
+      const result = await query('SELECT slug,name,category,view_count,COALESCE(avg_rating,0) as avg_rating,COALESCE(rating_count,0) as rating_count,created_at FROM sn_spokes ORDER BY view_count DESC');
       rows = result.rows; columns = ['slug','name','category','view_count','avg_rating','rating_count','created_at']; filename = 'spokes';
     } else if (type === 'errors') {
       const result = await query('SELECT title,category,severity,view_count,helpful_count,created_at FROM sn_error_encyclopedia ORDER BY view_count DESC');

@@ -13,7 +13,9 @@ async function handler(req, res) {
   // Sanitize ALL inputs — prevents SQL injection
   const body = req.method === 'POST' ? (req.body || {}) : {};
   const q        = sanitizeString(req.query.q || body.query || '', 200);
-  const category = sanitizeString(req.query.category || '', 50);
+  const bodyCategory = sanitizeString(body.category || '', 50);
+  const bodySort = body.sort || '';
+  const category = sanitizeString(req.query.category || bodyCategory || '', 50);
   const version  = sanitizeString(req.query.version || '', 50);
   const sort     = sanitizeSortField(req.query.sort, ['relevance', 'popular', 'newest']);
   const page     = sanitizeInt(req.query.page, 1, 1, 100);
