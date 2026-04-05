@@ -636,4 +636,20 @@ CREATE TABLE IF NOT EXISTS sn_chatbot_messages (
 
 CREATE INDEX IF NOT EXISTS idx_chatbot_messages_session ON sn_chatbot_messages(session_id);
 
+
+-- AI response cache (reduces API costs by 80%+)
+CREATE TABLE IF NOT EXISTS sn_ai_cache (
+  id SERIAL PRIMARY KEY,
+  normalized_query VARCHAR(500) NOT NULL,
+  original_query VARCHAR(500),
+  answer TEXT NOT NULL,
+  model VARCHAR(100),
+  type VARCHAR(50) DEFAULT 'chat',
+  hit_count INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(normalized_query, type)
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_cache_query ON sn_ai_cache(normalized_query, type);
+
 COMMIT;

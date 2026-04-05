@@ -22,6 +22,8 @@ const TOOLS = [
   { href:'/tools/script-linter', icon:'✅', name:'Script Linter', desc:'15+ rules + AI review for ServiceNow scripts', accent:'#14b8a6' },
   { href:'/tools/error-finder', icon:'🐛', name:'Error Finder', desc:'Paste any error, get root cause + fix', accent:'#f59e0b' },
   { href:'/tools/version-matrix', icon:'🔖', name:'Version Matrix', desc:'Feature compatibility across SN releases', accent:'#ec4899' },
+  { href:'/tools/snippets', icon:'📋', name:'Snippet Library', desc:'22+ ready-to-copy GlideRecord templates', accent:'#06b6d4' },
+  { href:'/tools/cheatsheet', icon:'📖', name:'Cheatsheet', desc:'Every GlideRecord & g_form method on one page', accent:'#84cc16' },
 ];
 
 function useTypewriter(phrases, speed = 55, pause = 2200) {

@@ -9,6 +9,8 @@ const TOOLS = [
   { href: '/tools/error-finder',   icon: '🐛', label: 'Error Finder',    desc: 'AI error analysis' },
   { href: '/tools/query-builder',  icon: '📊', label: 'Query Builder',   desc: 'Visual GlideRecord' },
   { href: '/tools/version-matrix', icon: '🔖', label: 'Version Matrix',  desc: 'SN compatibility' },
+  { href: '/tools/snippets',       icon: '📋', label: 'Snippets',        desc: 'Copy-paste templates' },
+  { href: '/tools/cheatsheet',     icon: '📖', label: 'Cheatsheet',      desc: 'Quick reference' },
 ];
 
 const NAV_LINKS = [

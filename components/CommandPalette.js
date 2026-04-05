@@ -8,6 +8,8 @@ const QUICK_ACTIONS = [
   { id: 'error', icon: '🐛', label: 'Error Finder', href: '/tools/error-finder' },
   { id: 'query', icon: '📊', label: 'Query Builder', href: '/tools/query-builder' },
   { id: 'matrix', icon: '🔖', label: 'Version Matrix', href: '/tools/version-matrix' },
+  { id: 'snippets', icon: '📋', label: 'Snippet Library', href: '/tools/snippets' },
+  { id: 'cheatsheet', icon: '📖', label: 'Cheatsheet', href: '/tools/cheatsheet' },
   { id: 'spokes', icon: '🔌', label: 'Browse All Spokes', href: '/spokes' },
   { id: 'dash', icon: '📊', label: 'Dashboard', href: '/dashboard' },
   { id: 'pricing', icon: '💳', label: 'Pricing', href: '/pricing' },

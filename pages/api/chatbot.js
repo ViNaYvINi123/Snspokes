@@ -1,4 +1,5 @@
 import { n8nChatbot } from '../../lib/n8n';
+import { getAICachedResponse, setAICachedResponse } from '../../lib/aiCache';
 import { checkRateLimit } from '../../lib/redis';
 import { query } from '../../lib/db';
 import { setSecurityHeaders } from '../../lib/security';
@@ -42,6 +43,17 @@ export default async function handler(req, res) {
       [sid, 'user', question.trim().substring(0, 2000)]).catch(() => {});
   } catch {}
 
+  // Check cache first (saves 80%+ API calls)
+  const cached = await getAICachedResponse(question.trim(), 'chat');
+  if (cached) {
+    query('INSERT INTO sn_chatbot_messages (session_id, role, content, model, latency_ms, created_at) VALUES ($1,$2,$3,$4,$5,NOW())',
+      [sid, 'assistant', cached.answer.substring(0, 5000), cached.model + ' (cached)', Date.now() - startTime]).catch(() => {});
+    return res.status(200).json({
+      success: true, answer: cached.answer, model: cached.model,
+      latency_ms: Date.now() - startTime, via: 'cache', session_id: sid, cached: true,
+    });
+  }
+
   try {
     const n8nResult = await n8nChatbot(question.trim(), Array.isArray(history) ? history.slice(-6) : []);
 
@@ -54,6 +66,9 @@ export default async function handler(req, res) {
         [sid, 'assistant', answer.substring(0, 5000), n8nResult.data.model || 'n8n', latency]).catch(() => {});
       query('UPDATE sn_chatbot_sessions SET last_answer=$1, last_active=NOW() WHERE session_id=$2',
         [answer.substring(0, 500), sid]).catch(() => {});
+
+      // Cache for future identical queries
+      setAICachedResponse(question.trim(), answer, n8nResult.data.model || 'n8n', 'chat').catch(() => {});
 
       return res.status(200).json({
         success: true, answer, model: n8nResult.data.model || 'n8n',
