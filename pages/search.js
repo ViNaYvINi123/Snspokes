@@ -70,6 +70,19 @@ function SearchCodeBlock({ code, lang }) {
   );
 }
 
+function LoadingPhase({ phase }) {
+  const [idx, setIdx] = useState(0);
+  const msgs = ['Searching spoke database…', 'Generating AI answer…', 'Formatting results…'];
+  useEffect(() => { const t = setInterval(() => setIdx(i => (i + 1) % msgs.length), 2000); return () => clearInterval(t); }, []);
+  if (!phase) return null;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', padding: '14px 18px', background: 'linear-gradient(135deg, rgba(108,99,255,0.06), rgba(168,85,247,0.03))', borderRadius: '12px', border: '1px solid rgba(108,99,255,0.12)' }}>
+      <div style={{ width: '18px', height: '18px', border: '2px solid #2a2a3e', borderTopColor: '#6c63ff', borderRightColor: '#a855f7', borderRadius: '50%', animation: 'spin 0.75s linear infinite', flexShrink: 0 }} />
+      <span style={{ color: '#8b85ff', fontSize: '13px', fontWeight: '500' }}>{msgs[idx]}</span>
+    </div>
+  );
+}
+
 /* ─── Shimmer skeleton ─── */
 function ResultSkeleton() {
   const shimmer = { background: 'linear-gradient(90deg, #111827 25%, #1a1a2e 50%, #111827 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite', borderRadius: '8px' };
