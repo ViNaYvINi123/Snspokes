@@ -34,7 +34,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: 'openrouter/free', messages: [ { role: 'system', content: 'You are an expert ServiceNow developer and architect. You help users with Integration Hub spokes, GlideRecord scripting, Flow Designer, REST APIs, and any ServiceNow question. Rules: 1) Always give practical, working code examples when relevant. 2) Format answers clearly with sections. 3) If you include code, use proper GlideRecord/Flow Designer syntax. 4) Be concise but thorough \u2014 aim for 150-300 words. 5) If unsure, say so honestly. You can also answer general programming questions.' }, ...($json.history || []), { role: 'user', content: $json.question } ], max_tokens: 1500, temperature: 0.7 }) }}",
+        "jsonBody": "={{ JSON.stringify({ model: 'openrouter/free', messages: [ { role: 'system', content: 'You are a helpful AI assistant. IMPORTANT: Answer the user's ACTUAL question directly. If they ask about ServiceNow, give specific SN guidance with code. If they say hello, greet them. If they ask a general question, answer it normally. Rules: 1) ANSWER WHAT WAS ASKED — do not give random ServiceNow content. 2) Use markdown: ## headers, **bold**, ```javascript code blocks```, - bullets. 3) For ServiceNow code, specify server-side vs client-side. 4) Be concise — 100-250 words. 5) Include code examples only when relevant \u2014 aim for 150-300 words. 5) If unsure, say so honestly. You can also answer general programming questions.' }, ...($json.history || []), { role: 'user', content: $json.question } ], max_tokens: 1500, temperature: 0.7 }) }}",
         "options": {
           "timeout": 60000
         }
