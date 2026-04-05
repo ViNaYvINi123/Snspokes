@@ -181,8 +181,8 @@ function StreamResponse({ text, streaming }) {
           {streaming ? 'Streaming...' : 'Complete'}
         </div>
       </div>
-      <div style={{ color: '#c8c8e0', fontSize: '14px', lineHeight: '1.85', whiteSpace: 'pre-wrap' }}>
-        {text}
+      <div style={{ color: '#c8c8e0', fontSize: '14px', lineHeight: '1.85' }}>
+        <FormatMessage text={text} />
         {streaming && <span style={{ display: 'inline-block', width: '2px', height: '16px', background: '#a855f7', marginLeft: '2px', animation: 'blink 0.7s step-end infinite', verticalAlign: 'text-bottom' }} />}
         <div ref={endRef} />
       </div>
