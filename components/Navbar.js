@@ -18,7 +18,7 @@ const NAV_LINKS = [
   { href: '/spokes',  label: 'Spokes' },
   { href: '/search',  label: 'Search' },
   { href: '/pricing', label: 'Pricing' },
-    { href: '/docs',    label: 'Docs' },
+    { href: '/docs/api', label: 'Docs' },
 ];
 
 export default function Navbar() {
