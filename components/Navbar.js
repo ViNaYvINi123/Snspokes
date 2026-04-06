@@ -76,7 +76,7 @@ export default function Navbar() {
                   </svg>
                 </button>
                 {toolsOpen && (
-                  <div style={{ position:'absolute', top:'calc(100% + 8px)', left:'50%', transform:'translateX(-50%)', width:'280px', background:'#0f0f1a', border:'1px solid #1e1e2e', borderRadius:'14px', padding:'8px', boxShadow:'0 20px 60px rgba(0,0,0,0.5)', zIndex:200 }}>
+                  <div style={{ position:'absolute', top:'calc(100% + 8px)', right:'0', width:'280px', background:'#0f0f1a', border:'1px solid #1e1e2e', borderRadius:'14px', padding:'8px', boxShadow:'0 20px 60px rgba(0,0,0,0.5)', zIndex:200 }}>
                     <div style={{ padding:'8px 12px 6px', fontSize:'10px', fontWeight:'700', color:'#4b4b6a', letterSpacing:'0.08em', textTransform:'uppercase' }}>Developer Tools</div>
                     {TOOLS.map(t => (
                       <Link key={t.href} href={t.href}
@@ -124,7 +124,7 @@ export default function Navbar() {
                     <span style={{ fontSize:'13px', fontWeight:'500', maxWidth:'80px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session.user?.name?.split(' ')[0]}</span>
                   </button>
                   {userOpen && (
-                    <div style={{ position:'absolute', top:'calc(100% + 8px)', right:0, width:'210px', background:'#0f0f1a', border:'1px solid #1e1e2e', borderRadius:'12px', padding:'8px', boxShadow:'0 20px 60px rgba(0,0,0,0.5)', zIndex:200 }}>
+                    <div style={{ position:'absolute', top:'calc(100% + 8px)', right:'0', width:'210px', maxWidth:'calc(100vw - 40px)', background:'#0f0f1a', border:'1px solid #1e1e2e', borderRadius:'12px', padding:'8px', boxShadow:'0 20px 60px rgba(0,0,0,0.5)', zIndex:200 }}>
                       <div style={{ padding:'10px 12px 10px', borderBottom:'1px solid #1e1e2e', marginBottom:'6px' }}>
                         <div style={{ color:'#fff', fontSize:'13px', fontWeight:'600', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session.user?.name}</div>
                         <div style={{ color:'#6b6b8a', fontSize:'11px', marginTop:'2px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{session.user?.email}</div>
