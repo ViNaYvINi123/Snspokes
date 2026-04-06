@@ -684,3 +684,12 @@ CREATE TABLE IF NOT EXISTS sn_shared_scripts (
 );
 CREATE INDEX IF NOT EXISTS idx_shared_scripts_id ON sn_shared_scripts(share_id);
 
+
+-- Email subscribers
+CREATE TABLE IF NOT EXISTS sn_subscribers (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  source VARCHAR(50) DEFAULT 'footer',
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT NOW()
+);

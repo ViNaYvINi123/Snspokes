@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import Navbar from '../components/Navbar';
+import UpgradeWall from '../components/UpgradeWall';
 import Footer from '../components/Footer';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
@@ -323,6 +324,7 @@ export default function Search() {
   const [loading, setLoading] = useState(false);
   const [loadingPhase, setLoadingPhase] = useState('');
   const [error, setError] = useState('');
+  const [limitReached, setLimitReached] = useState(false);
   const [searched, setSearched] = useState(false);
   const [meta, setMeta] = useState({});
   const [focused, setFocused] = useState(false);

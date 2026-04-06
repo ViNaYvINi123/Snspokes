@@ -47,6 +47,10 @@ export default function SharedScript() {
           <pre style={{ padding: '20px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '14px', fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', lineHeight: '1.65', color: '#a8b2d8', overflow: 'auto' }}>{script.code}</pre>
           <div style={{ textAlign: 'center', marginTop: '32px' }}>
             <p style={{ color: '#555', fontSize: '13px', marginBottom: '12px' }}>Shared via snspokes — the ServiceNow developer toolkit</p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '16px' }}>
+              <a href={'https://twitter.com/intent/tweet?text=' + encodeURIComponent((script.title || 'ServiceNow script') + ' — shared via snspokes') + '&url=' + encodeURIComponent('https://snspokes.com/share/' + id)} target="_blank" rel="noopener" style={{ padding: '8px 16px', background: 'rgba(29,161,242,0.1)', border: '1px solid rgba(29,161,242,0.2)', borderRadius: '8px', color: '#1da1f2', fontSize: '12px', textDecoration: 'none', fontWeight: '600' }}>Share on X</a>
+              <a href={'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent('https://snspokes.com/share/' + id)} target="_blank" rel="noopener" style={{ padding: '8px 16px', background: 'rgba(10,102,194,0.1)', border: '1px solid rgba(10,102,194,0.2)', borderRadius: '8px', color: '#0a66c2', fontSize: '12px', textDecoration: 'none', fontWeight: '600' }}>Share on LinkedIn</a>
+            </div>
             <Link href="/tools/snippets" style={{ color: '#6c63ff', fontSize: '13px', fontWeight: '600', textDecoration: 'none' }}>Browse more snippets →</Link>
           </div>
         </div>

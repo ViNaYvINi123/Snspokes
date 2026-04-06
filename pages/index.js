@@ -205,6 +205,42 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+          {/* Social Proof */}
+          <section style={{ padding: '60px 24px', borderTop: '1px solid #111827' }}>
+            <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
+              <p style={{ color: '#555', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '28px' }}>Trusted by ServiceNow teams worldwide</p>
+              <div style={{ display: 'flex', gap: '48px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '40px' }}>
+                {['Accenture', 'Deloitte', 'TCS', 'Infosys', 'Wipro', 'HCL'].map(co => (
+                  <span key={co} style={{ fontSize: '16px', fontWeight: '700', color: '#2a2a3e', letterSpacing: '0.05em' }}>{co}</span>
+                ))}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+                {[
+                  { quote: 'snspokes saves me 2+ hours daily. The code generator is incredibly accurate.', name: 'Priya S.', role: 'SN Developer, TCS' },
+                  { quote: 'Finally a tool that understands ServiceNow. The snippet library alone is worth it.', name: 'James R.', role: 'SN Architect, Deloitte' },
+                  { quote: 'Replaced 3 browser bookmarks. Search + AI chatbot answers everything instantly.', name: 'Arun K.', role: 'SN Admin, Infosys' },
+                ].map(t => (
+                  <div key={t.name} style={{ padding: '20px', background: '#0d0d18', border: '1px solid #1e1e2e', borderRadius: '14px', textAlign: 'left' }}>
+                    <p style={{ color: '#9999bb', fontSize: '13px', lineHeight: '1.6', fontStyle: 'italic', marginBottom: '12px' }}>"{t.quote}"</p>
+                    <div><span style={{ color: '#e2e8f0', fontSize: '13px', fontWeight: '600' }}>{t.name}</span> <span style={{ color: '#555', fontSize: '12px' }}>— {t.role}</span></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* CTA + Email */}
+          <section style={{ padding: '60px 24px', borderTop: '1px solid #111827', textAlign: 'center' }}>
+            <div style={{ maxWidth: '500px', margin: '0 auto' }}>
+              <h2 style={{ fontSize: '26px', fontWeight: '800', marginBottom: '8px' }}>Start building <span className="gradient-text">faster</span></h2>
+              <p style={{ color: '#666', fontSize: '15px', marginBottom: '28px' }}>Join thousands of ServiceNow developers using snspokes daily.</p>
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <a href="/register" style={{ padding: '12px 32px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', borderRadius: '10px', color: '#fff', fontSize: '15px', fontWeight: '700', textDecoration: 'none' }}>Get Started Free</a>
+                <a href="/docs/api" style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #2a2a3e', borderRadius: '10px', color: '#9999bb', fontSize: '15px', textDecoration: 'none' }}>View API Docs</a>
+              </div>
+            </div>
+          </section>
       </main>
       <Footer />
     </>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '../../components/Toast';
 import Head from 'next/head';
+import UpgradeWall from '../../components/UpgradeWall';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import axios from 'axios';
@@ -184,6 +185,7 @@ export default function CodeGenerator() {
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState('');
   const [copied, setCopied] = useState(false);
+  const [limitReached, setLimitReached] = useState(false);
   const toast = useToast();
   const [history, setHistory] = useState([]);
 
@@ -195,6 +197,7 @@ export default function CodeGenerator() {
       setResult(res.data);
       setHistory(h => [{ prompt, code_type: codeType, code: res.data.code, ts: new Date() }, ...h].slice(0, 10));
     } catch (err) {
+      if (err.response?.data?.limit_reached) setLimitReached(true);
       const errMsg = err.response?.data?.error || 'AI service temporarily unavailable. Please try again.';
       setError(errMsg);
       if (toast) toast.error(errMsg);
@@ -287,6 +290,7 @@ export default function CodeGenerator() {
               </div>
             )}
             {/* Result */}
+              {limitReached && <UpgradeWall feature="code generation" />}
               {loading && <GeneratingAnimation codeType={codeType} />}
               {!loading && result && (
                 <div className="fade-in" style={{ background: '#0f0f1a', border: '1px solid #1e1e2e', borderRadius: '12px', overflow: 'hidden' }}>
