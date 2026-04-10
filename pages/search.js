@@ -318,6 +318,8 @@ export default function Search() {
 
   const [queryText, setQueryText] = useState('');
   const [results, setResults] = useState([]);
+  const [snippets, setSnippets] = useState([]);
+  const [errors, setErrors] = useState([]);
   const [aiAnswer, setAiAnswer] = useState(null);
   const [streamedText, setStreamedText] = useState('');
   const [streaming, setStreaming] = useState(false);
@@ -370,8 +372,10 @@ export default function Search() {
       const res = await axios.post('/api/search', { query: searchQuery.trim(), user_id: session?.user?.id || null }, { timeout: 15000 });
       if (res.data.success) {
         setResults(res.data.results || []);
-        setAiAnswer(res.data.ai_answer);
-        setMeta({ cached: res.data.cached, model: res.data.model, latency: res.data.latency_ms || (Date.now() - start) });
+        setSnippets(res.data.snippets || []);
+        setErrors(res.data.errors || []);
+        setAiAnswer(null); // AI is separate now
+        setMeta({ cached: res.data.cached, latency: Date.now() - start });
       } else { setError(res.data.error || 'Search failed'); }
     } catch (err) {
       setError(err.response?.status === 429 ? `Rate limit — wait ${err.response.data.retry_after || 60}s` : 'Search unavailable. Please retry.');
@@ -530,6 +534,45 @@ export default function Search() {
               </div>
             )}
             {!loading && aiAnswer && !aiAnswer.error && <FollowUpQuestions query={queryText} onSearch={quickSearch} />}
+
+
+            {/* Code snippets matching query */}
+            {!loading && snippets.length > 0 && (
+              <div style={{ marginBottom: '20px' }}>
+                <p style={{ color: '#555', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '10px' }}>Code Snippets</p>
+                {snippets.map((s, i) => (
+                  <div key={i} className="fade-in" style={{ background: '#0d0d18', border: '1px solid #1e1e2e', borderRadius: '12px', marginBottom: '8px', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderBottom: '1px solid #141420' }}>
+                      <div>
+                        <span style={{ color: '#e2e8f0', fontSize: '13px', fontWeight: '600' }}>{s.title}</span>
+                        <span style={{ color: '#666', fontSize: '12px', marginLeft: '10px' }}>{s.desc}</span>
+                      </div>
+                      <button onClick={() => { navigator.clipboard.writeText(s.code); }}
+                        style={{ padding: '4px 12px', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '6px', color: '#8b85ff', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }}>Copy</button>
+                    </div>
+                    <pre style={{ padding: '10px 14px', margin: 0, fontFamily: "'JetBrains Mono', monospace", fontSize: '11.5px', color: '#a8b2d8', lineHeight: '1.6', overflow: 'auto', maxHeight: '120px' }}>{s.code}</pre>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Error solutions matching query */}
+            {!loading && errors.length > 0 && (
+              <div style={{ marginBottom: '20px' }}>
+                <p style={{ color: '#555', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '10px' }}>Known Solutions</p>
+                {errors.map((e, i) => (
+                  <div key={i} className="fade-in" style={{ padding: '16px', background: '#0d0d18', border: '1px solid rgba(250,204,21,0.15)', borderRadius: '12px', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '14px' }}>⚠️</span>
+                      <span style={{ color: '#e2e8f0', fontSize: '14px', fontWeight: '700' }}>{e.title}</span>
+                      {e.severity && <span style={{ padding: '2px 8px', borderRadius: '10px', fontSize: '10px', background: 'rgba(250,204,21,0.1)', color: '#facc15', fontWeight: '600' }}>{e.severity}</span>}
+                    </div>
+                    <p style={{ color: '#888', fontSize: '13px', lineHeight: '1.5', marginBottom: '6px' }}>{e.description}</p>
+                    {e.root_cause && <p style={{ color: '#f59e0b', fontSize: '12px' }}>Root cause: {e.root_cause}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Spoke results */}
             {!loading && results.length > 0 && (
