@@ -52,7 +52,7 @@ export default function Navbar() {
             </Link>
 
             {/* Desktop nav */}
-            <div style={{ display:'flex', alignItems:'center', gap:'4px' }}>
+            <div className="desktop-nav" style={{ display:'flex', alignItems:'center', gap:'4px' }}>
               {NAV_LINKS.map(l => (
                 <Link key={l.href} href={l.href}
                   style={{ textDecoration:'none', color:isActive(l.href)?'#fff':'#9999bb', fontSize:'14px', fontWeight:isActive(l.href)?600:500, padding:'6px 12px', borderRadius:'8px', background:isActive(l.href)?'rgba(108,99,255,0.12)':'transparent', transition:'all 0.15s' }}
@@ -96,10 +96,10 @@ export default function Navbar() {
             </div>
 
             {/* Right side */}
-            <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+            <div className="desktop-right" style={{ display:'flex', alignItems:'center', gap:'10px' }}>
               {/* Command Palette */}
               <button onClick={() => window.dispatchEvent(new KeyboardEvent('keydown',{key:'k',ctrlKey:true,bubbles:true}))}
-                style={{ display:'flex', alignItems:'center', gap:'6px', padding:'6px 12px', background:'rgba(108,99,255,0.06)', border:'1px solid #1e1e2e', borderRadius:'8px', color:'#6b6b8a', fontSize:'12px', cursor:'pointer', fontFamily:'inherit' }}
+                className="search-btn" style={{ display:'flex', alignItems:'center', gap:'6px', padding:'6px 12px', background:'rgba(108,99,255,0.06)', border:'1px solid #1e1e2e', borderRadius:'8px', color:'#6b6b8a', fontSize:'12px', cursor:'pointer', fontFamily:'inherit' }}
                 onMouseEnter={e=>{e.currentTarget.style.borderColor='#6c63ff';e.currentTarget.style.color='#8b85ff'}}
                 onMouseLeave={e=>{e.currentTarget.style.borderColor='#1e1e2e';e.currentTarget.style.color='#6b6b8a'}}>
                 <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -107,7 +107,7 @@ export default function Navbar() {
                 <kbd style={{padding:'1px 5px',background:'#1a1a2e',borderRadius:'4px',fontSize:'10px',border:'1px solid #2a2a3e'}}>⌘K</kbd>
               </button>
               {session ? (
-                <div ref={userRef} style={{ position:'relative' }}>
+                <div ref={userRef} className="user-menu" style={{ position:'relative' }}>
                   <button onClick={() => setUserOpen(o => !o)}
                     style={{ display:'flex', alignItems:'center', gap:'8px', background:'rgba(108,99,255,0.1)', border:'1px solid rgba(108,99,255,0.2)', borderRadius:'10px', padding:'7px 12px', cursor:'pointer', color:'#fff', fontFamily:'inherit', transition:'all 0.15s' }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(108,99,255,0.4)'; }}
@@ -148,12 +148,12 @@ export default function Navbar() {
                 </div>
               ) : (
                 <>
-                  <Link href="/login" style={{ textDecoration:'none', color:'#9999bb', fontSize:'13px', fontWeight:'500', padding:'7px 14px', border:'1px solid #1e1e2e', borderRadius:'8px', transition:'all 0.15s' }}
+                  <Link href="/login" className="login-btn" style={{ textDecoration:'none', color:'#9999bb', fontSize:'13px', fontWeight:'500', padding:'7px 14px', border:'1px solid #1e1e2e', borderRadius:'8px', transition:'all 0.15s' }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor='#6c63ff'; e.currentTarget.style.color='#fff'; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor='#1e1e2e'; e.currentTarget.style.color='#9999bb'; }}>
                     Log in
                   </Link>
-                  <Link href="/register" style={{ textDecoration:'none', color:'#fff', fontSize:'13px', fontWeight:'600', padding:'7px 16px', background:'linear-gradient(135deg,#6c63ff,#a855f7)', borderRadius:'8px' }}>
+                  <Link href="/register" className="signup-btn" style={{ textDecoration:'none', color:'#fff', fontSize:'13px', fontWeight:'600', padding:'7px 16px', background:'linear-gradient(135deg,#6c63ff,#a855f7)', borderRadius:'8px' }}>
                     Sign up free
                   </Link>
                 </>
@@ -161,7 +161,7 @@ export default function Navbar() {
 
               {/* Mobile menu toggle */}
               <button onClick={() => setMobileOpen(o => !o)}
-                style={{ display:'none', background:'transparent', border:'none', color:'#9999bb', cursor:'pointer', padding:'6px', fontSize:'18px' }}
+                style={{ background:'transparent', border:'none', color:'#9999bb', cursor:'pointer', padding:'8px', fontSize:'20px' }}
                 className="mobile-menu-btn">
                 {mobileOpen ? '✕' : '☰'}
               </button>
@@ -190,7 +190,13 @@ export default function Navbar() {
       </nav>
 
       <style>{`
+        .mobile-menu-btn { display: none; }
         @media (max-width: 768px) {
+          .desktop-nav { display: none !important; }
+          .desktop-right .search-btn { display: none !important; }
+          .desktop-right .login-btn { display: none !important; }
+          .desktop-right .signup-btn { display: none !important; }
+          .desktop-right .user-menu { display: none !important; }
           .mobile-menu-btn { display: block !important; }
         }
       `}</style>
