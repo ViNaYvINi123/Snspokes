@@ -50,6 +50,7 @@ const NAV_GROUPS = [
     { href: '/admin/logs',           label: '📋 Logs' },
     { href: '/admin/audit-log',      label: '🔐 Audit Log' },
     { href: '/admin/backup',         label: '💾 Backup' },
+    { href: '/admin/sync',           label: '🔄 SN Data Sync' },
     { href: '/admin/database',       label: '🗄️ Database' },
     { href: '/admin/ip-block',       label: '🛡️ IP Block' },
     { href: '/admin/export',         label: '📤 Export' },
