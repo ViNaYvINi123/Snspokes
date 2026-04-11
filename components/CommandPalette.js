@@ -209,7 +209,7 @@ export default function CommandPalette() {
 
       {/* Palette */}
       <div style={{ position:'fixed', top:'15%', left:'50%', transform:'translateX(-50%)', zIndex:9001, width:'100%', maxWidth:'600px', padding:'0 16px' }}>
-        <div style={{ background:'#06060e', border:'1px solid #1a1a2e', borderRadius:'16px', overflow:'hidden', boxShadow:'0 24px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(108,99,255,.1)' }}>
+        <div className='spring-in' style={{ background:'#06060e', border:'1px solid #1a1a2e', borderRadius:'16px', overflow:'hidden', boxShadow:'0 24px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(108,99,255,.1)' }}>
 
           {/* Input */}
           <div style={{ display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderBottom:'1px solid #0d0d18' }}>

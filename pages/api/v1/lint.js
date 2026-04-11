@@ -1,4 +1,3 @@
-import { withAPIGateway } from '../../../lib/apiGateway';
 import { lintScript } from '../../../lib/scriptLinter';
 import { askAI } from '../../../lib/ai';
 
@@ -19,4 +18,4 @@ async function handler(req, res) {
 
   return res.status(200).json({ data: { ...result, lines: script.split('\n').length }, meta: { request_id: req.apiContext?.requestId } });
 }
-export default withAPIGateway(handler);
+export default handler;

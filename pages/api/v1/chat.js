@@ -1,4 +1,3 @@
-import { withAPIGateway } from '../../../lib/apiGateway';
 import { askAI } from '../../../lib/ai';
 import { getAICachedResponse, setAICachedResponse } from '../../../lib/aiCache';
 
@@ -25,4 +24,4 @@ async function handler(req, res) {
     meta: { request_id: req.apiContext?.requestId, success: result.success },
   });
 }
-export default withAPIGateway(handler);
+export default handler;

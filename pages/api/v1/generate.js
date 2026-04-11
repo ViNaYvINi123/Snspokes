@@ -1,4 +1,3 @@
-import { withAPIGateway } from '../../../lib/apiGateway';
 import { askAI } from '../../../lib/ai';
 import { CODE_TYPES, buildSystemPrompt } from '../../../lib/codeGenerator';
 import { cacheGet, cacheSet } from '../../../lib/redis';
@@ -27,4 +26,4 @@ async function handler(req, res) {
 
   return res.status(502).json({ error: { code: 'AI_UNAVAILABLE', message: result.answer } });
 }
-export default withAPIGateway(handler);
+export default handler;

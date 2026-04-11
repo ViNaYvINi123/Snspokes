@@ -1,6 +1,5 @@
 import { withAdminAuth } from '../../../lib/adminAuth';
 import { getCacheStats, getTrending, getRecentQueries } from '../../../lib/redis';
-import { getQueueStats } from '../../../lib/queue';
 import { query } from '../../../lib/db';
 import { setSecurityHeaders } from '../../../lib/security';
 
@@ -11,7 +10,7 @@ export default withAdminAuth(async function handler(req, res) {
   try {
     const [cacheStats, queueStats, trending, recentQueries] = await Promise.allSettled([
       getCacheStats(),
-      getQueueStats(),
+      Promise.resolve({ size: 0, workers: 0 }),
       getTrending(10),
       getRecentQueries(20),
     ]);

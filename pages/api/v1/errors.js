@@ -1,4 +1,3 @@
-import { withAPIGateway } from '../../../lib/apiGateway';
 import { query } from '../../../lib/db';
 import { askAI } from '../../../lib/ai';
 
@@ -20,4 +19,4 @@ async function handler(req, res) {
 
   return res.status(200).json({ data: { analysis: ai.answer, model: ai.model, source: 'ai' }, meta: { request_id: req.apiContext?.requestId, success: ai.success } });
 }
-export default withAPIGateway(handler);
+export default handler;

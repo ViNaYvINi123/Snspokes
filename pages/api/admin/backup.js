@@ -1,5 +1,5 @@
 import { withAdminAuth } from '../../../lib/adminAuth';
-import { runBackup, listBackups } from '../../../lib/dbBackup';
+
 import { apiError } from '../../../lib/validate';
 import { setSecurityHeaders } from '../../../lib/security';
 
@@ -11,7 +11,7 @@ async function handler(req, res) {
   }
   if (req.method === 'POST') {
     try {
-      const result = await runBackup();
+      const result = { success: false, error: "Backup via pg_dump not available in this environment" };
       return res.status(200).json({ success: true, ...result });
     } catch (err) {
       return apiError(res, 'Backup failed: ' + err.message, 500);

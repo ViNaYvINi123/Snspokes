@@ -1,4 +1,3 @@
-import { withAPIGateway } from '../../../lib/apiGateway';
 import { query } from '../../../lib/db';
 
 async function handler(req, res) {

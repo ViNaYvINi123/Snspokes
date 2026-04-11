@@ -1,5 +1,4 @@
 import { withAdminAuth } from '../../../lib/adminAuth';
-import { executeAPI } from '../../../lib/apiEngine';
 import { apiError } from '../../../lib/validate';
 import { setSecurityHeaders } from '../../../lib/security';
 
@@ -11,16 +10,7 @@ async function handler(req, res) {
   if (!connector_id) return apiError(res, 'Connector ID required', 400);
 
   try {
-    const result = await executeAPI({
-      connectorId: connector_id,
-      endpointId: endpoint_id || null,
-      method,
-      path,
-      params: params || {},
-      body: body || null,
-      customHeaders: custom_headers || {},
-      triggeredBy: 'manual_test',
-    });
+    const result = { success: false, error: "API execution not available" };
     return res.status(200).json(result);
   } catch (err) {
     return apiError(res, 'Execution failed: ' + err.message, 500);

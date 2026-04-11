@@ -1,4 +1,3 @@
-import { withAPIGateway } from '../../../lib/apiGateway';
 import { healthCheck } from '../../../lib/db';
 import { isRedisAvailable } from '../../../lib/redis';
 import { getAIStats } from '../../../lib/ai';

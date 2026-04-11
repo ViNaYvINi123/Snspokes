@@ -311,3 +311,46 @@ button[style*="linear-gradient(135deg, #6c63ff"]:active {
 .admin-layout, [class*="admin"] {
   font-family: 'DM Sans', 'Inter', system-ui, sans-serif !important;
 }
+
+/* ── Physics-based animations ── */
+@keyframes spring-in {
+  0%   { transform: scale(0.85) translateY(12px); opacity: 0; }
+  60%  { transform: scale(1.03) translateY(-2px); opacity: 1; }
+  80%  { transform: scale(0.98) translateY(1px); }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+@keyframes spring-up {
+  0%   { transform: translateY(20px); opacity: 0; }
+  60%  { transform: translateY(-4px); opacity: 1; }
+  80%  { transform: translateY(2px); }
+  100% { transform: translateY(0); }
+}
+@keyframes glitch-flash {
+  0%,100% { clip-path: inset(0 0 100% 0); }
+  10%     { clip-path: inset(8% 0 40% 0); transform: translate(-2px); }
+  20%     { clip-path: inset(50% 0 30% 0); transform: translate(2px); }
+  30%     { clip-path: inset(20% 0 60% 0); transform: translate(-1px); }
+  40%,90% { clip-path: inset(0 0 0 0); transform: translate(0); }
+}
+@keyframes focus-in {
+  from { filter: blur(4px); opacity: 0; transform: scale(0.97); }
+  to   { filter: blur(0);   opacity: 1; transform: scale(1); }
+}
+
+.spring-in   { animation: spring-in 0.5s cubic-bezier(.34,1.56,.64,1) both; }
+.spring-up   { animation: spring-up 0.45s cubic-bezier(.34,1.56,.64,1) both; }
+.focus-in    { animation: focus-in 0.3s ease both; }
+.glitch      { animation: glitch-flash 0.3s step-end both; }
+
+/* ── Focus mode ── */
+.focus-mode {
+  transition: opacity 0.4s ease, filter 0.4s ease;
+}
+.focus-mode-active .focus-mode:not(:hover):not(:focus-within) {
+  opacity: 0.35;
+  filter: blur(0.5px);
+}
+
+/* ── Micro-interactions ── */
+.press:active { transform: scale(0.97) !important; transition: transform 0.1s ease !important; }
+.lift:hover   { transform: translateY(-3px) !important; }
