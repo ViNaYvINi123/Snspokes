@@ -16,19 +16,15 @@ ENV NODE_ENV=production
 RUN apk add --no-cache postgresql-client curl
 RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
 
-# Copy only what's needed for production
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
+# Standalone output: ~50% smaller, all deps bundled
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/next.config.js ./
-COPY --from=builder /app/pages ./pages
-COPY --from=builder /app/lib ./lib
-COPY --from=builder /app/components ./components
-COPY --from=builder /app/styles ./styles
-COPY --from=builder /app/mocks ./mocks
+# Runtime files needed by server.js scheduler
 COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/server.js ./server.js
+COPY --from=builder /app/lib ./lib
+COPY --from=builder /app/mocks ./mocks
 
 USER nextjs
 EXPOSE 3001

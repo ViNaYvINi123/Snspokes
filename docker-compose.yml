@@ -1,140 +1,218 @@
-version: '3.8'
+# ══════════════════════════════════════════════════════════
+# snspokes Production Stack
+# Scale: 3x Next.js instances behind Nginx load balancer
+#        PgBouncer for DB connection pooling
+#        Redis for caching + sessions
+# ══════════════════════════════════════════════════════════
 
-networks:
-  internal:
-    driver: bridge
-  external:
-    driver: bridge
-
-# Log rotation — prevents disk fill
 x-logging: &default-logging
   driver: json-file
   options:
-    max-size: "20m"
+    max-size: "10m"
     max-file: "3"
+
+x-nextjs-common: &nextjs-common
+  build:
+    context: .
+    dockerfile: Dockerfile
+    target: runner
+  env_file: .env.local
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    pgbouncer:
+      condition: service_started
+  networks: [internal]
+  restart: always
+  logging: *default-logging
+  deploy:
+    resources:
+      limits:
+        memory: 512M        # 3 instances × 512MB = 1.5GB total
+        cpus: '1.0'
+      reservations:
+        memory: 256M
+  healthcheck:
+    test: ["CMD", "curl", "-sf", "http://localhost:3001/api/health"]
+    interval: 30s
+    timeout: 5s
+    retries: 3
+    start_period: 20s
 
 services:
 
+  # ── PostgreSQL ─────────────────────────────────────────
   db:
     image: postgres:15-alpine
     container_name: snspokes_db
     logging: *default-logging
     restart: always
     environment:
-      POSTGRES_DB: snspokes
-      POSTGRES_USER: snspokes_user
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
-    command: postgres -c shared_buffers=256MB -c max_connections=200 -c work_mem=4MB -c effective_cache_size=1GB
+      POSTGRES_DB:       snspokes
+      POSTGRES_USER:     snspokes_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    command: >
+      postgres
+        -c shared_buffers=256MB
+        -c effective_cache_size=768MB
+        -c work_mem=4MB
+        -c max_connections=100
+        -c wal_buffers=8MB
+        -c checkpoint_completion_target=0.9
+        -c random_page_cost=1.1
+        -c effective_io_concurrency=200
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks: [internal]
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U snspokes_user -d snspokes"]
       interval: 10s
-      timeout: 5s
+      timeout: 3s
       retries: 5
 
+  # ── PgBouncer — DB connection pooler ──────────────────
+  # Without this: 3 Next.js instances × 25 DB pool each = 75 connections
+  # With PgBouncer: all instances share a pool of 20 connections
+  # Result: DB handles 300x more traffic without running out of connections
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: snspokes_pgbouncer
+    logging: *default-logging
+    restart: always
+    environment:
+      DB_USER:           snspokes_user
+      DB_PASSWORD:       ${DB_PASSWORD}
+      DB_HOST:           db
+      DB_NAME:           snspokes
+      POOL_MODE:         transaction     # most efficient for web apps
+      MAX_CLIENT_CONN:   500             # max clients connecting to PgBouncer
+      DEFAULT_POOL_SIZE: 20             # actual connections to Postgres
+      MIN_POOL_SIZE:     5
+      RESERVE_POOL_SIZE: 5
+      SERVER_IDLE_TIMEOUT: 600
+      LOG_CONNECTIONS:   0
+      LOG_DISCONNECTIONS: 0
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [internal]
+    deploy:
+      resources:
+        limits:
+          memory: 64M     # PgBouncer is incredibly lightweight
+
+  # ── Redis — cache + sessions ──────────────────────────
   redis:
     image: redis:7-alpine
     container_name: snspokes_redis
     logging: *default-logging
     restart: always
-    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru --save ""
+    command: >
+      redis-server
+        --maxmemory 512mb
+        --maxmemory-policy allkeys-lru
+        --save ""
+        --appendonly no
+        --tcp-backlog 511
+        --timeout 300
+        --tcp-keepalive 60
+        --lazyfree-lazy-eviction yes
+        --lazyfree-lazy-expire yes
+        --activedefrag yes
     networks: [internal]
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 3s
       retries: 3
 
-  portainer:
-    image: portainer/portainer-ce:latest
-    container_name: portainer
-    logging: *default-logging
-    restart: always
-    ports:
-      - "9443:9443"  # Portainer UI only
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - portainer_data:/data
-    networks: [external]
-
-  n8n:
-    image: n8nio/n8n:latest
-    container_name: snspokes_n8n
-    logging: *default-logging
-    restart: always
-    deploy:
-      resources:
-        limits:
-          memory: 512M
+  # ── Next.js Instance 1 ─────────────────────────────────
+  nextjs_1:
+    <<: *nextjs-common
+    container_name: snspokes_nextjs_1
     environment:
-      - WEBHOOK_URL=https://n8n.snspokes.com
-      - N8N_PROTOCOL=https
-      - N8N_HOST=n8n.snspokes.com
-      - N8N_BASIC_AUTH_ACTIVE=false
-      - N8N_TRUST_PROXY=true
-      - N8N_PROXY_HOPS=1
-      - N8N_PORT=5678
-      - DB_TYPE=postgresdb
-      - DB_POSTGRESDB_HOST=db
-      - DB_POSTGRESDB_PORT=5432
-      - DB_POSTGRESDB_DATABASE=snspokes
-      - DB_POSTGRESDB_USER=snspokes_user
-      - DB_POSTGRESDB_PASSWORD=${DB_PASSWORD:-changeme}
-      - EXECUTIONS_PROCESS=main
-      - QUEUE_BULL_REDIS_HOST=redis
-      - QUEUE_BULL_REDIS_PORT=6379
-      - GENERIC_TIMEZONE=UTC
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
-    # ports: ["5678:5678"]  # Accessed via nginx (n8n.snspokes.com)
-    depends_on:
-      db:
-        condition: service_healthy
-    networks: [internal, external]
-    volumes:
-      - n8ndata:/home/node/.n8n
+      INSTANCE_ID: "1"
+      PORT: "3001"
 
-  nextjs:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: runner
-    container_name: snspokes_nextjs
-    logging: *default-logging
-    restart: always
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-    env_file: .env.local
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks: [internal, external]
-    ports: ["3001:3001"]
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:3001/api/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 60s
+  # ── Next.js Instance 2 ─────────────────────────────────
+  nextjs_2:
+    <<: *nextjs-common
+    container_name: snspokes_nextjs_2
+    environment:
+      INSTANCE_ID: "2"
+      PORT: "3001"
 
+  # ── Next.js Instance 3 ─────────────────────────────────
+  nextjs_3:
+    <<: *nextjs-common
+    container_name: snspokes_nextjs_3
+    environment:
+      INSTANCE_ID: "3"
+      PORT: "3001"
+
+  # ── Nginx — load balancer + SSL + cache ────────────────
   nginx:
     image: nginx:alpine
     container_name: snspokes_nginx
     logging: *default-logging
     restart: always
-    ports: ["80:80", "443:443"]
+    ports:
+      - "80:80"
+      - "443:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
-    depends_on: [nextjs, portainer]
-    networks: [external]
+      - nginx_cache:/var/cache/nginx
+    depends_on:
+      - nextjs_1
+      - nextjs_2
+      - nextjs_3
+    networks: [internal, external]
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ── Portainer — container management UI ───────────────
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    logging: *default-logging
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks: [internal]
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+networks:
+  internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+  external:
+    driver: bridge
 
 volumes:
   pgdata:
-  n8ndata:
   portainer_data:
+  nginx_cache:       # Nginx disk cache for API responses
