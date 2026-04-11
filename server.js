@@ -272,6 +272,10 @@ app.prepare().then(() => {
     console.log(`> snspokes server ready on port ${port}`);
     console.log(`> environment: ${dev ? 'development' : 'production'}`);
 
+    // Ensure Postgres search indexes exist (pg_trgm, FTS)
+    const { ensureSearchIndexes } = require('./lib/search');
+    ensureSearchIndexes().then(() => console.log('[search] indexes ready'));
+
     // Start scheduler after server is up
     startScheduler();
 

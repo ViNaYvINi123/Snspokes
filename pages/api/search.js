@@ -1,226 +1,173 @@
 /**
  * snspokes Search API
- * 
- * What makes this different from servicenow.com/docs:
- * - Understands WHO is asking (context: jira-admin, python-dev, beginner, etc.)
- * - Answers in plain English first, technical detail second
- * - Error-first: recognizes error messages and jumps straight to root cause + fix
- * - Translates from other platform language to ServiceNow (Jira→SN, Salesforce→SN)
- * - Tells you WHEN and WHY to use something, not just HOW
+ *
+ * Architecture:
+ *   1. Redis cache check (1h TTL) — most queries hit this
+ *   2. Postgres full-text + fuzzy search — always works, zero external deps
+ *   3. AI answer — Gemini → Groq → Ollama (optional enhancement, graceful skip)
+ *
+ * If AI is down: search still returns DB results. Core feature never breaks.
  */
 
-import { askAI } from '../../lib/ai';
-import { query } from '../../lib/db';
+import { searchAll }        from '../../lib/search';
+import { askAI }            from '../../lib/ai';
+import { query }            from '../../lib/db';
 import { cacheGet, cacheSet } from '../../lib/redis';
 import { setSecurityHeaders } from '../../lib/security';
 
-export default async function handler(req, res) {
-  setSecurityHeaders(res);
-  if (req.method !== 'GET' && req.method !== 'POST') return res.status(405).end();
+const INTENT_PROMPTS = {
+  error: `You are a ServiceNow debugger. The user hit an error.
+Format your answer EXACTLY like this:
 
-  const body   = req.method === 'POST' ? req.body : req.query;
-  const q      = (body.query || body.q || '').trim().slice(0, 500);
-  const userId = body.user_id || null;
-  const context = body.context || ''; // 'jira-admin', 'python-dev', 'beginner', 'error', etc.
-
-  if (!q) return res.status(400).json({ error: 'Query required' });
-
-  const cacheKey = `search:${q.toLowerCase().replace(/\s+/g,'_').slice(0,80)}:${context}`;
-
-  // Check cache
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) {
-      const data = JSON.parse(cached);
-      return res.status(200).json({ ...data, cached: true });
-    }
-  } catch {}
-
-  // Search DB for matching spokes
-  let spokeResults = [];
-  let apiResults = [];
-  try {
-    const words = q.toLowerCase().split(/\s+/).filter(w => w.length > 2).slice(0, 6);
-    if (words.length > 0) {
-      const pattern = words.map((_, i) => `$${i + 1}`).join(' | ');
-      const params = words.map(w => `%${w}%`);
-
-      const [spokes, apis] = await Promise.all([
-        query(`
-          SELECT slug, name, description, icon, category, tags, tier, view_count,
-                 ai_description, setup_steps, actions, common_errors
-          FROM sn_spokes
-          WHERE is_active = true AND (
-            ${words.map((_, i) => `(LOWER(name) LIKE $${i+1} OR LOWER(description) LIKE $${i+1} OR LOWER(category) LIKE $${i+1})`).join(' OR ')}
-          )
-          ORDER BY view_count DESC LIMIT 6
-        `, params),
-        query(`
-          SELECT slug, name, category, api_type, scope, global_var, description, gotcha
-          FROM sn_api_reference
-          WHERE ${words.map((_, i) => `(LOWER(name) LIKE $${i+1} OR LOWER(description) LIKE $${i+1})`).join(' OR ')}
-          LIMIT 4
-        `, params).catch(() => ({ rows: [] })),
-      ]);
-      spokeResults = spokes.rows;
-      apiResults   = apis.rows;
-    }
-  } catch {}
-
-  // Detect query intent to choose the right AI mode
-  const qLower = q.toLowerCase();
-  const isError   = /error|exception|failed|cannot|undefined|null|403|401|404|500|invalid|restricted|denied/.test(qLower);
-  const isHowTo   = /how (do|to|can)|what is|explain|difference between|when (to|should)|which (api|method)/.test(qLower);
-  const isCode    = /code|script|example|write|create|build|generate|business rule|script include|client script/.test(qLower);
-  const isCompare = /vs|versus|difference|better|choose|compare|when to use/.test(qLower);
-
-  // Build context-aware system prompt — this is the core differentiation
-  let systemPrompt = '';
-
-  if (isError) {
-    systemPrompt = `You are a ServiceNow expert specializing in debugging. A developer has encountered an error.
-
-YOUR JOB:
-1. Identify the root cause in ONE plain-English sentence
-2. Give the exact fix (code if needed)
-3. Explain WHY this happens (so they avoid it next time)
-4. List any related gotchas
-
-Format:
 ## Root Cause
-[one sentence]
+[one plain-English sentence]
 
 ## Fix
 \`\`\`js
 [working code]
 \`\`\`
 
-## Why This Happens
-[brief explanation]
+## Why this happens
+[one sentence]
 
-## Watch Out For
-[bullet list of related pitfalls]
+## Watch out for
+- [gotcha 1]
+- [gotcha 2]
 
-Be direct. No preamble. No "I hope this helps."`;
+No preamble. No "I hope this helps." Just the fix.`,
 
-  } else if (isCompare) {
-    systemPrompt = `You are a ServiceNow architect explaining when to use different approaches.
-
-YOUR JOB: Give a clear "use X when..." decision guide. Not just how they work — WHEN and WHY.
-
+  compare: `You are a ServiceNow architect. User wants to know WHEN to use what.
 Format:
-## Use [A] when...
-- [specific scenario]
-- [specific scenario]
 
-## Use [B] when...
+## Use [A] when
 - [specific scenario]
 
-## Decision rule
-[one sentence rule of thumb]
+## Use [B] when
+- [specific scenario]
 
-## Example
-[brief real-world scenario]
+## Rule of thumb
+[one clear sentence]
 
-Be opinionated. Give a clear recommendation. This is what ServiceNow docs never do.`;
+Be opinionated. Give a recommendation. Docs never do this — you do.`,
 
-  } else if (isCode) {
-    systemPrompt = `You are a ServiceNow developer writing production-ready code.
-
-YOUR JOB:
-1. Give working, copy-paste-ready code
-2. Add inline comments explaining the non-obvious parts
-3. Include error handling
-4. Note any gotchas or caveats
-
+  code: `You are a ServiceNow developer. Write production-ready, copy-paste code.
 Format:
+
 ## Code
 \`\`\`js
-[full working code with comments]
+[full working code with inline comments on non-obvious parts]
 \`\`\`
 
-## Key Points
-[2-3 bullet points about what this does and why]
+## What this does
+[2 bullets max]
 
-## Common Variations
-[1-2 alternative patterns if relevant]
+No placeholder comments. No "// add your logic here".`,
 
-Write code a senior developer would not be embarrassed by. No placeholder comments like "// add your logic here".`;
-
-  } else {
-    systemPrompt = `You are a ServiceNow expert. Your answers are what servicenow.com/docs SHOULD be but never is.
-
-The difference: docs tell you HOW. You tell them HOW + WHEN + WHY + WHAT TO WATCH OUT FOR.
-
-YOUR JOB:
-1. Answer in plain English first (one paragraph max)
-2. Show a practical, real-world code example
-3. Call out the non-obvious gotcha that trips everyone up
-4. If relevant: mention the scoped vs global difference
+  default: `You are a ServiceNow expert. Answer like a senior developer explaining to a peer.
+Docs tell you HOW. You tell them HOW + WHEN + WHY + the gotcha they'll hit.
 
 Format:
 ## Answer
-[plain English explanation]
+[plain English, max 2 paragraphs]
 
 ## Example
 \`\`\`js
 [working code]
 \`\`\`
 
-## The gotcha nobody tells you
-[the thing that's not in the official docs]
+## The gotcha
+[the thing that trips everyone up that the docs never mention]
 
-Keep it tight. Senior developers hate fluff.`;
+Keep it tight.`,
+};
+
+const CONTEXT_ADDONS = {
+  'jira-admin':       '\n\nUser is a Jira admin, not a ServiceNow developer. Translate SN terms to Jira equivalents.',
+  'python-dev':       '\n\nUser is a Python developer. Show curl or Python requests examples alongside SN code.',
+  'salesforce-admin': '\n\nUser is a Salesforce admin. Map SN concepts to SF equivalents (Table=Object, etc.).',
+  'beginner':         '\n\nUser is new to ServiceNow. Define technical terms. No unexplained acronyms.',
+  'slack-admin':      '\n\nUser manages Slack. Explain from the Slack side first, then ServiceNow side.',
+};
+
+function detectIntent(q) {
+  const ql = q.toLowerCase();
+  if (/error|exception|failed|cannot|undefined|null|4\d\d|5\d\d|invalid|restricted|denied|not found/.test(ql)) return 'error';
+  if (/vs|versus|difference|better|choose|compare|when to use|which one/.test(ql)) return 'compare';
+  if (/code|script|example|write|create|build|generate|business rule|script include/.test(ql)) return 'code';
+  return 'default';
+}
+
+export default async function handler(req, res) {
+  setSecurityHeaders(res);
+  if (req.method !== 'GET' && req.method !== 'POST') return res.status(405).end();
+
+  const body    = req.method === 'POST' ? req.body : req.query;
+  const q       = (body.query || body.q || '').trim().slice(0, 300);
+  const userId  = body.user_id || null;
+  const context = body.context || '';
+
+  if (!q) return res.status(400).json({ error: 'Query required' });
+
+  const intent     = detectIntent(q);
+  const cacheKey   = `search:v2:${q.toLowerCase().replace(/\s+/g,'_').slice(0,80)}:${context}:${intent}`;
+
+  // 1. Check Redis cache
+  try {
+    const cached = await cacheGet(cacheKey);
+    if (cached) return res.status(200).json({ ...JSON.parse(cached), cached: true });
+  } catch {}
+
+  // 2. Postgres search — ALWAYS runs, never depends on AI
+  const t0 = Date.now();
+  const { spokes, apis, properties } = await searchAll(q, { limit: 8, includeAPIs: true });
+
+  // 3. AI answer — optional, graceful fallback to null
+  let aiAnswer = null;
+  let aiModel  = null;
+
+  const systemPrompt = (INTENT_PROMPTS[intent] || INTENT_PROMPTS.default)
+    + (CONTEXT_ADDONS[context] || '');
+
+  const aiResult = await askAI(q, {
+    systemPrompt,
+    maxTokens: 700,
+    timeout:   18000,
+  });
+
+  if (aiResult?.success && aiResult.answer) {
+    aiAnswer = aiResult.answer;
+    aiModel  = aiResult.model;
   }
 
-  // Context modifier — if user told us who they are
-  const contextAddons = {
-    'jira-admin':    '\n\nIMPORTANT: The user is a Jira admin, not a ServiceNow expert. Translate ServiceNow terms to Jira equivalents where helpful. Explain what "spoke", "flow", "table", etc. mean in Jira language.',
-    'python-dev':    '\n\nIMPORTANT: The user is a Python developer calling ServiceNow REST APIs. Show curl or Python requests examples alongside any ServiceNow-side code. Focus on the REST/JSON interface.',
-    'salesforce-admin': '\n\nIMPORTANT: The user is a Salesforce admin. Map ServiceNow concepts to Salesforce equivalents (Table→Object, Business Rule→Trigger, Script Include→Apex Class, etc.).',
-    'beginner':      '\n\nIMPORTANT: The user is new to ServiceNow. Define technical terms on first use. Explain what table names mean. Avoid acronyms without explanation.',
-    'slack-admin':   '\n\nIMPORTANT: The user manages Slack and wants to integrate with ServiceNow. Explain from the Slack side first, then the ServiceNow side.',
-  };
-  if (context && contextAddons[context]) systemPrompt += contextAddons[context];
+  // 4. Track search
+  query(
+    `INSERT INTO sn_search_analytics (query, results, user_id, created_at) VALUES ($1,$2,$3,NOW()) ON CONFLICT DO NOTHING`,
+    [q, spokes.length, userId]
+  ).catch(() => {});
 
-  // Run AI with the right prompt
-  let aiAnswer = '';
-  let aiModel  = '';
-  try {
-    const result = await askAI(q, {
-      systemPrompt,
-      maxTokens: 900,
-      timeout: 25000,
-    });
-    if (result.success) {
-      aiAnswer = result.answer;
-      aiModel  = result.model;
-    }
-  } catch {}
-
-  // Track search
-  try {
-    await query(
-      `INSERT INTO sn_search_analytics (query, results, user_id, created_at)
-       VALUES ($1, $2, $3, NOW())
-       ON CONFLICT DO NOTHING`,
-      [q, spokeResults.length + apiResults.length, userId]
+  // 5. Save to user memory
+  if (userId) {
+    query(
+      `INSERT INTO sn_saved_queries (user_id, name, query, created_at) VALUES ($1,$2,$3,NOW()) ON CONFLICT DO NOTHING`,
+      [userId, q.slice(0, 60), q]
     ).catch(() => {});
-  } catch {}
+  }
 
   const response = {
-    success: true,
-    results:    spokeResults,
-    api_results: apiResults,
-    ai_answer:  aiAnswer,
-    ai_model:   aiModel,
-    intent:     isError ? 'error' : isCompare ? 'compare' : isCode ? 'code' : 'explain',
-    cached:     false,
+    success:     true,
+    results:     spokes,
+    api_results: apis,
+    properties,
+    ai_answer:   aiAnswer,
+    ai_model:    aiModel,
+    intent,
+    latency_ms:  Date.now() - t0,
+    cached:      false,
   };
 
-  // Cache for 1 hour
+  // 6. Cache result (1h for AI answers, 10min without)
   try {
-    await cacheSet(cacheKey, JSON.stringify(response), 3600);
+    await cacheSet(cacheKey, JSON.stringify(response), aiAnswer ? 3600 : 600);
   } catch {}
 
   return res.status(200).json(response);
