@@ -306,3 +306,8 @@ button[style*="linear-gradient(135deg, #6c63ff"]:active {
 .card-hover:hover {
   transform: translateY(-3px) !important;
 }
+
+/* ── Admin font override ── */
+.admin-layout, [class*="admin"] {
+  font-family: 'DM Sans', 'Inter', system-ui, sans-serif !important;
+}

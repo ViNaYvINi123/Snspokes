@@ -10,7 +10,7 @@ function PlansPage() {
   useEffect(() => { fetchPlans(); }, []);
 
   async function fetchPlans() {
-    const r = await fetch('/api/admin/plans', { headers: { 'x-admin-token': localStorage.getItem('admin_token') || '' } });
+    const r = await fetch('/api/admin/plans', { headers: { 'x-admin-token': getAdminToken() } });
     const d = await r.json();
     if (d.success) setPlans(d.plans || []);
     setLoading(false);
@@ -21,7 +21,7 @@ function PlansPage() {
   async function updatePlan(id, field, value) {
     const r = await fetch('/api/admin/plans', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-token': localStorage.getItem('admin_token') || '' },
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': getAdminToken() },
       body: JSON.stringify({ id, field, value, action: 'update' }),
     });
     const d = await r.json();

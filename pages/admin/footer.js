@@ -12,7 +12,7 @@ function FooterAdmin() {
   const [msg, setMsg] = useState(null);
   const [activeTab, setActiveTab] = useState('brand');
 
-  const headers = { 'Content-Type': 'application/json', 'x-admin-token': localStorage.getItem('admin_token') || '' };
+  const headers = { 'Content-Type': 'application/json', 'x-admin-token': getAdminToken() };
 
   useEffect(() => {
     fetch('/api/admin/footer', { headers })

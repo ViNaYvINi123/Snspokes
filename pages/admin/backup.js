@@ -17,7 +17,7 @@ function AdminBackup() {
       const res = await axios.get('/api/admin/backup');
       setBackups(res.data.backups || []);
     } catch (err) {
-      if (err.response?.status === 401) window.location.href = '/admin';
+      if (err.response?.status === 401) if (typeof window !== 'undefined') window.location.href = '/admin';
     } finally { setLoading(false); }
   };
 

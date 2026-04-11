@@ -7,7 +7,7 @@ function AdminChatbotLogs() {
   const [data,    setData]    = useState(null);
   const [loading, setLoading] = useState(true);
   const [search,  setSearch]  = useState('');
-  const h = { 'x-admin-token': localStorage.getItem('admin_token')||'' };
+  const h = { 'x-admin-token': getAdminToken() };
 
   const load = (q='') => {
     setLoading(true);

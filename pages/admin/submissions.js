@@ -3,7 +3,7 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import { withAdminPage } from '../../lib/adminAuth';
 
 function SubmissionsPage() {
-  const h = { 'Content-Type':'application/json', 'x-admin-token': typeof window !== 'undefined' ? localStorage.getItem('admin_token') || '' : '' };
+  const h = { 'Content-Type':'application/json', 'x-admin-token': typeof window !== 'undefined' ? getAdminToken() : '' };
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('pending');
@@ -15,7 +15,7 @@ function SubmissionsPage() {
 
   async function fetch() {
     setLoading(true);
-    const res = await window.fetch(`/api/admin/submissions?status=${filter}`);
+    const res = await fetch(`/api/admin/submissions?status=${filter}`);
     const data = await res.json();
     setItems(data.submissions || []);
     setLoading(false);
@@ -27,7 +27,7 @@ function SubmissionsPage() {
   }
 
   async function review(id, action) {
-    const res = await window.fetch('/api/admin/submissions', { headers: h, method: 'POST',
+    const res = await fetch('/api/admin/submissions', { headers: h, method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, action, reviewer_notes: reviewNote }),
     });

@@ -13,7 +13,7 @@ function WebhooksPage() {
   useEffect(() => { fetchWebhooks(); }, []);
 
   async function fetchWebhooks() {
-    const r = await fetch('/api/admin/webhooks', { headers: { 'x-admin-token': localStorage.getItem('admin_token') || '' } });
+    const r = await fetch('/api/admin/webhooks', { headers: { 'x-admin-token': getAdminToken() } });
     const d = await r.json();
     if (d.success) setWebhooks(d.webhooks || []);
     setLoading(false);
@@ -26,7 +26,7 @@ function WebhooksPage() {
     if (!form.name || !form.url) return showToast('Name and URL required', 'error');
     const r = await fetch('/api/admin/webhooks', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-token': localStorage.getItem('admin_token') || '' },
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': getAdminToken() },
       body: JSON.stringify({ action: 'create', ...form }),
     });
     const d = await r.json();
@@ -38,7 +38,7 @@ function WebhooksPage() {
     if (!confirm('Delete this webhook?')) return;
     await fetch('/api/admin/webhooks', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-token': localStorage.getItem('admin_token') || '' },
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': getAdminToken() },
       body: JSON.stringify({ action: 'delete', id }),
     });
     fetchWebhooks();
@@ -47,7 +47,7 @@ function WebhooksPage() {
   async function testWebhook(id) {
     const r = await fetch('/api/admin/webhooks', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-token': localStorage.getItem('admin_token') || '' },
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': getAdminToken() },
       body: JSON.stringify({ action: 'test', id }),
     });
     const d = await r.json();

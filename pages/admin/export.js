@@ -12,7 +12,7 @@ function ExportPage() {
     setLoading(`${type}-${format}`);
     try {
       const r = await fetch(`/api/admin/export?type=${type}&format=${format}`, {
-        headers: { 'x-admin-token': localStorage.getItem('admin_token') || '' }
+        headers: { 'x-admin-token': getAdminToken() }
       });
       if (!r.ok) { showToast('Export failed', 'error'); return; }
       const blob = await r.blob();

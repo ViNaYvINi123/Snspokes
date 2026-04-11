@@ -8,7 +8,7 @@ const TYPE_COLORS = { info:'#2563eb', warning:'#d97706', success:'#16a34a', prom
 const EMPTY = { title:'', message:'', type:'info', target:'all', cta_text:'', cta_url:'', ends_at:'' };
 
 function AdminAnnouncements() {
-  const h = { 'Content-Type':'application/json', 'x-admin-token': typeof window !== 'undefined' ? localStorage.getItem('admin_token') || '' : '' };
+  const h = { 'Content-Type':'application/json', 'x-admin-token': typeof window !== 'undefined' ? getAdminToken() : '' };
   const [announcements, setAnnouncements] = useState([]);
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);

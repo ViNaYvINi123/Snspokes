@@ -31,7 +31,7 @@ function AdminAnalyticsPage() {
   const [period,  setPeriod]  = useState('7d');
 
   useEffect(() => {
-    fetch(`/api/admin/stats?period=${period}`, { headers: { 'x-admin-token': localStorage.getItem('admin_token')||'' } })
+    fetch(`/api/admin/stats?period=${period}`, { headers: { 'x-admin-token': getAdminToken() } })
       .then(r => r.json()).then(d => { if (d.success !== false) setStats(d.stats); })
       .catch(() => {}).finally(() => setLoading(false));
   }, [period]);

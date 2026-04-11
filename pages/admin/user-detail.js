@@ -13,20 +13,20 @@ function UserDetailPage() {
   const [tab, setTab] = useState('timeline');
   const [msg, setMsg] = useState(null);
 
-  useEffect(() => { if (id) fetch(`/api/admin/user-detail?id=${id}`, { headers: { 'x-admin-token': localStorage.getItem('admin_token') || '' } }).then(r => r.json()).then(d => { if (d.success) setData(d); }).catch(()=>{}).finally(() => setLoading(false)); }, [id]);
+  useEffect(() => { if (id) fetch(`/api/admin/user-detail?id=${id}`, { headers: { 'x-admin-token': getAdminToken() } }).then(r => r.json()).then(d => { if (d.success) setData(d); }).catch(()=>{}).finally(() => setLoading(false)); }, [id]);
 
   const showMsg = (text, type = 'success') => { setMsg({ text, type }); setTimeout(() => setMsg(null), 3000); };
 
   const addNote = async () => {
     if (!note.trim()) return;
-    const r = await fetch('/api/admin/user-detail', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-token': localStorage.getItem('admin_token') || '' }, body: JSON.stringify({ action: 'add_note', user_id: id, note }) });
+    const r = await fetch('/api/admin/user-detail', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-token': getAdminToken() }, body: JSON.stringify({ action: 'add_note', user_id: id, note }) });
     const d = await r.json();
     if (d.success) { showMsg('Note added'); setNote(''); setData(prev => ({ ...prev, admin_notes: [{ note, created_by: 'admin', created_at: new Date() }, ...prev.admin_notes] })); }
   };
 
   const impersonate = async () => {
     if (!confirm('Impersonate this user? A token will be generated valid for 1 hour.')) return;
-    const r = await fetch('/api/admin/user-detail', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-token': localStorage.getItem('admin_token') || '' }, body: JSON.stringify({ action: 'impersonate', user_id: id }) });
+    const r = await fetch('/api/admin/user-detail', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-token': getAdminToken() }, body: JSON.stringify({ action: 'impersonate', user_id: id }) });
     const d = await r.json();
     if (d.success) { showMsg(`Impersonation token generated. Copy: ${d.token.substring(0,20)}...`); }
   };

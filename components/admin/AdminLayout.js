@@ -207,6 +207,9 @@ function NotificationBell() {
   );
 }
 
+// Global font fix for admin
+const ADMIN_FONT = "'DM Sans', 'Inter', system-ui, sans-serif";
+
 export default function AdminLayout({ children, title, breadcrumbs = [] }) {
   const router = useRouter();
   const isAuth = useAdminAuth();
@@ -230,7 +233,7 @@ export default function AdminLayout({ children, title, breadcrumbs = [] }) {
   const sidebarW = collapsed ? '60px' : '232px';
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0f', fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0f', fontFamily: "'DM Sans', 'Inter', system-ui, sans-serif" }}>
       <style>{`
         * { box-sizing: border-box; }
         body { margin: 0; background: #0a0a0f; color: #e2e8f0; }
@@ -240,6 +243,7 @@ export default function AdminLayout({ children, title, breadcrumbs = [] }) {
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
         input, select, textarea, button { font-family: inherit; }
+        *, *::before, *::after { box-sizing: border-box; }
       `}</style>
 
       {/* ── SIDEBAR ── */}

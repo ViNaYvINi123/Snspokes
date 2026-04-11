@@ -9,7 +9,7 @@ function SystemPage() {
   useEffect(() => { fetchData(); const t = setInterval(fetchData, 15000); return () => clearInterval(t); }, []);
 
   async function fetchData() {
-    const r = await fetch('/api/admin/system', { headers: { 'x-admin-token': localStorage.getItem('admin_token') || '' } });
+    const r = await fetch('/api/admin/system', { headers: { 'x-admin-token': getAdminToken() } });
     const d = await r.json();
     if (d.success) setData(d);
     setLoading(false);

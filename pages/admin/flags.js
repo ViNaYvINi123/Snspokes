@@ -48,7 +48,7 @@ function AdminFlags() {
       const res = await axios.get('/api/admin/flags');
       setFlags(res.data.flags || []);
     } catch (err) {
-      if (err.response?.status === 401) window.location.href = '/admin';
+      if (err.response?.status === 401) if (typeof window !== 'undefined') window.location.href = '/admin';
     } finally { setLoading(false); }
   };
 

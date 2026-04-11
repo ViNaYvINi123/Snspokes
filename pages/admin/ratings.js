@@ -9,18 +9,18 @@ function AdminRatings() {
   const [filter, setFilter] = useState('');
 
   useEffect(() => {
-    fetch(`/api/admin/ratings${filter ? `?spoke_slug=${filter}` : ''}`, { headers: { 'x-admin-token': localStorage.getItem('admin_token') || '' } })
+    fetch(`/api/admin/ratings${filter ? `?spoke_slug=${filter}` : ''}`, { headers: { 'x-admin-token': getAdminToken() } })
       .then(r => r.json()).then(d => { if (d.success) setData(d); }).catch(()=>{}).finally(() => setLoading(false));
   }, [filter]);
 
   const deleteRating = async (id) => {
-    await fetch('/api/admin/ratings', { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'x-admin-token': localStorage.getItem('admin_token') || '' }, body: JSON.stringify({ id }) });
+    await fetch('/api/admin/ratings', { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'x-admin-token': getAdminToken() }, body: JSON.stringify({ id }) });
     setData(prev => ({ ...prev, ratings: prev.ratings.filter(r => r.id !== id) }));
   };
 
   const resetRatings = async (slug) => {
     if (!confirm(`Reset ALL ratings for ${slug}?`)) return;
-    await fetch('/api/admin/ratings', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-admin-token': localStorage.getItem('admin_token') || '' }, body: JSON.stringify({ action: 'reset', spoke_slug: slug }) });
+    await fetch('/api/admin/ratings', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-admin-token': getAdminToken() }, body: JSON.stringify({ action: 'reset', spoke_slug: slug }) });
     setData(prev => ({ ...prev, ratings: prev.ratings.filter(r => r.spoke_slug !== slug) }));
   };
 

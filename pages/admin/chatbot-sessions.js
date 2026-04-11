@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 
+
+function getAdminToken() {
+  if (typeof window === 'undefined') return '';
+  return getAdminToken();
+}
 export default function ChatbotSessions() {
   const [sessions, setSessions] = useState([]);
   const [stats, setStats] = useState({});
@@ -8,7 +13,7 @@ export default function ChatbotSessions() {
   const [messages, setMessages] = useState([]);
   const [view, setView] = useState('live');
   const [loading, setLoading] = useState(true);
-  const h = { 'x-admin-token': typeof window !== 'undefined' ? localStorage.getItem('admin_token') || '' : '' };
+  const h = { 'x-admin-token': typeof window !== 'undefined' ? getAdminToken() : '' };
 
   const fetchSessions = () => {
     fetch(`/api/admin/chatbot-sessions?view=${view}`, { headers: h })

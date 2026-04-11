@@ -50,7 +50,7 @@ function AdminRevenuePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/admin/revenue', { headers: { 'x-admin-token': localStorage.getItem('admin_token') || '' } })
+    fetch('/api/admin/revenue', { headers: { 'x-admin-token': getAdminToken() } })
       .then(r => r.json()).then(d => { if (d.success !== false) setData(d); })
       .catch(() => {}).finally(() => setLoading(false));
   }, []);

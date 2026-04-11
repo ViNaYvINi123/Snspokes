@@ -9,7 +9,7 @@ function AdminPromoCodes() {
   const [form, setForm] = useState({ code:'', type:'free_months', value:'1', max_uses:'', expires_days:'30', plan_override:'pro' });
   const [msg, setMsg] = useState(null);
 
-  const headers = { 'Content-Type':'application/json', 'x-admin-token': localStorage.getItem('admin_token') || '' };
+  const headers = { 'Content-Type':'application/json', 'x-admin-token': getAdminToken() };
 
   useEffect(() => {
     fetch('/api/admin/promo-codes', { headers }).then(r => r.json()).then(d => { if (d.success) setCodes(d.codes); }).catch(()=>{}).finally(() => setLoading(false));

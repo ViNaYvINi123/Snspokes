@@ -6,7 +6,7 @@ import { withAdminPage } from '../../lib/adminAuth';
 function AdminTeams() {
   const [teams, setTeams]   = useState([]);
   const [loading, setLoading] = useState(true);
-  const h = { 'x-admin-token': localStorage.getItem('admin_token')||'' };
+  const h = { 'x-admin-token': getAdminToken() };
 
   useEffect(() => {
     fetch('/api/admin/teams', { headers: h }).then(r=>r.json()).then(d=>{ if(d.success) setTeams(d.teams); }).catch(()=>{}).finally(()=>setLoading(false));

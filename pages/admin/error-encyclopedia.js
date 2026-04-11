@@ -10,10 +10,10 @@ function AdminErrorEncyclopedia() {
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ error_pattern:'', title:'', description:'', root_cause:'', fix_steps:'', category:'', severity:'medium', verified:true });
-  const headers = { 'Content-Type':'application/json', 'x-admin-token': localStorage.getItem('admin_token') || '' };
+  const headers = { 'Content-Type':'application/json', 'x-admin-token': getAdminToken() };
 
   useEffect(() => {
-    fetch(`/api/admin/error-encyclopedia${search ? `?search=${encodeURIComponent(search)}` : ''}`, { headers: { 'x-admin-token': localStorage.getItem('admin_token') || '' } })
+    fetch(`/api/admin/error-encyclopedia${search ? `?search=${encodeURIComponent(search)}` : ''}`, { headers: { 'x-admin-token': getAdminToken() } })
       .then(r => r.json()).then(d => { if (d.success) { setErrors(d.errors); setTotal(d.total); } }).catch(()=>{});
   }, [search]);
 
@@ -25,7 +25,7 @@ function AdminErrorEncyclopedia() {
     setShowForm(false); setEditing(null);
     setForm({ error_pattern:'', title:'', description:'', root_cause:'', fix_steps:'', category:'', severity:'medium', verified:true });
     // Refresh
-    fetch('/api/admin/error-encyclopedia', { headers: { 'x-admin-token': localStorage.getItem('admin_token') || '' } })
+    fetch('/api/admin/error-encyclopedia', { headers: { 'x-admin-token': getAdminToken() } })
       .then(r => r.json()).then(d => { if (d.success) setErrors(d.errors); }).catch(()=>{});
   };
 

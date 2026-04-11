@@ -11,7 +11,7 @@ function AdminChangelog() {
   const [editing, setEditing] = useState(null);
   const [form, setForm]       = useState(EMPTY);
   const [msg,  setMsg]        = useState(null);
-  const h = { 'Content-Type':'application/json', 'x-admin-token': localStorage.getItem('admin_token')||'' };
+  const h = { 'Content-Type':'application/json', 'x-admin-token': getAdminToken() };
 
   const load = () =>
     fetch('/api/changelog', { headers: h }).then(r => r.json())

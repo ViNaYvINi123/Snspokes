@@ -7,7 +7,7 @@ function AdminAuditLog() {
   const [data, setData] = useState(null);
   const [filter, setFilter] = useState('');
   const [loading, setLoading] = useState(true);
-  const headers = { 'x-admin-token': localStorage.getItem('admin_token') || '' };
+  const headers = { 'x-admin-token': getAdminToken() };
 
   useEffect(() => {
     fetch(`/api/admin/audit-log${filter ? `?action=${filter}` : ''}`, { headers })

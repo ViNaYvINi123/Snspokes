@@ -114,7 +114,7 @@ function AdminDatabase() {
               <div style={{ background: '#0f0f1a', borderRadius: '16px', border: '1px solid #1e1e2e', marginBottom: '24px', overflow: 'hidden' }}>
                 <div style={{ padding: '20px 24px', borderBottom: '1px solid #1e1e2e', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <h3 style={{ color: '#fff', fontSize: '16px', fontWeight: '700' }}>🗄️ Database Tables</h3>
-                  <button onClick={fetchStatus} style={{ padding: '6px 14px', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '8px', color: '#8b85ff', cursor: 'pointer', fontSize: '13px', fontFamily: 'Syne, sans-serif' }}>Refresh</button>
+                  <button onClick={fetchStatus} style={{ padding: '6px 14px', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '8px', color: '#8b85ff', cursor: 'pointer', fontSize: '13px', fontFamily: 'DM Sans', sans-serif }}>Refresh</button>
                 </div>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
@@ -149,7 +149,7 @@ function AdminDatabase() {
           {/* Quick queries */}
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
             {QUICK_QUERIES.map(q => (
-              <button key={q.label} onClick={() => setSqlQuery(q.sql)} style={{ padding: '5px 12px', background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '20px', color: '#8b85ff', cursor: 'pointer', fontSize: '12px', fontFamily: 'Syne, sans-serif', transition: 'all 0.2s' }}
+              <button key={q.label} onClick={() => setSqlQuery(q.sql)} style={{ padding: '5px 12px', background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '20px', color: '#8b85ff', cursor: 'pointer', fontSize: '12px', fontFamily: 'DM Sans', sans-serif, transition: 'all 0.2s' }}
                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(108,99,255,0.15)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'rgba(108,99,255,0.08)'}
               >{q.label}</button>
@@ -159,7 +159,7 @@ function AdminDatabase() {
           <textarea value={sqlQuery} onChange={e => setSqlQuery(e.target.value)} rows={4}
             style={{ width: '100%', padding: '12px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#a8b2d8', fontSize: '13px', fontFamily: 'JetBrains Mono, monospace', outline: 'none', resize: 'vertical', marginBottom: '12px' }} />
 
-          <button onClick={runQuery} disabled={queryLoading} style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontFamily: 'Syne, sans-serif', fontWeight: '600', opacity: queryLoading ? 0.7 : 1 }}>
+          <button onClick={runQuery} disabled={queryLoading} style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif, fontWeight: '600', opacity: queryLoading ? 0.7 : 1 }}>
             {queryLoading ? 'Running...' : '▶ Run Query'}
           </button>
 
@@ -202,7 +202,7 @@ function AdminDatabase() {
           <p style={{ color: '#fbbf24', fontSize: '13px', marginBottom: '16px' }}>Run CREATE/ALTER/INSERT SQL migrations. Use with caution — changes are permanent.</p>
           <textarea value={migrationSql} onChange={e => setMigrationSql(e.target.value)} rows={5} placeholder="ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS phone TEXT;"
             style={{ width: '100%', padding: '12px', background: '#0a0a14', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '10px', color: '#a8b2d8', fontSize: '13px', fontFamily: 'JetBrains Mono, monospace', outline: 'none', resize: 'vertical', marginBottom: '12px' }} />
-          <button onClick={runMigration} disabled={migrationLoading} style={{ padding: '10px 24px', background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '10px', color: '#fbbf24', cursor: 'pointer', fontFamily: 'Syne, sans-serif', fontWeight: '600', opacity: migrationLoading ? 0.7 : 1 }}>
+          <button onClick={runMigration} disabled={migrationLoading} style={{ padding: '10px 24px', background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '10px', color: '#fbbf24', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif, fontWeight: '600', opacity: migrationLoading ? 0.7 : 1 }}>
             {migrationLoading ? 'Running...' : '⚡ Run Migration'}
           </button>
           {migrationMsg && <div style={{ marginTop: '12px', padding: '12px', background: migrationMsg.startsWith('✅') ? 'rgba(74,222,128,0.08)' : 'rgba(239,68,68,0.08)', border: `1px solid ${migrationMsg.startsWith('✅') ? 'rgba(74,222,128,0.2)' : 'rgba(239,68,68,0.2)'}`, borderRadius: '8px', color: migrationMsg.startsWith('✅') ? '#4ade80' : '#f87171', fontSize: '13px' }}>{migrationMsg}</div>}

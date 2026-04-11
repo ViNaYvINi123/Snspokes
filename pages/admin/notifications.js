@@ -9,7 +9,7 @@ function NotificationsPage() {
   useEffect(() => { fetchNotifications(); }, []);
 
   async function fetchNotifications() {
-    const r = await fetch('/api/admin/notifications', { headers: { 'x-admin-token': localStorage.getItem('admin_token') || '' } });
+    const r = await fetch('/api/admin/notifications', { headers: { 'x-admin-token': getAdminToken() } });
     const d = await r.json();
     if (d.success) setNotifications(d.notifications || []);
     setLoading(false);
@@ -18,7 +18,7 @@ function NotificationsPage() {
   async function markRead(id) {
     await fetch('/api/admin/notifications', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-token': localStorage.getItem('admin_token') || '' },
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': getAdminToken() },
       body: JSON.stringify({ id, action: 'mark_read' }),
     });
     fetchNotifications();
@@ -27,7 +27,7 @@ function NotificationsPage() {
   async function markAllRead() {
     await fetch('/api/admin/notifications', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-token': localStorage.getItem('admin_token') || '' },
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': getAdminToken() },
       body: JSON.stringify({ action: 'mark_all_read' }),
     });
     fetchNotifications();

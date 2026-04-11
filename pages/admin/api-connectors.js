@@ -75,7 +75,7 @@ function APIConnectors() {
       const res = await axios.get('/api/admin/connectors');
       setConnectors(res.data.connectors || []);
     } catch (err) {
-      if (err.response?.status === 401) window.location.href = '/admin';
+      if (err.response?.status === 401) if (typeof window !== 'undefined') window.location.href = '/admin';
     } finally { setLoading(false); }
   };
 
