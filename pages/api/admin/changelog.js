@@ -4,6 +4,16 @@ import { setSecurityHeaders } from '../../../lib/security';
 
 async function handler(req, res) {
   setSecurityHeaders(res);
+
+  if (req.method === 'GET') {
+    try {
+      const r = await query("SELECT value FROM sn_system_properties WHERE name='changelog_entries'");
+      const data = r.rows[0]?.value;
+      const parsed = data ? JSON.parse(data) : { entries: [] };
+      return res.status(200).json({ success: true, entries: parsed.entries || [] });
+    } catch(err) { return res.status(500).json({ success: false, error: err.message }); }
+  }
+
   if (req.method === 'POST') {
     try {
       const { entries } = req.body;

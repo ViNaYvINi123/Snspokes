@@ -21,7 +21,7 @@ function CopyBtn({ text }) {
   const [copied, setCopied] = useState(false);
   return (
     <button onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      style={{ padding: '4px 10px', background: copied ? 'rgba(74,222,128,0.15)' : 'rgba(108,99,255,0.15)', border: `1px solid ${copied ? 'rgba(74,222,128,0.4)' : 'rgba(108,99,255,0.4)'}`, borderRadius: '6px', color: copied ? '#4ade80' : '#8b85ff', fontSize: '12px', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif, marginLeft: '8px', transition: 'all 0.2s' }}>
+      style={{ padding: '4px 10px', background: copied ? 'rgba(74,222,128,0.15)' : 'rgba(108,99,255,0.15)', border: `1px solid ${copied ? 'rgba(74,222,128,0.4)' : 'rgba(108,99,255,0.4)'}`, borderRadius: '6px', color: copied ? '#4ade80' : '#8b85ff', fontSize: '12px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", marginLeft: '8px', transition: 'all 0.2s' }}>
       {copied ? '✓' : 'Copy'}
     </button>
   );
@@ -68,7 +68,7 @@ function AdminSettings() {
     finally { setSaving(false); setTimeout(() => setMsg(''), 3000); }
   };
 
-  const inputStyle = { width: '100%', padding: '10px 12px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '8px', color: '#fff', fontSize: '14px', fontFamily: 'DM Sans', sans-serif, outline: 'none' };
+  const inputStyle = { width: '100%', padding: '10px 12px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '8px', color: '#fff', fontSize: '14px', fontFamily: "'DM Sans', sans-serif", outline: 'none' };
 
   return (
     <>
@@ -196,7 +196,7 @@ function AdminSettings() {
                   Search limit: {plan.search_limit === -1 ? 'Unlimited' : plan.search_limit + '/day'}
                 </p>
                 <button onClick={() => setEditPlan({ ...plan, features: Array.isArray(plan.features) ? plan.features.join('\n') : plan.features })}
-                  style={{ width: '100%', padding: '8px', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '8px', color: '#8b85ff', cursor: 'pointer', fontSize: '13px', fontFamily: 'DM Sans', sans-serif, fontWeight: '600' }}>
+                  style={{ width: '100%', padding: '8px', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '8px', color: '#8b85ff', cursor: 'pointer', fontSize: '13px', fontFamily: "'DM Sans', sans-serif", fontWeight: '600' }}>
                   ✏️ Edit Plan
                 </button>
               </div>
@@ -274,8 +274,8 @@ function AdminSettings() {
                 <label htmlFor="is_active" style={{ color: '#9999bb', fontSize: '14px', cursor: 'pointer' }}>Plan is active</label>
               </div>
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => setEditPlan(null)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#9999bb', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif }}>Cancel</button>
-                <button onClick={savePlan} disabled={saving} style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif, fontWeight: '600', opacity: saving ? 0.7 : 1 }}>
+                <button onClick={() => setEditPlan(null)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#9999bb', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>Cancel</button>
+                <button onClick={savePlan} disabled={saving} style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontWeight: '600', opacity: saving ? 0.7 : 1 }}>
                   {saving ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>

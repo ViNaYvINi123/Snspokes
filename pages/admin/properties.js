@@ -55,7 +55,7 @@ function PropertyModal({ prop, categories, onSave, onClose }) {
   const inputStyle = (hasError) => ({
     width: '100%', padding: '10px 12px', background: '#0a0a14',
     border: `1px solid ${hasError ? 'rgba(239,68,68,0.5)' : '#1e1e2e'}`, borderRadius: '8px',
-    color: '#fff', fontSize: '13px', fontFamily: 'DM Sans', sans-serif, outline: 'none',
+    color: '#fff', fontSize: '13px', fontFamily: "'DM Sans', sans-serif", outline: 'none',
   });
   const labelStyle = { display: 'block', color: '#9999bb', fontSize: '12px', fontWeight: '600', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' };
 
@@ -133,8 +133,8 @@ function PropertyModal({ prop, categories, onSave, onClose }) {
 
         {/* Actions */}
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button onClick={onClose} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#9999bb', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif, fontSize: '14px' }}>Cancel</button>
-          <button onClick={handleSubmit} disabled={loading} style={{ flex: 2, padding: '12px', background: loading ? '#1e1e2e' : 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '10px', color: '#fff', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans', sans-serif, fontSize: '14px', fontWeight: '700' }}>
+          <button onClick={onClose} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#9999bb', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}>Cancel</button>
+          <button onClick={handleSubmit} disabled={loading} style={{ flex: 2, padding: '12px', background: loading ? '#1e1e2e' : 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '10px', color: '#fff', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: '14px', fontWeight: '700' }}>
             {loading ? '⏳ Saving...' : prop ? '✅ Update Property' : '➕ Create Property'}
           </button>
         </div>
@@ -241,18 +241,18 @@ function AdminProperties() {
           {/* Search */}
           <div style={{ flex: 1, minWidth: '200px', display: 'flex', gap: '8px', padding: '8px 14px', background: '#0f0f1a', border: '1px solid #1e1e2e', borderRadius: '10px' }}>
             <span style={{ color: '#6b6b8a' }}>🔍</span>
-            <input value={search} onChange={e => handleSearchChange(e.target.value)} placeholder="Search by name, description, value..." style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#fff', fontSize: '14px', fontFamily: 'DM Sans', sans-serif }} />
+            <input value={search} onChange={e => handleSearchChange(e.target.value)} placeholder="Search by name, description, value..." style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#fff', fontSize: '14px', fontFamily: "'DM Sans', sans-serif" }} />
             {search && <button onClick={() => handleSearchChange('')} style={{ background: 'none', border: 'none', color: '#6b6b8a', cursor: 'pointer', fontSize: '16px' }}>×</button>}
           </div>
 
           {/* Category filter */}
           <select value={catFilter} onChange={e => { setCatFilter(e.target.value); setPage(1); }}
-            style={{ padding: '10px 14px', background: '#0f0f1a', border: '1px solid #1e1e2e', borderRadius: '10px', color: catFilter ? '#fff' : '#9999bb', fontSize: '14px', fontFamily: 'DM Sans', sans-serif, outline: 'none' }}>
+            style={{ padding: '10px 14px', background: '#0f0f1a', border: '1px solid #1e1e2e', borderRadius: '10px', color: catFilter ? '#fff' : '#9999bb', fontSize: '14px', fontFamily: "'DM Sans', sans-serif", outline: 'none' }}>
             <option value="">All Categories</option>
             {categories.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
 
-          <button onClick={openCreate} style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontSize: '14px', fontWeight: '700', fontFamily: 'DM Sans', sans-serif, whiteSpace: 'nowrap' }}>
+          <button onClick={openCreate} style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontSize: '14px', fontWeight: '700', fontFamily: "'DM Sans', sans-serif", whiteSpace: 'nowrap' }}>
             + Add Property
           </button>
         </div>
@@ -276,7 +276,7 @@ function AdminProperties() {
               <div style={{ fontSize: '36px', marginBottom: '12px' }}>⚙️</div>
               <p style={{ fontSize: '16px', color: '#fff', marginBottom: '8px' }}>No properties found</p>
               <p style={{ fontSize: '14px', marginBottom: '20px' }}>{search ? 'Try a different search' : 'Click "+ Add Property" to create one'}</p>
-              {!search && <button onClick={openCreate} style={{ padding: '10px 20px', background: 'rgba(108,99,255,0.15)', border: '1px solid rgba(108,99,255,0.3)', borderRadius: '8px', color: '#8b85ff', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif }}>Add First Property</button>}
+              {!search && <button onClick={openCreate} style={{ padding: '10px 20px', background: 'rgba(108,99,255,0.15)', border: '1px solid rgba(108,99,255,0.3)', borderRadius: '8px', color: '#8b85ff', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>Add First Property</button>}
             </div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
@@ -310,14 +310,14 @@ function AdminProperties() {
                       </td>
                       <td style={{ padding: '12px 16px', color: '#9999bb', fontSize: '13px', whiteSpace: 'nowrap' }}>{p.category || '—'}</td>
                       <td style={{ padding: '12px 16px' }}>
-                        <button onClick={() => handleToggleActive(p)} style={{ padding: '4px 10px', background: p.is_active ? 'rgba(74,222,128,0.08)' : 'rgba(239,68,68,0.08)', border: `1px solid ${p.is_active ? 'rgba(74,222,128,0.25)' : 'rgba(239,68,68,0.25)'}`, borderRadius: '20px', fontSize: '11px', color: p.is_active ? '#4ade80' : '#f87171', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif, fontWeight: '600' }}>
+                        <button onClick={() => handleToggleActive(p)} style={{ padding: '4px 10px', background: p.is_active ? 'rgba(74,222,128,0.08)' : 'rgba(239,68,68,0.08)', border: `1px solid ${p.is_active ? 'rgba(74,222,128,0.25)' : 'rgba(239,68,68,0.25)'}`, borderRadius: '20px', fontSize: '11px', color: p.is_active ? '#4ade80' : '#f87171', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontWeight: '600' }}>
                           {p.is_active ? '● Active' : '○ Inactive'}
                         </button>
                       </td>
                       <td style={{ padding: '12px 16px' }}>
                         <div style={{ display: 'flex', gap: '6px' }}>
-                          <button onClick={() => openEdit(p)} style={{ padding: '5px 10px', background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '6px', color: '#8b85ff', fontSize: '12px', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif }} title="Edit">✏️</button>
-                          <button onClick={() => handleDelete(p)} disabled={deleting === p.id} style={{ padding: '5px 10px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '6px', color: '#f87171', fontSize: '12px', cursor: deleting === p.id ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans', sans-serif, opacity: deleting === p.id ? 0.5 : 1 }} title="Delete">
+                          <button onClick={() => openEdit(p)} style={{ padding: '5px 10px', background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '6px', color: '#8b85ff', fontSize: '12px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }} title="Edit">✏️</button>
+                          <button onClick={() => handleDelete(p)} disabled={deleting === p.id} style={{ padding: '5px 10px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '6px', color: '#f87171', fontSize: '12px', cursor: deleting === p.id ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif", opacity: deleting === p.id ? 0.5 : 1 }} title="Delete">
                             {deleting === p.id ? '⏳' : '🗑️'}
                           </button>
                         </div>
@@ -333,10 +333,10 @@ function AdminProperties() {
           {pages > 1 && !loading && (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', padding: '16px', borderTop: '1px solid #1e1e2e' }}>
               <button onClick={() => { setPage(p => Math.max(1, p - 1)); fetchProps(Math.max(1, page - 1)); }} disabled={page === 1}
-                style={{ padding: '6px 14px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '6px', color: page === 1 ? '#6b6b8a' : '#fff', cursor: page === 1 ? 'default' : 'pointer', fontFamily: 'DM Sans', sans-serif }}>← Prev</button>
+                style={{ padding: '6px 14px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '6px', color: page === 1 ? '#6b6b8a' : '#fff', cursor: page === 1 ? 'default' : 'pointer', fontFamily: "'DM Sans', sans-serif" }}>← Prev</button>
               <span style={{ color: '#9999bb', fontSize: '13px' }}>Page {page} of {pages}</span>
               <button onClick={() => { setPage(p => Math.min(pages, p + 1)); fetchProps(Math.min(pages, page + 1)); }} disabled={page === pages}
-                style={{ padding: '6px 14px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '6px', color: page === pages ? '#6b6b8a' : '#fff', cursor: page === pages ? 'default' : 'pointer', fontFamily: 'DM Sans', sans-serif }}>Next →</button>
+                style={{ padding: '6px 14px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '6px', color: page === pages ? '#6b6b8a' : '#fff', cursor: page === pages ? 'default' : 'pointer', fontFamily: "'DM Sans', sans-serif" }}>Next →</button>
             </div>
           )}
         </div>

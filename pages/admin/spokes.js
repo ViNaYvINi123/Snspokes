@@ -87,7 +87,7 @@ function AdminSpokes() {
     } catch(e) { setErrMsg('Failed to delete spoke'); }
   };
 
-  const inputStyle = { width: '100%', padding: '10px 12px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '8px', color: '#fff', fontSize: '13px', fontFamily: 'DM Sans', sans-serif, outline: 'none', marginBottom: '12px' };
+  const inputStyle = { width: '100%', padding: '10px 12px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '8px', color: '#fff', fontSize: '13px', fontFamily: "'DM Sans', sans-serif", outline: 'none', marginBottom: '12px' };
   const labelStyle = { display: 'block', color: '#9999bb', fontSize: '12px', fontWeight: '500', marginBottom: '4px' };
 
   return (
@@ -99,10 +99,10 @@ function AdminSpokes() {
         <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', gap: '12px', flex: 1 }}>
             <input type="text" placeholder="Search spokes..." value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === 'Enter' && fetchSpokes()}
-              style={{ flex: 1, padding: '10px 16px', background: '#0f0f1a', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#fff', fontSize: '14px', fontFamily: 'DM Sans', sans-serif, outline: 'none' }} />
-            <button onClick={fetchSpokes} style={{ padding: '10px 20px', background: 'rgba(108,99,255,0.15)', border: '1px solid rgba(108,99,255,0.3)', borderRadius: '10px', color: '#8b85ff', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif, fontSize: '14px' }}>Search</button>
+              style={{ flex: 1, padding: '10px 16px', background: '#0f0f1a', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#fff', fontSize: '14px', fontFamily: "'DM Sans', sans-serif", outline: 'none' }} />
+            <button onClick={fetchSpokes} style={{ padding: '10px 20px', background: 'rgba(108,99,255,0.15)', border: '1px solid rgba(108,99,255,0.3)', borderRadius: '10px', color: '#8b85ff', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}>Search</button>
           </div>
-          <button onClick={openCreate} style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif, fontSize: '14px', fontWeight: '600', whiteSpace: 'nowrap' }}>
+          <button onClick={openCreate} style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: '14px', fontWeight: '600', whiteSpace: 'nowrap' }}>
             + Add Spoke
           </button>
         </div>
@@ -142,9 +142,9 @@ function AdminSpokes() {
                     <td style={{ padding: '14px 16px', color: '#9999bb', fontSize: '13px' }}>{spoke.view_count || 0}</td>
                     <td style={{ padding: '14px 16px' }}>
                       <div style={{ display: 'flex', gap: '6px' }}>
-                        <button onClick={() => openEdit(spoke)} style={{ padding: '5px 10px', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '6px', color: '#8b85ff', fontSize: '11px', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif }}>✏️ Edit</button>
+                        <button onClick={() => openEdit(spoke)} style={{ padding: '5px 10px', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '6px', color: '#8b85ff', fontSize: '11px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>✏️ Edit</button>
                         <a href={`/spoke/${spoke.slug}`} target="_blank" rel="noopener noreferrer" style={{ padding: '5px 10px', background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.2)', borderRadius: '6px', color: '#4ade80', fontSize: '11px', cursor: 'pointer', textDecoration: 'none' }}>👁️ View</a>
-                        <button onClick={() => handleDelete(spoke)} style={{ padding: '5px 10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '6px', color: '#f87171', fontSize: '11px', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif }}>🗑️</button>
+                        <button onClick={() => handleDelete(spoke)} style={{ padding: '5px 10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '6px', color: '#f87171', fontSize: '11px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>🗑️</button>
                       </div>
                     </td>
                   </tr>
@@ -154,9 +154,9 @@ function AdminSpokes() {
           </div>
           {pages > 1 && (
             <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', padding: '16px', borderTop: '1px solid #1e1e2e' }}>
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{ padding: '6px 12px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '6px', color: page === 1 ? '#6b6b8a' : '#fff', cursor: page === 1 ? 'default' : 'pointer', fontFamily: 'DM Sans', sans-serif }}>←</button>
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{ padding: '6px 12px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '6px', color: page === 1 ? '#6b6b8a' : '#fff', cursor: page === 1 ? 'default' : 'pointer', fontFamily: "'DM Sans', sans-serif" }}>←</button>
               <span style={{ padding: '6px 12px', color: '#9999bb', fontSize: '13px' }}>Page {page} of {pages}</span>
-              <button onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page === pages} style={{ padding: '6px 12px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '6px', color: page === pages ? '#6b6b8a' : '#fff', cursor: page === pages ? 'default' : 'pointer', fontFamily: 'DM Sans', sans-serif }}>→</button>
+              <button onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page === pages} style={{ padding: '6px 12px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '6px', color: page === pages ? '#6b6b8a' : '#fff', cursor: page === pages ? 'default' : 'pointer', fontFamily: "'DM Sans', sans-serif" }}>→</button>
             </div>
           )}
         </div>
@@ -189,8 +189,8 @@ function AdminSpokes() {
                 <label style={labelStyle}>Tags (comma separated)</label><input style={inputStyle} value={form.tags} onChange={e => setForm({...form, tags: e.target.value})} placeholder="messaging, notifications, collaboration" />
               </div>
               <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
-                <button onClick={() => setShowModal(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#9999bb', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif }}>Cancel</button>
-                <button onClick={handleSave} disabled={saving} style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif, fontWeight: '600', opacity: saving ? 0.7 : 1 }}>
+                <button onClick={() => setShowModal(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#9999bb', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>Cancel</button>
+                <button onClick={handleSave} disabled={saving} style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontWeight: '600', opacity: saving ? 0.7 : 1 }}>
                   {saving ? 'Saving...' : editSpoke ? 'Update Spoke' : 'Create Spoke'}
                 </button>
               </div>

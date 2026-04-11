@@ -86,15 +86,15 @@ function AdminUsers() {
         <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', gap: '12px', flex: 1, flexWrap: 'wrap' }}>
             <input type="text" placeholder="Search by name or email..." value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === 'Enter' && fetchUsers()}
-              style={{ flex: 1, minWidth: '200px', padding: '10px 16px', background: '#0f0f1a', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#fff', fontSize: '14px', fontFamily: 'DM Sans', sans-serif, outline: 'none' }} />
+              style={{ flex: 1, minWidth: '200px', padding: '10px 16px', background: '#0f0f1a', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#fff', fontSize: '14px', fontFamily: "'DM Sans', sans-serif", outline: 'none' }} />
             <select value={planFilter} onChange={e => { setPlanFilter(e.target.value); setPage(1); }}
-              style={{ padding: '10px 16px', background: '#0f0f1a', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#fff', fontSize: '14px', fontFamily: 'DM Sans', sans-serif, outline: 'none' }}>
+              style={{ padding: '10px 16px', background: '#0f0f1a', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#fff', fontSize: '14px', fontFamily: "'DM Sans', sans-serif", outline: 'none' }}>
               <option value="">All Plans</option>
               <option value="free">Free</option>
               <option value="pro">Pro</option>
               <option value="team">Team</option>
             </select>
-            <button onClick={fetchUsers} style={{ padding: '10px 20px', background: 'rgba(108,99,255,0.15)', border: '1px solid rgba(108,99,255,0.3)', borderRadius: '10px', color: '#8b85ff', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif, fontSize: '14px' }}>Search</button>
+            <button onClick={fetchUsers} style={{ padding: '10px 20px', background: 'rgba(108,99,255,0.15)', border: '1px solid rgba(108,99,255,0.3)', borderRadius: '10px', color: '#8b85ff', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: '14px' }}>Search</button>
           </div>
           <span style={{ color: '#6b6b8a', fontSize: '14px' }}>{total} total users</span>
         </div>
@@ -143,22 +143,22 @@ function AdminUsers() {
                     <td style={{ padding: '14px 16px' }}>
                       <div style={{ display: 'flex', gap: '6px' }}>
                         <button onClick={() => { setSelectedUser(user); setShowUpgradeModal(true); }} disabled={actionLoading === user.id}
-                          style={{ padding: '5px 10px', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '6px', color: '#8b85ff', fontSize: '11px', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif }}>
+                          style={{ padding: '5px 10px', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '6px', color: '#8b85ff', fontSize: '11px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
                           ⬆️ Plan
                         </button>
                         {user.is_banned ? (
                           <button onClick={() => handleUnban(user)} disabled={actionLoading === user.id}
-                            style={{ padding: '5px 10px', background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.2)', borderRadius: '6px', color: '#4ade80', fontSize: '11px', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif }}>
+                            style={{ padding: '5px 10px', background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.2)', borderRadius: '6px', color: '#4ade80', fontSize: '11px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
                             ✅ Unban
                           </button>
                         ) : (
                           <button onClick={() => { setSelectedUser(user); setShowBanModal(true); }} disabled={actionLoading === user.id}
-                            style={{ padding: '5px 10px', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '6px', color: '#fbbf24', fontSize: '11px', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif }}>
+                            style={{ padding: '5px 10px', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '6px', color: '#fbbf24', fontSize: '11px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
                             🚫 Ban
                           </button>
                         )}
                         <button onClick={() => handleDelete(user)} disabled={actionLoading === user.id}
-                          style={{ padding: '5px 10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '6px', color: '#f87171', fontSize: '11px', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif }}>
+                          style={{ padding: '5px 10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '6px', color: '#f87171', fontSize: '11px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
                           🗑️
                         </button>
                       </div>
@@ -172,9 +172,9 @@ function AdminUsers() {
           {/* Pagination */}
           {pages > 1 && (
             <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', padding: '16px', borderTop: '1px solid #1e1e2e' }}>
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{ padding: '6px 12px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '6px', color: page === 1 ? '#6b6b8a' : '#fff', cursor: page === 1 ? 'default' : 'pointer', fontFamily: 'DM Sans', sans-serif }}>←</button>
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{ padding: '6px 12px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '6px', color: page === 1 ? '#6b6b8a' : '#fff', cursor: page === 1 ? 'default' : 'pointer', fontFamily: "'DM Sans', sans-serif" }}>←</button>
               <span style={{ padding: '6px 12px', color: '#9999bb', fontSize: '13px' }}>Page {page} of {pages}</span>
-              <button onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page === pages} style={{ padding: '6px 12px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '6px', color: page === pages ? '#6b6b8a' : '#fff', cursor: page === pages ? 'default' : 'pointer', fontFamily: 'DM Sans', sans-serif }}>→</button>
+              <button onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page === pages} style={{ padding: '6px 12px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '6px', color: page === pages ? '#6b6b8a' : '#fff', cursor: page === pages ? 'default' : 'pointer', fontFamily: "'DM Sans', sans-serif" }}>→</button>
             </div>
           )}
         </div>
@@ -186,10 +186,10 @@ function AdminUsers() {
               <h3 style={{ color: '#fff', fontSize: '18px', fontWeight: '700', marginBottom: '8px' }}>Ban User</h3>
               <p style={{ color: '#6b6b8a', fontSize: '14px', marginBottom: '20px' }}>Banning <strong style={{ color: '#fff' }}>{selectedUser?.email}</strong></p>
               <textarea value={banReason} onChange={e => setBanReason(e.target.value)} placeholder="Reason for ban (optional)" rows={3}
-                style={{ width: '100%', padding: '12px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#fff', fontSize: '14px', fontFamily: 'DM Sans', sans-serif, outline: 'none', resize: 'vertical', marginBottom: '20px' }} />
+                style={{ width: '100%', padding: '12px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#fff', fontSize: '14px', fontFamily: "'DM Sans', sans-serif", outline: 'none', resize: 'vertical', marginBottom: '20px' }} />
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => setShowBanModal(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#9999bb', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif }}>Cancel</button>
-                <button onClick={handleBan} style={{ flex: 1, padding: '12px', background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: '10px', color: '#f87171', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif, fontWeight: '600' }}>Ban User</button>
+                <button onClick={() => setShowBanModal(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#9999bb', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>Cancel</button>
+                <button onClick={handleBan} style={{ flex: 1, padding: '12px', background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: '10px', color: '#f87171', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontWeight: '600' }}>Ban User</button>
               </div>
             </div>
           </div>
@@ -202,14 +202,14 @@ function AdminUsers() {
               <h3 style={{ color: '#fff', fontSize: '18px', fontWeight: '700', marginBottom: '8px' }}>Change Plan</h3>
               <p style={{ color: '#6b6b8a', fontSize: '14px', marginBottom: '20px' }}>Updating plan for <strong style={{ color: '#fff' }}>{selectedUser?.email}</strong></p>
               <select value={upgradePlan} onChange={e => setUpgradePlan(e.target.value)}
-                style={{ width: '100%', padding: '12px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#fff', fontSize: '14px', fontFamily: 'DM Sans', sans-serif, outline: 'none', marginBottom: '20px' }}>
+                style={{ width: '100%', padding: '12px', background: '#0a0a14', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#fff', fontSize: '14px', fontFamily: "'DM Sans', sans-serif", outline: 'none', marginBottom: '20px' }}>
                 <option value="free">Free</option>
                 <option value="pro">Pro (₹799/mo)</option>
                 <option value="team">Team (₹2499/mo)</option>
               </select>
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => setShowUpgradeModal(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#9999bb', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif }}>Cancel</button>
-                <button onClick={handleUpgrade} style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontFamily: 'DM Sans', sans-serif, fontWeight: '600' }}>Update Plan</button>
+                <button onClick={() => setShowUpgradeModal(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#9999bb', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>Cancel</button>
+                <button onClick={handleUpgrade} style={{ flex: 1, padding: '12px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontWeight: '600' }}>Update Plan</button>
               </div>
             </div>
           </div>

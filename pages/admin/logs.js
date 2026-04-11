@@ -40,7 +40,7 @@ function AdminLogs() {
         <div style={{ background: '#0f0f1a', borderRadius: '16px', border: '1px solid #1e1e2e', overflow: 'hidden' }}>
           <div style={{ padding: '20px 24px', borderBottom: '1px solid #1e1e2e', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3 style={{ color: '#fff', fontSize: '16px', fontWeight: '700' }}>Admin Activity Log</h3>
-            <button onClick={fetchLogs} style={{ padding: '6px 14px', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '8px', color: '#8b85ff', cursor: 'pointer', fontSize: '13px', fontFamily: 'DM Sans', sans-serif }}>Refresh</button>
+            <button onClick={fetchLogs} style={{ padding: '6px 14px', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: '8px', color: '#8b85ff', cursor: 'pointer', fontSize: '13px', fontFamily: "'DM Sans', sans-serif" }}>Refresh</button>
           </div>
 
           {loading ? (
