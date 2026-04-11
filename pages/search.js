@@ -4,147 +4,130 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 
+/* ─── WHO ARE YOU? — the key differentiator ─── */
+const CONTEXTS = [
+  { id:'',              label:'SN Developer',    icon:'⚙️', desc:'I write ServiceNow code' },
+  { id:'beginner',      label:'Beginner',         icon:'🌱', desc:'New to ServiceNow' },
+  { id:'jira-admin',    label:'Jira Admin',       icon:'🔷', desc:'Integrating Jira ↔ ServiceNow' },
+  { id:'python-dev',    label:'Python Dev',       icon:'🐍', desc:'Calling SN REST APIs' },
+  { id:'salesforce-admin', label:'Salesforce',   icon:'☁️', desc:'Integrating Salesforce ↔ SN' },
+  { id:'slack-admin',   label:'Slack Admin',      icon:'💬', desc:'Setting up Slack notifications' },
+];
+
+const INTENT_META = {
+  error:   { label:'Error Fix',     color:'#f87171', icon:'🐛', desc:'Root cause + fix' },
+  compare: { label:'Decision Guide',color:'#f59e0b', icon:'⚖️', desc:'When to use what' },
+  code:    { label:'Code Example',  color:'#4ade80', icon:'💻', desc:'Copy-paste ready' },
+  explain: { label:'Explanation',   color:'#8b85ff', icon:'📖', desc:'How + When + Why' },
+};
+
 /* ─── Markdown renderer ─── */
 function Md({ text }) {
   if (!text) return null;
-  const escaped = text
-    .replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) =>
-      `<PRE data-lang="${lang||'code'}">${code.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</PRE>`)
-    .replace(/`([^`\n]+)`/g, '<IC>$1</IC>')
-    .replace(/\*\*([^*]+)\*\*/g, '<B>$1</B>')
-    .replace(/^#{1,3} (.+)$/gm, '<H>$1</H>')
-    .replace(/^[-*] (.+)$/gm, '<LI>$1</LI>')
-    .replace(/\n\n/g, '<BR>');
-
-  const html = escaped
-    .replace(/<PRE data-lang="([^"]*)">([\s\S]*?)<\/PRE>/g,
-      (_, lang, code) => `<div class="md-pre"><div class="md-pre-header"><span class="md-lang">${lang||'code'}</span><button class="md-copy" onclick="navigator.clipboard.writeText(this.closest('.md-pre').querySelector('code').innerText)">copy</button></div><pre><code>${code}</code></pre></div>`)
-    .replace(/<IC>(.*?)<\/IC>/g, '<code class="md-ic">$1</code>')
-    .replace(/<B>(.*?)<\/B>/g, '<strong>$1</strong>')
-    .replace(/<H>(.*?)<\/H>/g, '<div class="md-h">$1</div>')
-    .replace(/<LI>(.*?)<\/LI>/g, '<div class="md-li">▸ $1</div>')
-    .replace(/<BR>/g, '<div class="md-gap"></div>')
-    .replace(/\n/g, '<br/>');
-
+  const html = text
+    .replace(/```(\w*)\n?([\s\S]*?)```/g,(_, lang, code) =>
+      `<div class="md-pre"><div class="md-pre-hdr"><span class="md-lang">${lang||'code'}</span><button class="md-cp" onclick="navigator.clipboard?.writeText(this.closest('.md-pre').querySelector('code').innerText).then(()=>{this.textContent='✓ copied';setTimeout(()=>this.textContent='copy',1500)})">copy</button></div><pre><code>${code.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</code></pre></div>`)
+    .replace(/`([^`\n]+)`/g,'<code class="md-ic">$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/^## (.+)$/gm,'<div class="md-h2">$1</div>')
+    .replace(/^### (.+)$/gm,'<div class="md-h3">$1</div>')
+    .replace(/^- (.+)$/gm,'<div class="md-li">▸ $1</div>')
+    .replace(/\n\n/g,'<div class="md-gap"></div>');
   return (
     <>
       <style>{`
-        .md-pre { background:#020208; border:1px solid #1a1a2e; border-radius:8px; margin:.6em 0; overflow:hidden; }
-        .md-pre-header { display:flex; justify-content:space-between; align-items:center; padding:6px 14px; background:#0a0a14; border-bottom:1px solid #1a1a2e; }
-        .md-lang { font-family:'JetBrains Mono',monospace; font-size:10px; color:#6c63ff; text-transform:uppercase; letter-spacing:1px; }
-        .md-copy { background:none; border:1px solid #2a2a3e; border-radius:4px; color:#6b7280; font-size:10px; padding:2px 8px; cursor:pointer; font-family:'JetBrains Mono',monospace; }
-        .md-copy:hover { color:#8b85ff; border-color:#6c63ff; }
-        .md-pre pre { margin:0; padding:14px 16px; overflow-x:auto; }
-        .md-pre code { font-family:'JetBrains Mono',monospace; font-size:12px; color:#7dd3fc; line-height:1.7; }
-        .md-ic { background:rgba(108,99,255,.1); border:1px solid rgba(108,99,255,.2); border-radius:4px; padding:1px 6px; font-family:'JetBrains Mono',monospace; font-size:12px; color:#c4beff; }
-        .md-h { color:#f0f4ff; font-size:14px; font-weight:700; margin:.8em 0 .3em; font-family:'Bricolage Grotesque',sans-serif; }
-        .md-li { color:#c9d1e8; font-size:13.5px; margin:.2em 0; line-height:1.6; padding-left:4px; }
-        .md-gap { height:.6em; }
-        strong { color:#e8eaf6; }
-        br { display:block; content:''; }
-        p, span { color:#b0b8d0; font-size:13.5px; line-height:1.7; }
+        .md-pre{background:#020208;border:1px solid #1a1a2e;border-radius:8px;margin:.6em 0;overflow:hidden}
+        .md-pre-hdr{display:flex;justify-content:space-between;align-items:center;padding:5px 12px;background:#0a0a14;border-bottom:1px solid #1a1a2e}
+        .md-lang{font-family:'JetBrains Mono',monospace;font-size:9px;color:#6c63ff;text-transform:uppercase;letter-spacing:1px}
+        .md-cp{background:none;border:1px solid #1a1a2e;border-radius:4px;color:#6b7280;font-size:9px;padding:2px 8px;cursor:pointer;font-family:'JetBrains Mono',monospace}
+        .md-cp:hover{color:#8b85ff;border-color:#6c63ff}
+        .md-pre pre{margin:0;padding:12px 14px;overflow-x:auto}
+        .md-pre code{font-family:'JetBrains Mono',monospace;font-size:12px;color:#7dd3fc;line-height:1.7}
+        .md-ic{background:rgba(108,99,255,.1);border:1px solid rgba(108,99,255,.2);border-radius:4px;padding:1px 5px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#c4beff}
+        .md-h2{color:#f0f4ff;font-size:14px;font-weight:700;margin:.8em 0 .35em;font-family:'Bricolage Grotesque',sans-serif}
+        .md-h3{color:#e2e8f0;font-size:13px;font-weight:600;margin:.6em 0 .25em}
+        .md-li{color:#b0b8d0;font-size:13.5px;margin:.2em 0;line-height:1.65;padding-left:4px}
+        .md-gap{height:.5em}
+        strong{color:#e8eaf6}
       `}</style>
-      <div dangerouslySetInnerHTML={{ __html: html }} />
+      <div style={{ color:'#b0b8d0', fontSize:'13.5px', lineHeight:1.7 }}
+           dangerouslySetInnerHTML={{ __html: html }} />
     </>
   );
 }
 
 /* ─── Terminal log line ─── */
-function LogLine({ type = 'info', text, time }) {
-  const colors = { info:'#6b7280', success:'#4ade80', error:'#f87171', ai:'#8b85ff', search:'#f59e0b', system:'#38bdf8' };
-  const icons  = { info:'›', success:'✓', error:'✗', ai:'⟡', search:'⌕', system:'◈' };
+function LogLine({ type, text, time }) {
+  const c = { info:'#4b5563', success:'#4ade80', error:'#f87171', ai:'#8b85ff', search:'#f59e0b', system:'#1e1e2e' };
+  const i = { info:'›', success:'✓', error:'✗', ai:'⟡', search:'⌕', system:'◈' };
   return (
-    <div style={{ display:'flex', gap:'8px', padding:'2px 0', fontFamily:"'JetBrains Mono',monospace", fontSize:'11.5px', lineHeight:'1.6', opacity: type==='system' ? 0.5 : 1 }}>
-      <span style={{ color:'#2a2a3a', flexShrink:0 }}>{time}</span>
-      <span style={{ color:colors[type], flexShrink:0 }}>{icons[type]}</span>
-      <span style={{ color: type==='system' ? '#374151' : '#9ca3af', wordBreak:'break-all' }}>{text}</span>
+    <div style={{ display:'flex', gap:'8px', padding:'1.5px 0', fontFamily:"'JetBrains Mono',monospace", fontSize:'11px', lineHeight:1.7 }}>
+      <span style={{ color:'#1e1e2e', flexShrink:0 }}>{time}</span>
+      <span style={{ color:c[type]||'#4b5563', flexShrink:0 }}>{i[type]||'›'}</span>
+      <span style={{ color: type==='system'?'#2a2a3a':'#6b7280', wordBreak:'break-all' }}>{text}</span>
     </div>
   );
-}
-
-/* ─── Spoke card (compact) ─── */
-function SpokeCard({ spoke }) {
-  return (
-    <Link href={`/spoke/${spoke.slug}`} style={{ textDecoration:'none', display:'block' }}>
-      <div style={{ padding:'12px 14px', background:'rgba(255,255,255,.02)', border:'1px solid rgba(255,255,255,.05)', borderRadius:'10px', cursor:'pointer', transition:'all .15s' }}
-        onMouseOver={e=>{e.currentTarget.style.borderColor='rgba(108,99,255,.3)';e.currentTarget.style.background='rgba(108,99,255,.04)';}}
-        onMouseOut={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,.05)';e.currentTarget.style.background='rgba(255,255,255,.02)';}}>
-        <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'4px' }}>
-          <span style={{ fontSize:'16px' }}>{spoke.icon || '🔌'}</span>
-          <span style={{ color:'#e2e8f0', fontSize:'13px', fontWeight:600 }}>{spoke.name}</span>
-          {spoke.category && <span style={{ fontSize:'10px', color:'#4b5563', background:'rgba(255,255,255,.04)', padding:'1px 7px', borderRadius:'10px' }}>{spoke.category}</span>}
-        </div>
-        <p style={{ color:'#4b5563', fontSize:'12px', margin:0, lineHeight:1.45 }}>{(spoke.description||'').slice(0,70)}{(spoke.description||'').length>70?'…':''}</p>
-      </div>
-    </Link>
-  );
-}
-
-/* ─── Skeleton ─── */
-function Skel({ h = '14px', w = '100%', mb = '8px' }) {
-  return <div className="skeleton" style={{ height:h, width:w, borderRadius:'6px', marginBottom:mb }} />;
 }
 
 export default function Search() {
   const router = useRouter();
   const { data: session } = useSession();
-  const inputRef   = useRef(null);
-  const logRef     = useRef(null);
-  const prevQ      = useRef('');
+  const inputRef = useRef(null);
+  const logRef   = useRef(null);
+  const prevQ    = useRef('');
 
-  const [q,          setQ]          = useState('');
-  const [results,    setResults]    = useState([]);
-  const [aiAnswer,   setAiAnswer]   = useState(null);
-  const [streamText, setStreamText] = useState('');
-  const [loading,    setLoading]    = useState(false);
-  const [streaming,  setStreaming]  = useState(false);
-  const [searched,   setSearched]   = useState(false);
-  const [error,      setError]      = useState('');
-  const [logs,       setLogs]       = useState([]);
-  const [meta,       setMeta]       = useState({});
+  const [q,         setQ]         = useState('');
+  const [context,   setContext]   = useState('');
+  const [results,   setResults]   = useState([]);
+  const [apiHits,   setApiHits]   = useState([]);
+  const [aiAnswer,  setAiAnswer]  = useState('');
+  const [streamText,setStreamText]= useState('');
+  const [loading,   setLoading]   = useState(false);
+  const [streaming, setStreaming] = useState(false);
+  const [searched,  setSearched]  = useState(false);
+  const [intent,    setIntent]    = useState('');
+  const [logs,      setLogs]      = useState([]);
+  const [meta,      setMeta]      = useState({});
+  const [showCtx,   setShowCtx]   = useState(false);
 
   const addLog = useCallback((type, text) => {
-    const time = new Date().toLocaleTimeString('en-US', { hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit' });
-    setLogs(prev => [...prev.slice(-80), { type, text, time, id: Date.now() + Math.random() }]);
+    const t = new Date().toLocaleTimeString('en-US', { hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    setLogs(p => [...p.slice(-80), { type, text, time:t, id:Date.now()+Math.random() }]);
   }, []);
 
-  // Auto-scroll log
-  useEffect(() => {
-    if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
-  }, [logs]);
+  useEffect(() => { if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight; }, [logs]);
 
   // Boot log
   useEffect(() => {
-    const bootLines = [
-      { type:'system', text:'snspokes intelligence OS v33.10 — ready' },
-      { type:'system', text:'search engine online | ai providers loaded' },
-      { type:'system', text:'200+ spoke index | redis cache active' },
-      { type:'info',   text:'awaiting query...' },
-    ];
-    bootLines.forEach((l, i) => setTimeout(() => addLog(l.type, l.text), i * 180));
+    [
+      { type:'system', text:'snspokes intelligence OS — ready', delay:0 },
+      { type:'system', text:'200+ spokes · full API reference · AI answers', delay:150 },
+      { type:'info',   text:'awaiting query...', delay:300 },
+    ].forEach(l => setTimeout(() => addLog(l.type, l.text), l.delay));
   }, []);
 
   // URL query
   useEffect(() => {
     const urlQ = router.query.q;
+    const urlCtx = router.query.ctx || '';
     if (urlQ && urlQ !== prevQ.current) {
       prevQ.current = urlQ;
       setQ(urlQ);
-      runSearch(urlQ);
+      if (urlCtx) setContext(urlCtx);
+      runSearch(urlQ, urlCtx);
     }
-  }, [router.query.q]);
+  }, [router.query.q, router.query.ctx]);
 
   const doStream = async (query) => {
-    if (!query?.trim() || streaming) return;
     setStreaming(true); setStreamText('');
-    addLog('ai', 'streaming response...');
+    addLog('ai', 'generating answer...');
     try {
-      const res = await fetch('/api/stream', {
+      const r = await fetch('/api/stream', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ query, user_id: session?.user?.id }),
       });
-      if (!res.ok) { setStreaming(false); return; }
-      const reader = res.body.getReader();
+      if (!r.ok) { setStreaming(false); return; }
+      const reader = r.body.getReader();
       const dec = new TextDecoder();
       let buf = '';
       while (true) {
@@ -157,10 +140,7 @@ export default function Search() {
           try {
             const d = JSON.parse(line.slice(6));
             if (d.type==='chunk') setStreamText(p => p+d.content);
-            if (d.type==='done') {
-              addLog('success', `response complete • model: ${d.model||'AI'}`);
-              setMeta(m => ({ ...m, model:d.model }));
-            }
+            if (d.type==='done') addLog('success', `done · ${d.model||'AI'}`);
           } catch {}
         }
       }
@@ -168,105 +148,128 @@ export default function Search() {
     finally { setStreaming(false); }
   };
 
-  const runSearch = useCallback(async (query) => {
+  const runSearch = useCallback(async (query, ctx = context) => {
     if (!query?.trim()) return;
-    setLoading(true); setError('');
-    setResults([]); setAiAnswer(null); setStreamText(''); setSearched(true);
-    addLog('search', `query: "${query}"`);
-    addLog('info',   'searching spoke index...');
+    setLoading(true);
+    setResults([]); setApiHits([]); setAiAnswer(''); setStreamText('');
+    setSearched(true); setIntent('');
+    addLog('search', `"${query}"${ctx ? ` [${ctx}]` : ''}`);
+    addLog('info', 'searching spoke index + API reference...');
     const t0 = Date.now();
     try {
-      const res = await fetch('/api/search', {
+      const r = await fetch('/api/search', {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ query: query.trim(), user_id: session?.user?.id || null }),
+        body: JSON.stringify({ query: query.trim(), user_id: session?.user?.id, context: ctx }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || 'Search failed');
-        addLog('error', data.error || 'search failed');
-        return;
-      }
-      const count = (data.results||[]).length;
-      setResults(data.results || []);
-      addLog('success', `found ${count} spoke${count===1?'':'s'} • ${Date.now()-t0}ms`);
-
-      if (data.ai_answer) {
-        setAiAnswer({ text: data.ai_answer, model: data.ai_model });
-        addLog('ai', `answer ready • ${data.ai_model||'AI'} ${data.cached?'(cached)':''}`);
+      const d = await r.json();
+      if (!r.ok) { addLog('error', d.error||'search failed'); return; }
+      setResults(d.results || []);
+      setApiHits(d.api_results || []);
+      if (d.intent) setIntent(d.intent);
+      const spokeCount = (d.results||[]).length;
+      const apiCount   = (d.api_results||[]).length;
+      addLog('success', `${spokeCount} spokes · ${apiCount} API refs · ${Date.now()-t0}ms${d.cached?' [cached]':''}`);
+      if (d.ai_answer) {
+        setAiAnswer(d.ai_answer);
+        addLog('ai', `answer ready · ${d.ai_model||'AI'} · intent: ${d.intent||'explain'}`);
       } else {
-        addLog('ai', 'generating AI answer...');
+        addLog('ai', 'generating answer...');
         doStream(query.trim());
       }
-      setMeta({ latency: Date.now()-t0, cached: data.cached });
-    } catch(err) {
-      setError('Search failed. Please try again.');
-      addLog('error', 'network error');
-    } finally { setLoading(false); }
-  }, [session, addLog]);
+      setMeta({ latency: Date.now()-t0, cached: d.cached });
+      // Save to memory
+      if (session?.user?.id) {
+        fetch('/api/user/memory', { method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ action:'save_query', query, name:query.slice(0,60) }) }).catch(()=>{});
+      }
+    } catch(err) { addLog('error', err.message); }
+    finally { setLoading(false); }
+  }, [session, addLog, context]);
 
   const submit = (e) => {
     e.preventDefault();
     if (!q.trim()) return;
-    router.push('/search?q=' + encodeURIComponent(q.trim()), undefined, { shallow:true });
-    runSearch(q.trim());
+    const url = `/search?q=${encodeURIComponent(q.trim())}${context?`&ctx=${context}`:''}`;
+    router.push(url, undefined, { shallow:true });
+    runSearch(q.trim(), context);
   };
 
-  const aiText = aiAnswer?.text || streamText;
-  const isLoading = loading || streaming;
+  const aiText = aiAnswer || streamText;
+  const ctxMeta = CONTEXTS.find(c => c.id === context) || CONTEXTS[0];
+  const intentMeta = INTENT_META[intent];
 
   return (
     <>
       <Head>
         <title>{q ? `${q} — snspokes` : 'Search — snspokes'}</title>
-        <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
         <style>{`
-          @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-          @keyframes glitch {
-            0%,100%{transform:translate(0,0) skew(0)}
-            20%{transform:translate(-1px,1px) skew(0.5deg)}
-            40%{transform:translate(1px,-1px) skew(-0.3deg)}
-            60%{transform:translate(-0.5px,0.5px)}
-            80%{transform:translate(0.5px,-0.5px) skew(0.2deg)}
-          }
-          .glitch { animation: glitch 0.3s ease forwards; }
-          @keyframes scanline { 0%{transform:translateY(-100%)} 100%{transform:translateY(100vh)} }
-          .cursor-blink::after { content:'_'; animation:blink 1s step-end infinite; color:#6c63ff; }
-          .scanline-effect { position:fixed; top:0; left:0; right:0; height:2px; background:linear-gradient(transparent,rgba(108,99,255,.04),transparent); animation:scanline 8s linear infinite; pointer-events:none; z-index:9998; }
-          .ai-pulse { animation: aiPulse 2s ease-in-out infinite; }
-          @keyframes aiPulse { 0%,100%{opacity:.6} 50%{opacity:1} }
+          @keyframes spin{to{transform:rotate(360deg)}}
+          @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+          @keyframes scanline{0%{transform:translateY(-100%)}100%{transform:translateY(100vh)}}
+          .scanline{position:fixed;top:0;left:0;right:0;height:2px;background:linear-gradient(transparent,rgba(108,99,255,.03),transparent);animation:scanline 10s linear infinite;pointer-events:none;z-index:9998}
+          .ctx-btn:hover{background:rgba(255,255,255,.04)!important}
         `}</style>
       </Head>
-
-      <div className="scanline-effect" />
+      <div className="scanline"/>
 
       {/* Top bar */}
       <div style={{ position:'fixed', top:0, left:0, right:0, zIndex:100, background:'rgba(4,4,7,.97)', backdropFilter:'blur(20px)', borderBottom:'1px solid #0d0d18' }}>
-        <div style={{ maxWidth:'1400px', margin:'0 auto', padding:'0 20px', height:'56px', display:'flex', alignItems:'center', gap:'16px' }}>
-
-          {/* Logo */}
-          <Link href="/" style={{ textDecoration:'none', flexShrink:0, display:'flex', alignItems:'center', gap:'8px' }}>
-            <img src="/logo.svg" height="26" style={{ borderRadius:'5px' }} alt="snspokes" />
+        <div style={{ maxWidth:'1400px', margin:'0 auto', padding:'0 20px', height:'56px', display:'flex', alignItems:'center', gap:'14px' }}>
+          <Link href="/" style={{ textDecoration:'none', flexShrink:0 }}>
+            <img src="/logo.svg" height="26" style={{ borderRadius:'5px' }} alt="snspokes"/>
           </Link>
 
-          {/* Search */}
-          <form onSubmit={submit} style={{ flex:1, maxWidth:'600px' }}>
+          {/* Search form */}
+          <form onSubmit={submit} style={{ flex:1, maxWidth:'560px' }}>
             <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'6px 12px', background:'#0a0a14', border:'1px solid #1a1a2e', borderRadius:'10px', transition:'border-color .2s' }}
               onFocusCapture={e=>e.currentTarget.style.borderColor='#6c63ff'}
               onBlurCapture={e=>e.currentTarget.style.borderColor='#1a1a2e'}>
               <svg width="13" height="13" fill="none" stroke="#374151" strokeWidth="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input ref={inputRef} value={q} onChange={e=>setQ(e.target.value)}
-                placeholder="search spokes, ask anything..."
-                className={!q && !isLoading ? 'cursor-blink' : ''}
-                style={{ flex:1, background:'none', border:'none', outline:'none', color:'#e8eaf6', fontSize:'13.5px', fontFamily:"'JetBrains Mono',monospace" }} />
-              {q && <button type="button" onClick={()=>setQ('')} style={{ background:'none', border:'none', color:'#374151', cursor:'pointer', fontSize:'14px', lineHeight:1 }}>×</button>}
-              {isLoading && <div style={{ width:'14px', height:'14px', border:'1.5px solid #1e1e2e', borderTopColor:'#6c63ff', borderRadius:'50%', animation:'spin .6s linear infinite', flexShrink:0 }} />}
+                placeholder="search or ask anything about ServiceNow..."
+                style={{ flex:1, background:'none', border:'none', outline:'none', color:'#e8eaf6', fontSize:'13px', fontFamily:"'JetBrains Mono',monospace" }}/>
+              {(loading||streaming) && <div style={{ width:'13px', height:'13px', border:'1.5px solid #1e1e2e', borderTopColor:'#6c63ff', borderRadius:'50%', animation:'spin .6s linear infinite', flexShrink:0 }}/>}
             </div>
           </form>
 
-          {/* Right side */}
-          <div style={{ display:'flex', alignItems:'center', gap:'8px', marginLeft:'auto' }}>
-            <Link href="/tools/code-generator" style={{ textDecoration:'none', padding:'5px 12px', background:'rgba(108,99,255,.08)', border:'1px solid rgba(108,99,255,.15)', borderRadius:'7px', color:'#8b85ff', fontSize:'12px', fontFamily:"'JetBrains Mono',monospace", whiteSpace:'nowrap' }}>code_gen</Link>
-            <Link href="/tools/error-finder" style={{ textDecoration:'none', padding:'5px 12px', background:'rgba(245,158,11,.07)', border:'1px solid rgba(245,158,11,.15)', borderRadius:'7px', color:'#d97706', fontSize:'12px', fontFamily:"'JetBrains Mono',monospace", whiteSpace:'nowrap' }}>err_fix</Link>
+          {/* WHO ARE YOU selector — the key differentiator */}
+          <div style={{ position:'relative', flexShrink:0 }}>
+            <button onClick={()=>setShowCtx(s=>!s)} className="ctx-btn"
+              style={{ display:'flex', alignItems:'center', gap:'6px', padding:'6px 12px', background: context?'rgba(108,99,255,.1)':'rgba(255,255,255,.03)', border:`1px solid ${context?'rgba(108,99,255,.3)':'rgba(255,255,255,.06)'}`, borderRadius:'8px', cursor:'pointer', fontFamily:"'JetBrains Mono',monospace", fontSize:'11px', color: context?'#8b85ff':'#4b5563', transition:'all .15s', whiteSpace:'nowrap' }}>
+              <span>{ctxMeta.icon}</span>
+              <span>{ctxMeta.label}</span>
+              <span style={{ opacity:.5 }}>▾</span>
+            </button>
+
+            {showCtx && (
+              <div style={{ position:'absolute', top:'42px', right:0, background:'#06060e', border:'1px solid #1a1a2e', borderRadius:'12px', padding:'8px', zIndex:200, minWidth:'220px', boxShadow:'0 16px 48px rgba(0,0,0,.6)' }}>
+                <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#1e1e2e', margin:'0 0 6px 6px', letterSpacing:'1px' }}>I AM A...</p>
+                {CONTEXTS.map(c => (
+                  <button key={c.id} onClick={()=>{ setContext(c.id); setShowCtx(false); if (q.trim()) { router.push(`/search?q=${encodeURIComponent(q.trim())}${c.id?`&ctx=${c.id}`:''}`); runSearch(q.trim(), c.id); } }}
+                    style={{ display:'flex', alignItems:'center', gap:'8px', width:'100%', padding:'8px 10px', background: context===c.id?'rgba(108,99,255,.1)':'transparent', border:'none', borderRadius:'8px', cursor:'pointer', textAlign:'left', transition:'background .1s' }}>
+                    <span style={{ fontSize:'14px' }}>{c.icon}</span>
+                    <div>
+                      <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:'12.5px', fontWeight:600, color: context===c.id?'#8b85ff':'#e2e8f0' }}>{c.label}</div>
+                      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#374151' }}>{c.desc}</div>
+                    </div>
+                    {context===c.id && <span style={{ marginLeft:'auto', color:'#6c63ff', fontSize:'12px' }}>✓</span>}
+                  </button>
+                ))}
+                <div style={{ margin:'8px 6px 2px', padding:'8px', background:'rgba(108,99,255,.06)', border:'1px solid rgba(108,99,255,.1)', borderRadius:'7px' }}>
+                  <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#6c63ff', margin:'0 0 3px', letterSpacing:'.5px' }}>WHY THIS MATTERS</p>
+                  <p style={{ color:'#4b5563', fontSize:'11px', margin:0, lineHeight:1.5 }}>
+                    Answers are tailored to your background. A Jira admin gets Jira-language explanations. A Python dev gets REST examples.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Nav links */}
+          <div style={{ display:'flex', gap:'8px', marginLeft:'auto' }}>
+            <Link href="/api-reference" style={{ padding:'5px 12px', background:'rgba(255,255,255,.03)', border:'1px solid rgba(255,255,255,.06)', borderRadius:'7px', color:'#4b5563', fontSize:'11px', fontFamily:"'JetBrains Mono',monospace", textDecoration:'none', whiteSpace:'nowrap' }}>api_ref</Link>
+            <Link href="/tools/error-finder" style={{ padding:'5px 12px', background:'rgba(245,158,11,.07)', border:'1px solid rgba(245,158,11,.12)', borderRadius:'7px', color:'#d97706', fontSize:'11px', fontFamily:"'JetBrains Mono',monospace", textDecoration:'none', whiteSpace:'nowrap' }}>err_fix</Link>
             {session ? (
               <Link href="/dashboard" style={{ width:'30px', height:'30px', borderRadius:'50%', background:'linear-gradient(135deg,#6c63ff,#a855f7)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'11px', fontWeight:700, color:'#fff', textDecoration:'none' }}>
                 {session.user?.name?.[0]?.toUpperCase()||'?'}
@@ -278,133 +281,153 @@ export default function Search() {
         </div>
       </div>
 
-      {/* Main split layout */}
+      {/* Split layout */}
       <div style={{ display:'flex', height:'100vh', paddingTop:'56px', background:'#040407', fontFamily:"'DM Sans',sans-serif", overflow:'hidden' }}>
 
-        {/* LEFT — Terminal log */}
-        <div style={{ width:'300px', flexShrink:0, borderRight:'1px solid #0d0d18', display:'flex', flexDirection:'column', background:'#020205' }}>
-          {/* Terminal header */}
-          <div style={{ padding:'10px 14px', borderBottom:'1px solid #0d0d18', display:'flex', alignItems:'center', gap:'8px' }}>
-            <div style={{ display:'flex', gap:'4px' }}>
-              {['#ff5f57','#febc2e','#28c840'].map(c=><div key={c} style={{ width:'8px', height:'8px', borderRadius:'50%', background:c, opacity:.7 }}/>)}
-            </div>
-            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'10px', color:'#2a2a3a', letterSpacing:'1px' }}>SYSTEM LOG</span>
-            <div style={{ marginLeft:'auto', width:'6px', height:'6px', borderRadius:'50%', background:'#4ade80', animation:'blink 3s step-end infinite' }} />
+        {/* LEFT — terminal log */}
+        <div style={{ width:'280px', flexShrink:0, borderRight:'1px solid #0d0d18', display:'flex', flexDirection:'column', background:'#020205' }}>
+          <div style={{ padding:'9px 12px', borderBottom:'1px solid #0d0d18', display:'flex', alignItems:'center', gap:'8px' }}>
+            <div style={{ display:'flex', gap:'4px' }}>{['#ff5f57','#febc2e','#28c840'].map(c=><div key={c} style={{ width:'7px', height:'7px', borderRadius:'50%', background:c, opacity:.7 }}/>)}</div>
+            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#2a2a3a', letterSpacing:'1px' }}>SYSTEM LOG</span>
+            <div style={{ marginLeft:'auto', width:'5px', height:'5px', borderRadius:'50%', background:'#4ade80', animation:'blink 3s step-end infinite' }}/>
           </div>
-
-          {/* Log lines */}
-          <div ref={logRef} style={{ flex:1, overflowY:'auto', padding:'10px 14px', scrollbarWidth:'thin', scrollbarColor:'#1a1a2e transparent' }}>
-            {logs.map(l => <LogLine key={l.id} {...l} />)}
-            {isLoading && (
-              <div style={{ display:'flex', gap:'8px', padding:'2px 0', fontFamily:"'JetBrains Mono',monospace", fontSize:'11.5px' }}>
-                <span style={{ color:'#2a2a3a' }}>{new Date().toLocaleTimeString('en-US',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span>
-                <span style={{ color:'#6c63ff' }} className="ai-pulse">⟳</span>
-                <span style={{ color:'#374151' }}>processing...</span>
-              </div>
-            )}
+          <div ref={logRef} style={{ flex:1, overflowY:'auto', padding:'10px 12px', scrollbarWidth:'thin', scrollbarColor:'#1a1a2e transparent' }}>
+            {logs.map(l=><LogLine key={l.id} {...l}/>)}
           </div>
-
-          {/* Quick commands */}
-          <div style={{ padding:'10px 14px', borderTop:'1px solid #0d0d18' }}>
-            <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#1e1e2e', textTransform:'uppercase', letterSpacing:'1.5px', marginBottom:'6px' }}>QUICK SEARCH</p>
-            {['Slack OAuth setup','GlideRecord query','ACL error fix'].map(cmd=>(
-              <button key={cmd} onClick={()=>{ setQ(cmd); router.push('/search?q='+encodeURIComponent(cmd),undefined,{shallow:true}); runSearch(cmd); }}
-                style={{ display:'block', width:'100%', textAlign:'left', padding:'4px 0', background:'none', border:'none', fontFamily:"'JetBrains Mono',monospace", fontSize:'10.5px', color:'#374151', cursor:'pointer', transition:'color .15s' }}
+          {/* Quick example queries */}
+          <div style={{ padding:'10px 12px', borderTop:'1px solid #0d0d18' }}>
+            <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#1e1e2e', marginBottom:'6px', letterSpacing:'1px' }}>TRY THESE</p>
+            {[
+              context==='jira-admin' ? 'How do I sync Jira issues to SN incidents?' :
+              context==='python-dev' ? 'Authenticate to ServiceNow REST API python' :
+              context==='beginner'   ? 'What is a Business Rule' :
+              'GlideRecord query with OR condition',
+              context==='error' ? '' : 'Table API vs Import Set API when to use',
+              'How to fix ACL restriction error',
+            ].filter(Boolean).slice(0,3).map(cmd=>(
+              <button key={cmd} onClick={()=>{ setQ(cmd); router.push(`/search?q=${encodeURIComponent(cmd)}${context?`&ctx=${context}`:''}`); runSearch(cmd, context); }}
+                style={{ display:'block', width:'100%', textAlign:'left', padding:'3px 0', background:'none', border:'none', fontFamily:"'JetBrains Mono',monospace", fontSize:'10px', color:'#2a2a3a', cursor:'pointer', transition:'color .1s', lineHeight:1.5 }}
                 onMouseOver={e=>e.currentTarget.style.color='#8b85ff'}
-                onMouseOut={e=>e.currentTarget.style.color='#374151'}>
-                › {cmd}
+                onMouseOut={e=>e.currentTarget.style.color='#2a2a3a'}>
+                › {cmd.slice(0,38)}{cmd.length>38?'…':''}
               </button>
             ))}
           </div>
         </div>
 
-        {/* RIGHT — Results */}
-        <div style={{ flex:1, overflowY:'auto', padding:'28px 32px', scrollbarWidth:'thin', scrollbarColor:'#1a1a2e transparent' }}>
+        {/* RIGHT — results */}
+        <div style={{ flex:1, overflowY:'auto', padding:'24px 28px', scrollbarWidth:'thin', scrollbarColor:'#1a1a2e transparent' }}>
 
           {/* Empty state */}
-          {!searched && !loading && (
-            <div style={{ paddingTop:'60px', maxWidth:'560px' }}>
-              <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'11px', color:'#1e1e2e', marginBottom:'24px', letterSpacing:'1px' }}>RECENT QUERIES</p>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
+          {!searched && (
+            <div style={{ paddingTop:'40px', maxWidth:'640px' }}>
+              {/* USP banner — show what makes this different */}
+              <div style={{ padding:'16px 20px', background:'rgba(108,99,255,.04)', border:'1px solid rgba(108,99,255,.12)', borderRadius:'12px', marginBottom:'28px' }}>
+                <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#6c63ff', marginBottom:'10px', letterSpacing:'1.5px' }}>HOW THIS IS DIFFERENT FROM servicenow.com/docs</p>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
+                  {[
+                    { icon:'⚖️', t:'When to use what', d:'Docs say HOW. We say WHEN and WHY.' },
+                    { icon:'🐛', t:'Error → Fix instantly', d:'Paste any error, get root cause + fix.' },
+                    { icon:'🌍', t:'Your platform, your language', d:'Jira admin? Python dev? We translate.' },
+                    { icon:'💻', t:'Copy-paste ready code', d:'Not syntax fragments. Real patterns.' },
+                  ].map(f=>(
+                    <div key={f.t} style={{ padding:'10px 12px', background:'rgba(255,255,255,.02)', border:'1px solid rgba(255,255,255,.04)', borderRadius:'8px' }}>
+                      <div style={{ fontSize:'16px', marginBottom:'4px' }}>{f.icon}</div>
+                      <div style={{ color:'#e2e8f0', fontSize:'12.5px', fontWeight:600, marginBottom:'2px' }}>{f.t}</div>
+                      <div style={{ color:'#374151', fontSize:'11px', lineHeight:1.45, fontFamily:"'JetBrains Mono',monospace" }}>{f.d}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Context prompt */}
+              {!context && (
+                <div style={{ padding:'12px 16px', background:'rgba(245,158,11,.05)', border:'1px solid rgba(245,158,11,.15)', borderRadius:'10px', marginBottom:'20px', display:'flex', alignItems:'center', gap:'10px' }}>
+                  <span style={{ fontSize:'16px' }}>💡</span>
+                  <div>
+                    <p style={{ color:'#f59e0b', fontSize:'12.5px', fontWeight:600, margin:'0 0 2px' }}>Tell us who you are for better answers</p>
+                    <p style={{ color:'#6b7280', fontSize:'11.5px', margin:0 }}>Click <strong style={{ color:'#9ca3af' }}>SN Developer ▾</strong> in the header to set your context</p>
+                  </div>
+                </div>
+              )}
+
+              <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'10px', color:'#1e1e2e', marginBottom:'12px', letterSpacing:'1px' }}>POPULAR QUERIES</p>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'7px' }}>
                 {[
-                  { icon:'🔌', label:'Slack spoke setup', q:'How to set up Slack spoke in ServiceNow' },
-                  { icon:'⚙️', label:'GlideRecord patterns', q:'GlideRecord query best practices' },
-                  { icon:'🐛', label:'Debug ACL errors', q:'Fix ACL restriction error ServiceNow' },
-                  { icon:'🔑', label:'OAuth configuration', q:'OAuth 2.0 Integration Hub setup' },
+                  { q:'Table API vs Import Set API when to use', icon:'⚖️', tag:'decision' },
+                  { q:'GlideRecord query multiple conditions', icon:'🗄️', tag:'code' },
+                  { q:'INVALID_SESSION_ID error ServiceNow', icon:'🐛', tag:'error' },
+                  { q:'How to set up Slack Integration Hub', icon:'💬', tag:'setup' },
+                  { q:'Business Rule vs Script Include vs Client Script', icon:'⚖️', tag:'decision' },
+                  { q:'OAuth 2.0 outbound REST ServiceNow', icon:'🔐', tag:'setup' },
                 ].map(s=>(
-                  <button key={s.q} onClick={()=>{ setQ(s.q); router.push('/search?q='+encodeURIComponent(s.q),undefined,{shallow:true}); runSearch(s.q); }}
-                    style={{ padding:'14px', background:'rgba(255,255,255,.015)', border:'1px solid rgba(255,255,255,.04)', borderRadius:'10px', cursor:'pointer', textAlign:'left', transition:'all .15s' }}
+                  <button key={s.q} onClick={()=>{ setQ(s.q); router.push(`/search?q=${encodeURIComponent(s.q)}`); runSearch(s.q); }}
+                    style={{ padding:'10px 12px', background:'rgba(255,255,255,.015)', border:'1px solid rgba(255,255,255,.04)', borderRadius:'9px', cursor:'pointer', textAlign:'left', transition:'all .15s' }}
                     onMouseOver={e=>{e.currentTarget.style.borderColor='rgba(108,99,255,.25)';e.currentTarget.style.background='rgba(108,99,255,.04)';}}
                     onMouseOut={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,.04)';e.currentTarget.style.background='rgba(255,255,255,.015)';}}>
-                    <div style={{ fontSize:'18px', marginBottom:'6px' }}>{s.icon}</div>
-                    <div style={{ color:'#6b7280', fontSize:'12.5px', fontFamily:"'JetBrains Mono',monospace" }}>{s.label}</div>
+                    <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'3px' }}>
+                      <span style={{ fontSize:'13px' }}>{s.icon}</span>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'8.5px', color: s.tag==='error'?'#f87171':s.tag==='decision'?'#f59e0b':'#6c63ff',
+                        background: s.tag==='error'?'rgba(248,113,113,.1)':s.tag==='decision'?'rgba(245,158,11,.1)':'rgba(108,99,255,.1)',
+                        padding:'1px 6px', borderRadius:'3px' }}>{s.tag}</span>
+                    </div>
+                    <p style={{ color:'#6b7280', fontSize:'12px', margin:0, lineHeight:1.4 }}>{s.q}</p>
                   </button>
                 ))}
-              </div>
-
-              <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'11px', color:'#1e1e2e', margin:'28px 0 14px', letterSpacing:'1px' }}>BROWSE SPOKES</p>
-              <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
-                {['slack','jira','github','aws','salesforce','pagerduty','okta','microsoft-teams'].map(s=>(
-                  <Link key={s} href={`/spoke/${s}`} style={{ textDecoration:'none', padding:'4px 12px', background:'rgba(255,255,255,.02)', border:'1px solid rgba(255,255,255,.04)', borderRadius:'20px', color:'#4b5563', fontSize:'11.5px', fontFamily:"'JetBrains Mono',monospace", transition:'all .15s' }}
-                    onMouseOver={e=>{e.currentTarget.style.color='#8b85ff';e.currentTarget.style.borderColor='rgba(108,99,255,.2)';}}
-                    onMouseOut={e=>{e.currentTarget.style.color='#4b5563';e.currentTarget.style.borderColor='rgba(255,255,255,.04)';}}>
-                    {s}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Error */}
-          {error && (
-            <div style={{ padding:'12px 16px', background:'rgba(239,68,68,.06)', border:'1px solid rgba(239,68,68,.15)', borderRadius:'10px', color:'#f87171', fontSize:'13px', marginBottom:'20px', fontFamily:"'JetBrains Mono',monospace" }}>
-              ✗ {error}
-            </div>
-          )}
-
-          {/* Loading skeleton */}
-          {loading && !results.length && (
-            <div style={{ maxWidth:'720px' }}>
-              <div style={{ padding:'20px', background:'rgba(108,99,255,.04)', border:'1px solid rgba(108,99,255,.1)', borderRadius:'12px', marginBottom:'20px' }}>
-                <Skel h="12px" w="80px" mb="14px" /><Skel /><Skel /><Skel w="75%" mb="0" />
-              </div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
-                {[1,2,3,4].map(i=><div key={i}><Skel h="72px" mb="0" /></div>)}
               </div>
             </div>
           )}
 
           {/* Results */}
-          {searched && !loading && (
-            <div style={{ maxWidth:'720px' }}>
+          {searched && (
+            <div style={{ maxWidth:'760px' }}>
 
-              {/* Query header */}
-              {q && (
-                <div style={{ marginBottom:'20px', display:'flex', alignItems:'center', gap:'10px' }}>
-                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'11px', color:'#2a2a3a' }}>query:</span>
-                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'13px', color:'#8b85ff' }}>"{q}"</span>
-                  {meta.latency && <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'10px', color:'#1e1e2e', marginLeft:'auto' }}>{meta.latency}ms {meta.cached?'[cached]':''}</span>}
-                </div>
-              )}
+              {/* Query header + intent badge */}
+              <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'18px', flexWrap:'wrap' }}>
+                <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'11px', color:'#2a2a3a' }}>›</span>
+                <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'13px', color:'#8b85ff' }}>"{q}"</span>
+                {intentMeta && (
+                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9.5px', color:intentMeta.color,
+                    background: intentMeta.color+'12', border:`1px solid ${intentMeta.color}25`,
+                    padding:'2px 8px', borderRadius:'4px', display:'flex', alignItems:'center', gap:'4px' }}>
+                    {intentMeta.icon} {intentMeta.label}
+                  </span>
+                )}
+                {ctxMeta.id && (
+                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9.5px', color:'#8b85ff',
+                    background:'rgba(108,99,255,.1)', border:'1px solid rgba(108,99,255,.2)',
+                    padding:'2px 8px', borderRadius:'4px' }}>
+                    {ctxMeta.icon} {ctxMeta.label} mode
+                  </span>
+                )}
+                {meta.latency && <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#1e1e2e', marginLeft:'auto' }}>{meta.latency}ms{meta.cached?' [cached]':''}</span>}
+              </div>
 
               {/* AI Answer */}
-              {(aiText || streaming) && (
-                <div style={{ marginBottom:'24px', borderRadius:'12px', border:'1px solid rgba(108,99,255,.18)', background:'rgba(108,99,255,.03)', overflow:'hidden' }}>
-                  <div style={{ padding:'10px 16px', borderBottom:'1px solid rgba(108,99,255,.1)', display:'flex', alignItems:'center', gap:'8px' }}>
-                    <span style={{ width:'7px', height:'7px', borderRadius:'50%', background: streaming ? '#f59e0b' : '#4ade80', display:'inline-block', animation: streaming ? 'blink 1s infinite' : 'none' }} />
-                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'10px', color:'#6c63ff', letterSpacing:'1.5px' }}>AI_RESPONSE</span>
-                    {(aiAnswer?.model||meta.model) && <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#1e1e2e', marginLeft:'auto' }}>{aiAnswer?.model||meta.model}</span>}
+              {(aiText || loading || streaming) && (
+                <div style={{ marginBottom:'22px', borderRadius:'12px', border:'1px solid rgba(108,99,255,.18)', background:'rgba(108,99,255,.03)', overflow:'hidden' }}>
+                  <div style={{ padding:'9px 16px', borderBottom:'1px solid rgba(108,99,255,.1)', display:'flex', alignItems:'center', gap:'8px' }}>
+                    <span style={{ width:'6px', height:'6px', borderRadius:'50%', background: streaming?'#f59e0b':'#4ade80', display:'inline-block', animation:streaming?'blink 1s infinite':'none' }}/>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#6c63ff', letterSpacing:'1.5px' }}>
+                      {streaming ? 'GENERATING...' : 'AI_ANSWER'}
+                    </span>
+                    {intentMeta && !streaming && (
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'8px', color:intentMeta.color, marginLeft:'4px' }}>{intentMeta.icon} {intentMeta.desc}</span>
+                    )}
                   </div>
-                  <div style={{ padding:'16px' }}>
-                    {streaming && !streamText ? (
-                      <div style={{ display:'flex', gap:'4px', alignItems:'center' }}>
-                        {[0,1,2].map(i=><div key={i} style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#6c63ff', animation:`blink 1s ${i*0.2}s ease-in-out infinite` }}/>)}
+                  <div style={{ padding:'16px 18px' }}>
+                    {loading && !aiText && !streamText ? (
+                      <div style={{ display:'flex', gap:'5px' }}>
+                        {[0,1,2].map(i=><div key={i} style={{ width:'7px', height:'7px', borderRadius:'50%', background:'#6c63ff', animation:`blink 1s ${i*.2}s infinite` }}/>)}
                       </div>
                     ) : <Md text={aiText} />}
                   </div>
                   {aiText && !streaming && (
-                    <div style={{ padding:'0 16px 12px', display:'flex', gap:'8px' }}>
-                      <button onClick={()=>navigator.clipboard?.writeText(aiText)} style={{ padding:'3px 10px', background:'rgba(108,99,255,.08)', border:'1px solid rgba(108,99,255,.15)', borderRadius:'5px', color:'#8b85ff', fontSize:'10.5px', cursor:'pointer', fontFamily:"'JetBrains Mono',monospace" }}>copy_answer</button>
+                    <div style={{ padding:'0 16px 12px' }}>
+                      <button onClick={()=>navigator.clipboard?.writeText(aiText)}
+                        style={{ padding:'3px 10px', background:'rgba(108,99,255,.08)', border:'1px solid rgba(108,99,255,.15)', borderRadius:'5px', color:'#8b85ff', fontSize:'10px', cursor:'pointer', fontFamily:"'JetBrains Mono',monospace" }}>
+                        copy_answer
+                      </button>
                     </div>
                   )}
                 </div>
@@ -412,25 +435,57 @@ export default function Search() {
 
               {/* Spoke results */}
               {results.length > 0 && (
-                <div>
-                  <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'10px', color:'#2a2a3a', letterSpacing:'1.5px', marginBottom:'10px' }}>MATCHED SPOKES ({results.length})</p>
-                  <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))', gap:'7px', marginBottom:'24px' }}>
-                    {results.slice(0,6).map(s=><SpokeCard key={s.id||s.slug} spoke={s} />)}
+                <div style={{ marginBottom:'20px' }}>
+                  <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9.5px', color:'#2a2a3a', letterSpacing:'1.5px', marginBottom:'10px' }}>MATCHED SPOKES ({results.length})</p>
+                  <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:'6px' }}>
+                    {results.slice(0,6).map(s=>(
+                      <Link key={s.slug} href={`/spoke/${s.slug}`} style={{ textDecoration:'none', display:'block' }}>
+                        <div style={{ padding:'11px 13px', background:'rgba(255,255,255,.02)', border:'1px solid rgba(255,255,255,.05)', borderRadius:'9px', transition:'all .15s' }}
+                          onMouseOver={e=>{e.currentTarget.style.borderColor='rgba(108,99,255,.3)';e.currentTarget.style.background='rgba(108,99,255,.04)';}}
+                          onMouseOut={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,.05)';e.currentTarget.style.background='rgba(255,255,255,.02)';}}>
+                          <div style={{ display:'flex', alignItems:'center', gap:'7px', marginBottom:'4px' }}>
+                            <span style={{ fontSize:'15px' }}>{s.icon||'🔌'}</span>
+                            <span style={{ color:'#e2e8f0', fontSize:'13px', fontWeight:600 }}>{s.name}</span>
+                            {s.category && <span style={{ fontSize:'9.5px', color:'#374151', background:'rgba(255,255,255,.04)', padding:'1px 6px', borderRadius:'10px' }}>{s.category}</span>}
+                          </div>
+                          <p style={{ color:'#4b5563', fontSize:'11.5px', margin:0, lineHeight:1.4 }}>{(s.description||'').slice(0,70)}{(s.description||'').length>70?'…':''}</p>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
-                  {results.length > 6 && (
-                    <Link href={`/spokes?q=${encodeURIComponent(q)}`} style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'11px', color:'#4b5563', textDecoration:'none' }}>
-                      view all {results.length} results →
-                    </Link>
-                  )}
+                </div>
+              )}
+
+              {/* API reference hits */}
+              {apiHits.length > 0 && (
+                <div style={{ marginBottom:'20px' }}>
+                  <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9.5px', color:'#2a2a3a', letterSpacing:'1.5px', marginBottom:'10px' }}>API REFERENCE ({apiHits.length})</p>
+                  <div style={{ display:'flex', flexDirection:'column', gap:'5px' }}>
+                    {apiHits.map(api=>(
+                      <Link key={api.slug} href={`/api-reference?q=${encodeURIComponent(api.name)}`} style={{ textDecoration:'none', display:'block' }}>
+                        <div style={{ padding:'9px 12px', background:'rgba(255,255,255,.015)', border:'1px solid rgba(255,255,255,.04)', borderRadius:'8px', display:'flex', alignItems:'center', gap:'10px', transition:'all .15s' }}
+                          onMouseOver={e=>{e.currentTarget.style.borderColor='rgba(108,99,255,.25)';}}
+                          onMouseOut={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,.04)';}}>
+                          <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', padding:'2px 7px', borderRadius:'4px',
+                            color: api.api_type==='rest'?'#0ea5e9':api.api_type==='client'?'#f59e0b':'#8b85ff',
+                            background: api.api_type==='rest'?'rgba(14,165,233,.1)':api.api_type==='client'?'rgba(245,158,11,.1)':'rgba(108,99,255,.1)' }}>
+                            {api.api_type}
+                          </span>
+                          <span style={{ color:'#e2e8f0', fontSize:'13px', fontWeight:600 }}>{api.name}</span>
+                          {api.global_var && <code style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'10px', color:'#6c63ff' }}>{api.global_var}</code>}
+                          <span style={{ color:'#374151', fontSize:'11px', marginLeft:'auto' }}>→</span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               )}
 
               {/* No results */}
-              {!loading && !aiText && !streaming && results.length === 0 && (
+              {!loading && !aiText && !streaming && results.length === 0 && apiHits.length === 0 && (
                 <div style={{ textAlign:'center', padding:'48px 0' }}>
-                  <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'11px', color:'#2a2a3a', marginBottom:'8px' }}>NO_RESULTS</p>
-                  <p style={{ color:'#374151', fontSize:'13px', marginBottom:'20px' }}>No spokes matched "{q}"</p>
-                  <Link href="/spokes" style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'11px', color:'#6c63ff', textDecoration:'none', padding:'6px 14px', border:'1px solid rgba(108,99,255,.2)', borderRadius:'6px' }}>browse_all_spokes →</Link>
+                  <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'10px', color:'#1e1e2e', marginBottom:'6px' }}>NO_RESULTS</p>
+                  <p style={{ color:'#374151', fontSize:'13px' }}>No matches for "{q}"</p>
                 </div>
               )}
             </div>
@@ -438,7 +493,8 @@ export default function Search() {
         </div>
       </div>
 
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}} @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}`}</style>
+      {/* Click outside to close context menu */}
+      {showCtx && <div style={{ position:'fixed', inset:0, zIndex:100 }} onClick={()=>setShowCtx(false)}/>}
     </>
   );
 }
