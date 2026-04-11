@@ -5,13 +5,8 @@ import { useSession, signOut } from 'next-auth/react';
 
 const TOOLS = [
   { href: '/tools/code-generator', icon: '💻', label: 'Code Generator',  desc: 'AI-powered SN code' },
-  { href: '/tools/script-linter',  icon: '✅', label: 'Script Linter',   desc: '15 lint rules + AI' },
   { href: '/tools/error-finder',   icon: '🐛', label: 'Error Finder',    desc: 'AI error analysis' },
-  { href: '/tools/query-builder',  icon: '📊', label: 'Query Builder',   desc: 'Visual GlideRecord' },
-  { href: '/tools/version-matrix', icon: '🔖', label: 'Version Matrix',  desc: 'SN compatibility' },
-  { href: '/tools/snippets',       icon: '📋', label: 'Snippets',        desc: 'Copy-paste templates' },
   { href: '/tools/cheatsheet',     icon: '📖', label: 'Cheatsheet',      desc: 'Quick reference' },
-  { href: '/tools/formatter',      icon: '✨', label: 'Formatter',        desc: 'Auto-indent scripts' },
 ];
 
 const NAV_LINKS = [
