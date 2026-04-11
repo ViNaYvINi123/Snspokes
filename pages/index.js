@@ -23,8 +23,8 @@ const TOOLS = [
     name: 'Code Generator',
     tagline: 'Write zero code',
     desc: 'Describe what you need — Business Rules, Script Includes, Client Scripts — and get production-ready ServiceNow code instantly.',
-    accent: '#6366f1',
-    glow: 'rgba(99,102,241,0.2)',
+    accent: '#6c63ff',
+    glow: 'rgba(108,99,255,0.2)',
     preview: 'var gr = new GlideRecord(\'incident\');\ngr.addQuery(\'state\', 1);\ngr.query();\nwhile (gr.next()) {\n  gs.log(gr.number);\n}',
   },
   {
@@ -147,21 +147,21 @@ export default function Home() {
           @keyframes sndot { 0%,100% { opacity:1; } 50% { opacity:0.25; } }
           .snfu { animation: snfu .65s ease both; }
           .snd1 { animation-delay:.05s; } .snd2 { animation-delay:.15s; } .snd3 { animation-delay:.25s; } .snd4 { animation-delay:.35s; } .snd5 { animation-delay:.48s; }
-          .sngt { background:linear-gradient(135deg,#818cf8 0%,#c084fc 50%,#38bdf8 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-          .snsht { background:linear-gradient(90deg,#818cf8,#c084fc,#38bdf8,#818cf8); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:snshimmer 4s linear infinite; }
+          .sngt { background:linear-gradient(135deg,#8b85ff 0%,#c084fc 50%,#38bdf8 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+          .snsht { background:linear-gradient(90deg,#8b85ff,#c084fc,#38bdf8,#8b85ff); background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:snshimmer 4s linear infinite; }
           .sncard { transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease; }
           .sncard:hover { transform:translateY(-3px); }
           .snswrap { transition:box-shadow .25s ease, border-color .25s ease; }
-          .snsfoc { box-shadow:0 0 0 1px rgba(99,102,241,.45),0 8px 40px rgba(99,102,241,.12),0 20px 60px rgba(0,0,0,.5)!important; border-color:rgba(99,102,241,.4)!important; }
+          .snsfoc { box-shadow:0 0 0 1px rgba(108,99,255,.45),0 8px 40px rgba(108,99,255,.12),0 20px 60px rgba(0,0,0,.5)!important; border-color:rgba(108,99,255,.4)!important; }
           .snticker-wrap { overflow:hidden; mask-image:linear-gradient(to right,transparent 0%,black 10%,black 90%,transparent 100%); }
           .snticker-inner { display:inline-flex; gap:0; animation:snticker 32s linear infinite; width:max-content; }
           .snspk { transition:all .2s ease; }
           .snspk:hover { transform:translateY(-2px) scale(1.02); }
-          .snbtnp { background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; border:none; padding:15px 34px; border-radius:12px; font-size:15px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; transition:opacity .15s,transform .15s,box-shadow .15s; text-decoration:none; display:inline-block; }
-          .snbtnp:hover { opacity:.9; transform:translateY(-1px); box-shadow:0 8px 24px rgba(99,102,241,.35); }
+          .snbtnp { background:linear-gradient(135deg,#6c63ff,#a855f7); color:#fff; border:none; padding:15px 34px; border-radius:12px; font-size:15px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; transition:opacity .15s,transform .15s,box-shadow .15s; text-decoration:none; display:inline-block; }
+          .snbtnp:hover { opacity:.9; transform:translateY(-1px); box-shadow:0 8px 24px rgba(108,99,255,.35); }
           .snbtng { background:rgba(255,255,255,.04); color:#a8b2d8; border:1px solid rgba(255,255,255,.08); padding:15px 26px; border-radius:12px; font-size:15px; font-weight:500; cursor:pointer; font-family:'DM Sans',sans-serif; transition:background .15s,border-color .15s; text-decoration:none; display:inline-block; }
           .snbtng:hover { background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.15); }
-          .snavi { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:700; color:#fff; flex-shrink:0; }
+          .snavi { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,#6c63ff,#a855f7); display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:700; color:#fff; flex-shrink:0; }
         `}</style>
       </Head>
       <Navbar />
@@ -170,13 +170,13 @@ export default function Home() {
         {/* HERO */}
         <section style={{ position:'relative', minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', padding:'140px 24px 100px', overflow:'hidden' }}>
           <div style={{ position:'absolute', inset:0, pointerEvents:'none', overflow:'hidden' }}>
-            <div style={{ position:'absolute', top:'-10%', left:'-5%', width:'600px', height:'600px', background:'radial-gradient(ellipse, rgba(99,102,241,.08) 0%, transparent 70%)', animation:'snaurora 18s ease-in-out infinite', borderRadius:'50%' }} />
-            <div style={{ position:'absolute', bottom:'-15%', right:'-5%', width:'500px', height:'500px', background:'radial-gradient(ellipse, rgba(139,92,246,.07) 0%, transparent 70%)', animation:'snaurora 22s ease-in-out infinite reverse', borderRadius:'50%' }} />
-            <div style={{ position:'absolute', top:'40%', left:'50%', transform:'translate(-50%,-50%)', width:'800px', height:'400px', background:'radial-gradient(ellipse, rgba(56,189,248,.04) 0%, transparent 60%)', animation:'snaurora 15s ease-in-out infinite 5s', borderRadius:'50%' }} />
+            <div style={{ position:'absolute', top:'-10%', left:'-5%', width:'600px', height:'600px', background:'radial-gradient(ellipse, rgba(108,99,255,.08) 0%, transparent 70%)', animation:'snaurora 18s ease-in-out infinite', borderRadius:'50%' }} />
+            <div style={{ position:'absolute', bottom:'-15%', right:'-5%', width:'500px', height:'500px', background:'radial-gradient(ellipse, rgba(168,85,247,.07) 0%, transparent 70%)', animation:'snaurora 22s ease-in-out infinite reverse', borderRadius:'50%' }} />
+            <div style={{ position:'absolute', top:'40%', left:'50%', transform:'translate(-50%,-50%)', width:'800px', height:'400px', background:'radial-gradient(ellipse, rgba(108,99,255,.04) 0%, transparent 60%)', animation:'snaurora 15s ease-in-out infinite 5s', borderRadius:'50%' }} />
             <div style={{ position:'absolute', inset:0, backgroundImage:'radial-gradient(circle, rgba(255,255,255,.025) 1px, transparent 1px)', backgroundSize:'40px 40px', maskImage:'radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%)' }} />
           </div>
           <div style={{ maxWidth:'780px', width:'100%', textAlign:'center', position:'relative', zIndex:1 }}>
-            <div className="snfu snd1" style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'6px 16px', background:'rgba(99,102,241,.07)', border:'1px solid rgba(99,102,241,.18)', borderRadius:'30px', marginBottom:'32px', fontSize:'12.5px', color:'#a5b4fc', fontFamily:"'DM Sans',sans-serif", fontWeight:500 }}>
+            <div className="snfu snd1" style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'6px 16px', background:'rgba(108,99,255,.07)', border:'1px solid rgba(108,99,255,.18)', borderRadius:'30px', marginBottom:'32px', fontSize:'12.5px', color:'#c4beff', fontFamily:"'DM Sans',sans-serif", fontWeight:500 }}>
               <span style={{ width:'7px', height:'7px', borderRadius:'50%', background:'#4ade80', display:'inline-block', animation:'sndot 2s infinite' }} />
               Free forever · No credit card
               <span style={{ width:'1px', height:'12px', background:'rgba(165,180,252,.2)', margin:'0 2px' }} />
@@ -184,7 +184,7 @@ export default function Home() {
             </div>
             <h1 className="snfu snd2 snf" style={{ fontSize:'clamp(38px,6vw,68px)', fontWeight:800, lineHeight:1.05, letterSpacing:'-2px', marginBottom:'22px', color:'#f0f4ff' }}>
               The toolkit every<br />
-              <span className="sngt">ServiceNow developer</span><br />
+              <span className="gradient-text">ServiceNow developer</span><br />
               actually needs
             </h1>
             <p className="snfu snd3" style={{ color:'#6b7280', fontSize:'18px', lineHeight:1.75, maxWidth:'520px', margin:'0 auto 44px', fontWeight:400 }}>
@@ -203,7 +203,7 @@ export default function Home() {
                   placeholder={searchQ ? '' : (typed || 'Ask anything about ServiceNow...')}
                   style={{ flex:1, background:'none', border:'none', outline:'none', color:'#e8eaf6', fontSize:'15px', fontFamily:"'DM Sans',sans-serif", padding:'13px 8px' }}
                 />
-                <button type="submit" style={{ flexShrink:0, padding:'13px 26px', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', border:'none', borderRadius:'14px', color:'#fff', fontSize:'14px', fontWeight:600, cursor:'pointer', fontFamily:"'DM Sans',sans-serif", whiteSpace:'nowrap' }}>
+                <button type="submit" style={{ flexShrink:0, padding:'13px 26px', background:'linear-gradient(135deg,#6c63ff,#a855f7)', border:'none', borderRadius:'14px', color:'#fff', fontSize:'14px', fontWeight:600, cursor:'pointer', fontFamily:"'DM Sans',sans-serif", whiteSpace:'nowrap' }}>
                   Search →
                 </button>
               </div>
@@ -212,7 +212,7 @@ export default function Home() {
                   return (
                     <button key={q} type="button"
                       onClick={function() { setSearchQ(q); router.push('/search?q=' + encodeURIComponent(q)); }}
-                      onMouseOver={function(e) { e.currentTarget.style.color='#a5b4fc'; e.currentTarget.style.borderColor='rgba(165,180,252,.3)'; }}
+                      onMouseOver={function(e) { e.currentTarget.style.color='#c4beff'; e.currentTarget.style.borderColor='rgba(165,180,252,.3)'; }}
                       onMouseOut={function(e) { e.currentTarget.style.color='#6b7280'; e.currentTarget.style.borderColor='rgba(255,255,255,.07)'; }}
                       style={{ padding:'5px 13px', background:'rgba(255,255,255,.03)', border:'1px solid rgba(255,255,255,.07)', borderRadius:'20px', color:'#6b7280', fontSize:'12.5px', cursor:'pointer', fontFamily:"'DM Sans',sans-serif", transition:'color .15s,border-color .15s' }}>
                       {q}
@@ -256,7 +256,7 @@ export default function Home() {
             </div>
           </div>
           <div style={{ textAlign:'center', marginTop:'28px' }}>
-            <Link href="/spokes" style={{ color:'#6366f1', fontSize:'13px', fontWeight:600, textDecoration:'none', padding:'8px 20px', border:'1px solid rgba(99,102,241,.2)', borderRadius:'20px' }}>View all 200+ spokes →</Link>
+            <Link href="/spokes" style={{ color:'#6c63ff', fontSize:'13px', fontWeight:600, textDecoration:'none', padding:'8px 20px', border:'1px solid rgba(108,99,255,.2)', borderRadius:'20px' }}>View all 200+ spokes →</Link>
           </div>
         </section>
 
@@ -264,19 +264,19 @@ export default function Home() {
         <section style={{ padding:'100px 24px', borderTop:'1px solid rgba(255,255,255,.04)' }}>
           <div style={{ maxWidth:'1000px', margin:'0 auto' }}>
             <div style={{ textAlign:'center', marginBottom:'64px' }}>
-              <p style={{ color:'#6366f1', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'2.5px', marginBottom:'12px' }}>How it works</p>
+              <p style={{ color:'#6c63ff', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'2.5px', marginBottom:'12px' }}>How it works</p>
               <h2 className="snf" style={{ fontSize:'clamp(28px,4vw,42px)', fontWeight:800, letterSpacing:'-1px', color:'#f0f4ff', lineHeight:1.1 }}>
-                From question to <span className="sngt">shipped code</span> in minutes
+                From question to <span className="gradient-text">shipped code</span> in minutes
               </h2>
             </div>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:'2px' }}>
               {STEPS.map(function(step, i) {
                 return (
-                  <div key={i} style={{ padding:'36px 32px', background: i===1 ? 'rgba(99,102,241,.05)' : 'rgba(255,255,255,.015)', border:'1px solid rgba(255,255,255,.05)', borderRadius: i===0 ? '20px 0 0 20px' : i===2 ? '0 20px 20px 0' : '0', position:'relative', overflow:'hidden' }}>
-                    {i===1 && <div style={{ position:'absolute', top:0, left:0, right:0, height:'2px', background:'linear-gradient(to right,transparent,#6366f1,transparent)' }} />}
+                  <div key={i} style={{ padding:'36px 32px', background: i===1 ? 'rgba(108,99,255,.05)' : 'rgba(255,255,255,.015)', border:'1px solid rgba(255,255,255,.05)', borderRadius: i===0 ? '20px 0 0 20px' : i===2 ? '0 20px 20px 0' : '0', position:'relative', overflow:'hidden' }}>
+                    {i===1 && <div style={{ position:'absolute', top:0, left:0, right:0, height:'2px', background:'linear-gradient(to right,transparent,#6c63ff,transparent)' }} />}
                     <div style={{ display:'flex', alignItems:'flex-start', gap:'16px', marginBottom:'16px' }}>
                       <span className="snm" style={{ fontSize:'11px', color:'#374151', fontWeight:600, paddingTop:'2px', flexShrink:0 }}>{step.n}</span>
-                      <div style={{ width:'40px', height:'40px', background:'rgba(99,102,241,.08)', border:'1px solid rgba(99,102,241,.12)', borderRadius:'10px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px', flexShrink:0 }}>{step.icon}</div>
+                      <div style={{ width:'40px', height:'40px', background:'rgba(108,99,255,.08)', border:'1px solid rgba(108,99,255,.12)', borderRadius:'10px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px', flexShrink:0 }}>{step.icon}</div>
                     </div>
                     <h3 className="snf" style={{ fontSize:'17px', fontWeight:700, color:'#e8eaf6', marginBottom:'10px', letterSpacing:'-0.3px' }}>{step.title}</h3>
                     <p style={{ color:'#6b7280', fontSize:'13.5px', lineHeight:1.65 }}>{step.desc}</p>
@@ -291,15 +291,15 @@ export default function Home() {
         <section style={{ padding:'100px 24px', borderTop:'1px solid rgba(255,255,255,.04)' }}>
           <div style={{ maxWidth:'1100px', margin:'0 auto' }}>
             <div style={{ textAlign:'center', marginBottom:'64px' }}>
-              <p style={{ color:'#6366f1', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'2.5px', marginBottom:'12px' }}>Power Tools</p>
+              <p style={{ color:'#6c63ff', fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'2.5px', marginBottom:'12px' }}>Power Tools</p>
               <h2 className="snf" style={{ fontSize:'clamp(28px,4vw,42px)', fontWeight:800, letterSpacing:'-1px', color:'#f0f4ff', lineHeight:1.1 }}>
-                Built for devs who <span className="snsht">hate wasting time</span>
+                Built for devs who <span className="gradient-text">hate wasting time</span>
               </h2>
               <p style={{ color:'#6b7280', fontSize:'16px', maxWidth:'440px', margin:'16px auto 0', lineHeight:1.6 }}>Three tools, each solving a real problem every ServiceNow developer faces daily.</p>
             </div>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(310px, 1fr))', gap:'16px' }}>
               {TOOLS.map(function(t, i) {
-                var rgb = t.accent === '#6366f1' ? '99,102,241' : t.accent === '#f59e0b' ? '245,158,11' : '16,185,129';
+                var rgb = t.accent === '#6c63ff' ? '99,102,241' : t.accent === '#f59e0b' ? '245,158,11' : '16,185,129';
                 return (
                   <Link key={t.href} href={t.href} style={{ textDecoration:'none' }}>
                     <div className="sncard"
@@ -341,16 +341,16 @@ export default function Home() {
               })}
             </div>
             <div style={{ textAlign:'center', marginBottom:'48px' }}>
-              <h2 className="snf" style={{ fontSize:'clamp(26px,3.5vw,38px)', fontWeight:800, letterSpacing:'-.8px', color:'#f0f4ff' }}>Developers <span className="sngt">love it</span></h2>
+              <h2 className="snf" style={{ fontSize:'clamp(26px,3.5vw,38px)', fontWeight:800, letterSpacing:'-.8px', color:'#f0f4ff' }}>Developers <span className="gradient-text">love it</span></h2>
             </div>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))', gap:'16px' }}>
               {TESTIMONIALS.map(function(t, i) {
                 return (
                   <div key={i} className="sncard"
-                    onMouseOver={function(e) { e.currentTarget.style.borderColor='rgba(99,102,241,.25)'; e.currentTarget.style.background='rgba(99,102,241,.04)'; }}
+                    onMouseOver={function(e) { e.currentTarget.style.borderColor='rgba(108,99,255,.25)'; e.currentTarget.style.background='rgba(108,99,255,.04)'; }}
                     onMouseOut={function(e) { e.currentTarget.style.borderColor='rgba(255,255,255,.06)'; e.currentTarget.style.background='rgba(255,255,255,.02)'; }}
                     style={{ padding:'24px', background:'rgba(255,255,255,.02)', border:'1px solid rgba(255,255,255,.06)', borderRadius:'18px', overflow:'hidden' }}>
-                    <div style={{ fontSize:'28px', color:'#6366f1', marginBottom:'14px', lineHeight:1, fontFamily:'Georgia,serif', opacity:.5 }}>"</div>
+                    <div style={{ fontSize:'28px', color:'#6c63ff', marginBottom:'14px', lineHeight:1, fontFamily:'Georgia,serif', opacity:.5 }}>"</div>
                     <p style={{ color:'#9ca3af', fontSize:'14px', lineHeight:1.7, marginBottom:'20px', fontStyle:'italic' }}>{t.q}</p>
                     <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
                       <div className="snavi">{t.avatar}</div>
@@ -368,15 +368,15 @@ export default function Home() {
 
         {/* FINAL CTA */}
         <section style={{ padding:'120px 24px', borderTop:'1px solid rgba(255,255,255,.04)', position:'relative', overflow:'hidden' }}>
-          <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:'600px', height:'300px', background:'radial-gradient(ellipse,rgba(99,102,241,.08) 0%,transparent 70%)', pointerEvents:'none' }} />
+          <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:'600px', height:'300px', background:'radial-gradient(ellipse,rgba(108,99,255,.08) 0%,transparent 70%)', pointerEvents:'none' }} />
           <div style={{ maxWidth:'560px', margin:'0 auto', textAlign:'center', position:'relative', zIndex:1 }}>
-            <div style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'6px 16px', background:'rgba(99,102,241,.07)', border:'1px solid rgba(99,102,241,.18)', borderRadius:'30px', marginBottom:'28px', fontSize:'12.5px', color:'#a5b4fc' }}>
+            <div style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'6px 16px', background:'rgba(108,99,255,.07)', border:'1px solid rgba(108,99,255,.18)', borderRadius:'30px', marginBottom:'28px', fontSize:'12.5px', color:'#c4beff' }}>
               <span style={{ width:'7px', height:'7px', borderRadius:'50%', background:'#4ade80', display:'inline-block' }} />
               Free forever — no account required to search
             </div>
             <h2 className="snf" style={{ fontSize:'clamp(30px,4.5vw,52px)', fontWeight:800, lineHeight:1.05, letterSpacing:'-1.5px', color:'#f0f4ff', marginBottom:'16px' }}>
               Stop Googling.<br />
-              <span className="sngt">Start shipping.</span>
+              <span className="gradient-text">Start shipping.</span>
             </h2>
             <p style={{ color:'#6b7280', fontSize:'16px', lineHeight:1.7, marginBottom:'36px' }}>Everything a ServiceNow developer needs, in one place, powered by AI.</p>
             <div style={{ display:'flex', gap:'12px', justifyContent:'center', flexWrap:'wrap' }}>
