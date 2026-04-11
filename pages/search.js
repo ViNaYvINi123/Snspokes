@@ -221,6 +221,14 @@ export default function Search() {
         <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
         <style>{`
           @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+          @keyframes glitch {
+            0%,100%{transform:translate(0,0) skew(0)}
+            20%{transform:translate(-1px,1px) skew(0.5deg)}
+            40%{transform:translate(1px,-1px) skew(-0.3deg)}
+            60%{transform:translate(-0.5px,0.5px)}
+            80%{transform:translate(0.5px,-0.5px) skew(0.2deg)}
+          }
+          .glitch { animation: glitch 0.3s ease forwards; }
           @keyframes scanline { 0%{transform:translateY(-100%)} 100%{transform:translateY(100vh)} }
           .cursor-blink::after { content:'_'; animation:blink 1s step-end infinite; color:#6c63ff; }
           .scanline-effect { position:fixed; top:0; left:0; right:0; height:2px; background:linear-gradient(transparent,rgba(108,99,255,.04),transparent); animation:scanline 8s linear infinite; pointer-events:none; z-index:9998; }

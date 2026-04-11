@@ -154,6 +154,35 @@ function useScrollReveal() {
   });
 }
 
+
+function FeatureGate({ children }) {
+  const [flags, setFlags] = useState({
+    chatbot: false,        // off by default until flag loaded
+    command_palette: true, // on by default
+  });
+
+  useEffect(() => {
+    fetch('/api/flags')
+      .then(r => r.json())
+      .then(d => {
+        if (d.flags) {
+          const flagMap = {};
+          d.flags.forEach(f => { flagMap[f.key] = f.enabled; });
+          setFlags(prev => ({ ...prev, ...flagMap }));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  return (
+    <>
+      {children}
+      {flags.command_palette !== false && <CommandPalette />}
+      {flags.chatbot === true && <Chatbot />}
+    </>
+  );
+}
+
 export default function App({ Component, pageProps: { session, ...pageProps } }) {
   const router = useRouter();
   useScrollReveal();
@@ -166,10 +195,9 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
           <ToastProvider>
           <OnboardingGuard>
             <AnnouncementBanner />
+            <FeatureGate><span /></FeatureGate>
             <div key={router.asPath} className='page-mount'><Component {...pageProps} /></div>
-            <CommandPalette />
             <ShortcutHelp />
-            <Chatbot />
             <CookieBanner />
           </OnboardingGuard>
           </ToastProvider>
