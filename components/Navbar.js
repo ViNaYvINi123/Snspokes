@@ -7,6 +7,7 @@ const TOOLS = [
   { href: '/tools/code-generator', icon: '💻', label: 'Code Generator',  desc: 'AI-powered SN code' },
   { href: '/tools/error-finder',   icon: '🐛', label: 'Error Finder',    desc: 'AI error analysis' },
   { href: '/tools/cheatsheet',     icon: '📖', label: 'Cheatsheet',      desc: 'Quick reference' },
+  { href: '/api-reference',         icon: '📡', label: 'API Reference',  desc: 'Full SN API docs' },
 ];
 
 const NAV_LINKS = [

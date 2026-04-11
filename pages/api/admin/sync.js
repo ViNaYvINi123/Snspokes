@@ -232,7 +232,37 @@ async function handler(req, res) {
   }
 
   // ── SAVE SYNC LOG ─────────────────────────────────────────────
-  const duration = Date.now() - startedAt;
+
+    // ── Tier 1: API Reference ──────────────────────────────────
+    if (['full', 'api'].includes(action)) {
+      try {
+        const apiDataPath = path.join(process.cwd(), 'scripts', 'sn-api-data.js');
+        const { REST_APIS, SERVER_APIS, CLIENT_APIS, SCRIPTING_CONTEXTS, SCOPE_COMPARISON } = require(apiDataPath);
+        const allAPIs = [
+          ...REST_APIS.map(a => ({ ...a, api_type: 'rest' })),
+          ...SERVER_APIS.map(a => ({ ...a, api_type: 'server' })),
+          ...CLIENT_APIS.map(a => ({ ...a, api_type: 'client' })),
+          ...SCRIPTING_CONTEXTS.map(a => ({ ...a, api_type: 'context' })),
+        ];
+        await query('CREATE TABLE IF NOT EXISTS sn_api_reference (id SERIAL PRIMARY KEY, slug TEXT UNIQUE NOT NULL, name TEXT NOT NULL, category TEXT NOT NULL, api_type TEXT NOT NULL, scope TEXT DEFAULT 'both', global_var TEXT, base_path TEXT, description TEXT, methods JSONB DEFAULT '[]', params JSONB DEFAULT '[]', auth JSONB DEFAULT '[]', code_example TEXT, gotcha TEXT, scoped_differences TEXT, best_practices JSONB DEFAULT '[]', available_vars JSONB DEFAULT '[]', types JSONB DEFAULT '[]', roles_required JSONB DEFAULT '[]', view_count INTEGER DEFAULT 0, last_synced_at TIMESTAMP DEFAULT NOW(), created_at TIMESTAMP DEFAULT NOW(), updated_at TIMESTAMP DEFAULT NOW())').catch(() => {});
+        await query('CREATE TABLE IF NOT EXISTS sn_scope_comparison (id SERIAL PRIMARY KEY, topic TEXT UNIQUE NOT NULL, scoped TEXT, global_col TEXT, gotcha TEXT, created_at TIMESTAMP DEFAULT NOW())').catch(() => {});
+        let apiCount = 0;
+        for (const api of allAPIs) {
+          try {
+            await query('INSERT INTO sn_api_reference (slug,name,category,api_type,scope,global_var,base_path,description,methods,params,auth,code_example,gotcha,scoped_differences,best_practices,available_vars,types,roles_required,last_synced_at,updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,NOW(),NOW()) ON CONFLICT (slug) DO UPDATE SET name=$2,category=$3,api_type=$4,scope=$5,global_var=$6,base_path=$7,description=$8,methods=$9,params=$10,auth=$11,code_example=$12,gotcha=$13,scoped_differences=$14,best_practices=$15,available_vars=$16,types=$17,roles_required=$18,last_synced_at=NOW(),updated_at=NOW()',
+              [api.slug, api.name, api.category, api.api_type, api.scope||'both', api.global_var||'', api.base_path||'', api.description||'', JSON.stringify(api.methods||[]), JSON.stringify(api.params||[]), JSON.stringify(api.auth||[]), api.code_example||'', api.gotcha||'', api.scoped_differences||'', JSON.stringify(api.best_practices||[]), JSON.stringify(api.available_vars||[]), JSON.stringify(api.types||[]), JSON.stringify(api.roles_required||[])]);
+            apiCount++;
+          } catch(e) { result.errors.push('api:' + api.slug + ':' + e.message.slice(0,40)); }
+        }
+        for (const s of SCOPE_COMPARISON) {
+          await query('INSERT INTO sn_scope_comparison (topic,scoped,global_col,gotcha) VALUES ($1,$2,$3,$4) ON CONFLICT (topic) DO UPDATE SET scoped=$2,global_col=$3,gotcha=$4', [s.topic, s.scoped, s.global, s.gotcha]).catch(() => {});
+        }
+        result.apis = { total: allAPIs.length, upserted: apiCount };
+        log('API reference: ' + apiCount + ' entries upserted');
+      } catch(e) { result.errors.push('API: ' + e.message.slice(0,80)); }
+    }
+
+    const duration = Date.now() - startedAt;
   result.duration_ms = duration;
   result.completed_at = new Date().toISOString();
 

@@ -85,7 +85,7 @@ async function runSync(action) {
     ]);
 
     // ── Tier 1: Static seed ──────────────────────────────────────
-    if (['full','spokes'].includes(action)) {
+    if (['full','spokes','api'].includes(action)) {
       const SPOKES = require(path.join(__dirname, 'scripts', 'spoke-data.js'));
       log(`upserting ${SPOKES.length} spokes...`);
       for (const s of SPOKES) {
@@ -117,7 +117,7 @@ async function runSync(action) {
       log(`spokes done — ${result.spokes_updated} upserted`);
     }
 
-    if (['full','properties'].includes(action)) {
+    if (['full','properties','api'].includes(action)) {
       const PROPS = require(path.join(__dirname, 'scripts', 'system-properties-data.js'));
       log(`upserting ${PROPS.length} system properties...`);
       for (const p of PROPS) {
@@ -210,7 +210,7 @@ async function runSync(action) {
       ON CONFLICT (name) DO UPDATE SET value=$1, updated_at=NOW()
     `, [JSON.stringify(meta)]).catch(()=>{});
 
-    log(`sync complete in ${meta.duration_ms}ms`);
+    log(`sync complete in ${meta.duration_ms}ms — spokes:${result.spokes_updated} props:${result.props_updated} releases:${result.releases_found} enriched:${result.enriched.length}`);
     return meta;
 
   } catch(err) {
