@@ -69,6 +69,161 @@ function LogLine({ type, text, time }) {
   );
 }
 
+
+/* ─── DB Answer renderer — displays structured DB data ─── */
+function DBAnswer({ answer }) {
+  if (!answer) return null;
+  const isMono = { fontFamily:"'JetBrains Mono',monospace" };
+  const pill = (text, color='#6c63ff') => (
+    <span style={{ ...isMono, fontSize:'9px', padding:'2px 8px', borderRadius:'4px',
+      color, background:color+'14', border:`1px solid ${color}28` }}>{text}</span>
+  );
+
+  return (
+    <div style={{ borderRadius:'12px', border:'1px solid rgba(74,222,128,.18)', background:'rgba(74,222,128,.03)', overflow:'hidden', marginBottom:'22px' }}>
+      {/* Header */}
+      <div style={{ padding:'9px 16px', borderBottom:'1px solid rgba(74,222,128,.1)', display:'flex', alignItems:'center', gap:'8px', flexWrap:'wrap' }}>
+        <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#4ade80', display:'inline-block' }}/>
+        <span style={{ ...isMono, fontSize:'9px', color:'#4ade80', letterSpacing:'1.5px' }}>FROM_DATABASE</span>
+        <span style={{ ...isMono, fontSize:'10px', color:'#e2e8f0', fontWeight:600 }}>{answer.name}</span>
+        {answer.global_var && pill(answer.global_var, '#f59e0b')}
+        {answer.scope && answer.scope !== 'both' && pill(answer.scope, '#8b85ff')}
+        {answer.tier && pill(answer.tier, '#0ea5e9')}
+      </div>
+
+      <div style={{ padding:'14px 16px', display:'flex', flexDirection:'column', gap:'14px' }}>
+        {answer.sections?.map((s, i) => {
+          if (s.type === 'overview' && s.content) return (
+            <p key={i} style={{ color:'#9ca3af', fontSize:'13.5px', lineHeight:1.7, margin:0 }}>{s.content}</p>
+          );
+
+          if (s.type === 'gotcha' && s.content) return (
+            <div key={i} style={{ padding:'10px 14px', background:'rgba(245,158,11,.07)', border:'1px solid rgba(245,158,11,.18)', borderRadius:'8px' }}>
+              <div style={{ ...isMono, fontSize:'9px', color:'#f59e0b', marginBottom:'5px', letterSpacing:'1px' }}>⚠ GOTCHA</div>
+              <p style={{ color:'#d97706', fontSize:'13px', lineHeight:1.6, margin:0 }}>{s.content}</p>
+            </div>
+          );
+
+          if (s.type === 'tip' && s.content) return (
+            <div key={i} style={{ padding:'10px 14px', background:'rgba(16,185,129,.06)', border:'1px solid rgba(16,185,129,.15)', borderRadius:'8px' }}>
+              <div style={{ ...isMono, fontSize:'9px', color:'#10b981', marginBottom:'5px', letterSpacing:'1px' }}>💡 TIP</div>
+              <p style={{ color:'#6ee7b7', fontSize:'13px', lineHeight:1.6, margin:0 }}>{s.content}</p>
+            </div>
+          );
+
+          if (s.type === 'scope' && s.content) return (
+            <div key={i} style={{ padding:'10px 14px', background:'rgba(108,99,255,.06)', border:'1px solid rgba(108,99,255,.15)', borderRadius:'8px' }}>
+              <div style={{ ...isMono, fontSize:'9px', color:'#6c63ff', marginBottom:'5px', letterSpacing:'1px' }}>SCOPED vs GLOBAL</div>
+              <p style={{ color:'#9ca3af', fontSize:'13px', lineHeight:1.6, margin:0 }}>{s.content}</p>
+            </div>
+          );
+
+          if (s.type === 'setup' && s.items?.length) return (
+            <div key={i}>
+              <div style={{ ...isMono, fontSize:'9px', color:'#2a2a3a', marginBottom:'8px', letterSpacing:'1px', textTransform:'uppercase' }}>Setup Steps</div>
+              {s.items.map((step, j) => (
+                <div key={j} style={{ display:'flex', gap:'10px', padding:'5px 0', borderBottom:'1px solid #0d0d18' }}>
+                  <span style={{ ...isMono, fontSize:'10px', color:'#4ade80', flexShrink:0, minWidth:'16px' }}>{j+1}.</span>
+                  <span style={{ color:'#9ca3af', fontSize:'13px', lineHeight:1.5 }}>{step}</span>
+                </div>
+              ))}
+            </div>
+          );
+
+          if (s.type === 'errors' && s.items?.length) return (
+            <div key={i}>
+              <div style={{ ...isMono, fontSize:'9px', color:'#2a2a3a', marginBottom:'8px', letterSpacing:'1px', textTransform:'uppercase' }}>Common Errors</div>
+              {s.items.map((err, j) => {
+                const e = typeof err === 'string' ? { error: err, fix: '' } : err;
+                return (
+                  <div key={j} style={{ padding:'8px 10px', background:'rgba(248,113,113,.05)', border:'1px solid rgba(248,113,113,.12)', borderRadius:'7px', marginBottom:'5px' }}>
+                    <div style={{ ...isMono, fontSize:'11px', color:'#f87171' }}>✗ {e.error}</div>
+                    {e.fix && <div style={{ ...isMono, fontSize:'11px', color:'#4ade80', marginTop:'4px' }}>✓ {e.fix}</div>}
+                  </div>
+                );
+              })}
+            </div>
+          );
+
+          if (s.type === 'actions' && s.items?.length) return (
+            <div key={i}>
+              <div style={{ ...isMono, fontSize:'9px', color:'#2a2a3a', marginBottom:'8px', letterSpacing:'1px', textTransform:'uppercase' }}>Available Actions ({s.items.length})</div>
+              <div style={{ display:'flex', gap:'5px', flexWrap:'wrap' }}>
+                {s.items.slice(0, 12).map((a, j) => {
+                  const name = typeof a === 'string' ? a : a.name;
+                  return <span key={j} style={{ ...isMono, fontSize:'10px', padding:'3px 8px', background:'rgba(108,99,255,.08)', border:'1px solid rgba(108,99,255,.15)', borderRadius:'5px', color:'#8b85ff' }}>{name}</span>;
+                })}
+                {s.items.length > 12 && <span style={{ ...isMono, fontSize:'10px', color:'#374151' }}>+{s.items.length-12} more</span>}
+              </div>
+            </div>
+          );
+
+          if (s.type === 'methods' && s.items?.length) return (
+            <div key={i}>
+              <div style={{ ...isMono, fontSize:'9px', color:'#2a2a3a', marginBottom:'8px', letterSpacing:'1px', textTransform:'uppercase' }}>
+                Methods ({s.total || s.items.length})
+              </div>
+              <div style={{ display:'flex', flexDirection:'column', gap:'5px' }}>
+                {s.items.slice(0, 8).map((m, j) => (
+                  <div key={j} style={{ padding:'7px 10px', background:'rgba(255,255,255,.02)', border:'1px solid rgba(255,255,255,.04)', borderRadius:'7px' }}>
+                    <code style={{ ...isMono, fontSize:'11px', color:'#8b85ff' }}>{m.name || m.path}</code>
+                    {(m.desc || m.description) && <p style={{ color:'#6b7280', fontSize:'12px', margin:'3px 0 0', lineHeight:1.4 }}>{m.desc || m.description}</p>}
+                  </div>
+                ))}
+                {s.items.length > 8 && <span style={{ ...isMono, fontSize:'10px', color:'#374151', padding:'4px 0' }}>+{s.items.length-8} more — see API Reference</span>}
+              </div>
+            </div>
+          );
+
+          if (s.type === 'best_practices' && s.items?.length) return (
+            <div key={i}>
+              <div style={{ ...isMono, fontSize:'9px', color:'#2a2a3a', marginBottom:'8px', letterSpacing:'1px', textTransform:'uppercase' }}>Best Practices</div>
+              {s.items.map((b, j) => (
+                <div key={j} style={{ display:'flex', gap:'8px', padding:'4px 0', borderBottom:'1px solid #0d0d18' }}>
+                  <span style={{ color:'#4ade80', flexShrink:0 }}>✓</span>
+                  <span style={{ color:'#6b7280', fontSize:'12.5px', lineHeight:1.5 }}>{b}</span>
+                </div>
+              ))}
+            </div>
+          );
+
+          if (s.type === 'when' && s.content) return (
+            <div key={i} style={{ padding:'8px 12px', background:'rgba(255,255,255,.02)', border:'1px solid rgba(255,255,255,.04)', borderRadius:'7px' }}>
+              <div style={{ ...isMono, fontSize:'9px', color:'#2a2a3a', marginBottom:'5px', letterSpacing:'1px' }}>WHEN IT RUNS</div>
+              <p style={{ color:'#9ca3af', fontSize:'13px', margin:0, lineHeight:1.5 }}>{s.content}</p>
+            </div>
+          );
+
+          if (s.type === 'code' && s.content) return (
+            <div key={i}>
+              <div style={{ ...isMono, fontSize:'9px', color:'#2a2a3a', marginBottom:'7px', letterSpacing:'1px', textTransform:'uppercase' }}>Code Example</div>
+              <div style={{ background:'#020208', border:'1px solid #0d0d18', borderRadius:'8px', overflow:'hidden' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', padding:'5px 12px', background:'#0a0a14', borderBottom:'1px solid #0d0d18' }}>
+                  <span style={{ ...isMono, fontSize:'9px', color:'#6c63ff', letterSpacing:'1px' }}>JAVASCRIPT</span>
+                  <button onClick={()=>navigator.clipboard?.writeText(s.content)} style={{ ...isMono, background:'none', border:'1px solid #1a1a2e', borderRadius:'3px', color:'#6b7280', fontSize:'9px', padding:'1px 7px', cursor:'pointer' }}>copy</button>
+                </div>
+                <pre style={{ margin:0, padding:'12px 14px', overflowX:'auto' }}>
+                  <code style={{ ...isMono, fontSize:'11.5px', color:'#7dd3fc', lineHeight:1.7 }}>{s.content}</code>
+                </pre>
+              </div>
+            </div>
+          );
+
+          if (s.type === 'meta') return (
+            <div key={i} style={{ display:'flex', gap:'8px', flexWrap:'wrap', paddingTop:'4px', borderTop:'1px solid #0d0d18' }}>
+              {s.plugin_id  && <span style={{ ...isMono, fontSize:'9px', color:'#374151' }}>plugin: {s.plugin_id}</span>}
+              {s.credential_type && <span style={{ ...isMono, fontSize:'9px', color:'#374151' }}>auth: {s.credential_type}</span>}
+              {s.min_version && <span style={{ ...isMono, fontSize:'9px', color:'#374151' }}>min: {s.min_version}</span>}
+            </div>
+          );
+
+          return null;
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function Search() {
   const router = useRouter();
   const { data: session } = useSession();
@@ -81,6 +236,7 @@ export default function Search() {
   const [results,   setResults]   = useState([]);
   const [apiHits,   setApiHits]   = useState([]);
   const [aiAnswer,  setAiAnswer]  = useState('');
+  const [dbAnswer,   setDbAnswer]  = useState(null);
   const [streamText,setStreamText]= useState('');
   const [loading,   setLoading]   = useState(false);
   const [streaming, setStreaming] = useState(false);
@@ -151,7 +307,7 @@ export default function Search() {
   const runSearch = useCallback(async (query, ctx = context) => {
     if (!query?.trim()) return;
     setLoading(true);
-    setResults([]); setApiHits([]); setAiAnswer(''); setStreamText('');
+    setResults([]); setApiHits([]); setAiAnswer(''); setStreamText(''); setDbAnswer(null);
     setSearched(true); setIntent('');
     addLog('search', `"${query}"${ctx ? ` [${ctx}]` : ''}`);
     addLog('info', 'searching spoke index + API reference...');
@@ -165,6 +321,7 @@ export default function Search() {
       if (!r.ok) { addLog('error', d.error||'search failed'); return; }
       setResults(d.results || []);
       setApiHits(d.api_results || []);
+      setDbAnswer(d.db_answer || null);
       if (d.intent) setIntent(d.intent);
       const spokeCount = (d.results||[]).length;
       const apiCount   = (d.api_results||[]).length;
@@ -403,8 +560,11 @@ export default function Search() {
                 {meta.latency && <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#1e1e2e', marginLeft:'auto' }}>{meta.latency}ms{meta.cached?' [cached]':''}</span>}
               </div>
 
-              {/* AI Answer */}
-              {(aiText || loading || streaming) && (
+              {/* DB Answer — from synced ServiceNow data */}
+              {searched && dbAnswer && <DBAnswer answer={dbAnswer} />}
+
+              {/* AI Answer — only shown when DB had no answer */}
+              {(aiText || loading || streaming) && !dbAnswer && (
                 <div style={{ marginBottom:'22px', borderRadius:'12px', border:'1px solid rgba(108,99,255,.18)', background:'rgba(108,99,255,.03)', overflow:'hidden' }}>
                   <div style={{ padding:'9px 16px', borderBottom:'1px solid rgba(108,99,255,.1)', display:'flex', alignItems:'center', gap:'8px' }}>
                     <span style={{ width:'6px', height:'6px', borderRadius:'50%', background: streaming?'#f59e0b':'#4ade80', display:'inline-block', animation:streaming?'blink 1s infinite':'none' }}/>
