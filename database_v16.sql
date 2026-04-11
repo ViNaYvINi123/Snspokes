@@ -166,3 +166,12 @@ BEGIN
     END IF;
   END LOOP;
 END $$;
+
+-- Add tier column to sn_spokes for Integration Hub subscription tier
+ALTER TABLE sn_spokes ADD COLUMN IF NOT EXISTS tier TEXT DEFAULT 'professional';
+ALTER TABLE sn_spokes ADD COLUMN IF NOT EXISTS source_url TEXT DEFAULT '';
+ALTER TABLE sn_spokes ADD COLUMN IF NOT EXISTS last_synced_at TIMESTAMP;
+
+-- Add sync tracking to sn_system_properties
+ALTER TABLE sn_system_properties ADD COLUMN IF NOT EXISTS source_url TEXT DEFAULT '';
+ALTER TABLE sn_system_properties ADD COLUMN IF NOT EXISTS last_synced_at TIMESTAMP;
