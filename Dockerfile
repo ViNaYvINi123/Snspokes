@@ -27,6 +27,8 @@ COPY --from=builder /app/lib ./lib
 COPY --from=builder /app/components ./components
 COPY --from=builder /app/styles ./styles
 COPY --from=builder /app/mocks ./mocks
+COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/server.js ./server.js
 
 USER nextjs
 EXPOSE 3001
