@@ -3,7 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import axios from 'axios';
+import http from '../lib/http';
 import { SpokeCardSkeleton } from '../components/Skeleton';
 
 const CATEGORIES = ['All', 'Communication', 'DevOps', 'Cloud', 'ITSM', 'Security', 'HR', 'CRM'];
@@ -26,7 +26,7 @@ export default function Spokes() {
 
   const fetchSpokes = async () => {
     try {
-      const res = await axios.get('/api/spokes', { params: { category: category !== 'All' ? category : '' }, timeout: 10000 });
+      const res = await http.get('/api/spokes', { params: { category: category !== 'All' ? category : '' }, timeout: 10000 });
       if (res.data.success) { setSpokes(res.data.spokes || []); setFiltered(res.data.spokes || []); }
       else setError('Failed to load spokes.');
     } catch { setError('Unable to load spokes. Please try again.'); }

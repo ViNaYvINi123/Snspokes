@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Head from 'next/head';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { withAdminPage } from '../../lib/adminAuth';
-import axios from 'axios';
+import http from '../../lib/http';
 
 const CONTEXT_TYPES = [
   { value: 'general', label: '🧠 General', desc: 'Ask anything about the system' },
@@ -33,7 +33,7 @@ function AIDebug() {
     if (!question.trim()) return;
     setLoading(true); setError(''); setAnswer(null);
     try {
-      const res = await axios.post('/api/admin/ai-debug', { question, context_type: contextType });
+      const res = await http.post('/api/admin/ai-debug', { question, context_type: contextType });
       const entry = { question, answer: res.data.answer, model: res.data.model, context: contextType, ts: new Date() };
       setAnswer(res.data);
       setHistory(h => [entry, ...h].slice(0, 10));

@@ -1,270 +1,239 @@
+/**
+ * Command Palette — Ctrl+K
+ * Instant navigation, search, recent history, quick actions
+ */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import { useSession } from 'next-auth/react';
-
-export function KeyboardHelp({ open, onClose }) {
-  if (!open) return null;
-  const shortcuts = [
-    { keys: ['⌘', 'K'],     label: 'Command palette' },
-    { keys: ['↑', '↓'],     label: 'Navigate results' },
-    { keys: ['↵'],           label: 'Select / open' },
-    { keys: ['⌘', 'C'],     label: 'Copy result' },
-    { keys: ['⌘', 'S'],     label: 'Save to memory' },
-    { keys: ['Esc'],         label: 'Close / dismiss' },
-    { keys: ['?'],           label: 'Show keyboard help' },
-  ];
-  return (
-    <div style={{ position:'fixed', inset:0, zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,.7)', backdropFilter:'blur(4px)' }} onClick={onClose}>
-      <div style={{ background:'#0a0a14', border:'1px solid #1a1a2e', borderRadius:'14px', padding:'24px', maxWidth:'380px', width:'100%', margin:'16px' }} onClick={e=>e.stopPropagation()}>
-        <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'20px' }}>
-          <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'11px', color:'#6c63ff', letterSpacing:'1.5px' }}>KEYBOARD_SHORTCUTS</span>
-          <button onClick={onClose} style={{ background:'none', border:'none', color:'#6b7280', cursor:'pointer', fontSize:'16px' }}>×</button>
-        </div>
-        {shortcuts.map((s,i)=>(
-          <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'8px 0', borderBottom:'1px solid #0d0d18' }}>
-            <span style={{ color:'#6b7280', fontSize:'13px' }}>{s.label}</span>
-            <div style={{ display:'flex', gap:'4px' }}>
-              {s.keys.map((k,j)=>(
-                <kbd key={j} style={{ padding:'2px 8px', background:'#111', border:'1px solid #1e1e2e', borderRadius:'5px', fontFamily:"'JetBrains Mono',monospace", fontSize:'11px', color:'#9ca3af' }}>{k}</kbd>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 const BASE_COMMANDS = [
-  { id:'search',     icon:'⌕',  label:'Search spokes...',         action:'search',  category:'actions' },
-  { id:'code',       icon:'💻', label:'Code Generator',            href:'/tools/code-generator', category:'tools', tag:'code_gen' },
-  { id:'error',      icon:'🐛', label:'Error Finder',              href:'/tools/error-finder',   category:'tools', tag:'err_fix' },
-  { id:'cheatsheet', icon:'📖', label:'Cheatsheet',                href:'/tools/cheatsheet',     category:'tools', tag:'ref_docs' },
-  { id:'spokes',     icon:'🔌', label:'Browse All Spokes',         href:'/spokes',      category:'nav' },
-  { id:'search_pg',  icon:'🔍', label:'Search Page',               href:'/search',      category:'nav' },
-  { id:'dashboard',  icon:'📊', label:'Dashboard',                 href:'/dashboard',   category:'nav' },
-  { id:'pricing',    icon:'💳', label:'Pricing',                   href:'/pricing',     category:'nav' },
+  { id:'search',     icon:'🔍', label:'Search anything…',    action:'focus_search', category:'quick',   hint:'↵ to open search' },
+  { id:'code-gen',   icon:'💻', label:'Code Generator',      href:'/tools/code-generator', category:'tools', hint:'AI-powered scripts' },
+  { id:'error',      icon:'🐛', label:'Error Finder',        href:'/tools/error-finder',   category:'tools', hint:'Paste error → get fix' },
+  { id:'cheatsheet', icon:'📖', label:'Cheatsheet',          href:'/tools/cheatsheet',     category:'tools', hint:'Quick reference' },
+  { id:'api-ref',    icon:'📡', label:'API Reference',       href:'/api-reference',         category:'nav',   hint:'36 APIs documented' },
+  { id:'spokes',     icon:'🔌', label:'All Spokes',          href:'/spokes',               category:'nav',   hint:'200+ integrations' },
+  { id:'search-pg',  icon:'⌕',  label:'Search Page',         href:'/search',               category:'nav',   hint:'Full semantic search' },
+  { id:'dashboard',  icon:'📊', label:'Dashboard',           href:'/dashboard',            category:'nav',   hint:'Your activity' },
+  { id:'pricing',    icon:'💳', label:'Pricing',             href:'/pricing',              category:'nav',   hint:'Free + Pro plans' },
+  { id:'slack',      icon:'💬', label:'Slack Spoke',         href:'/spoke/slack',          category:'spoke', hint:'OAuth, actions, errors' },
+  { id:'github',     icon:'🐙', label:'GitHub Spoke',        href:'/spoke/github',         category:'spoke', hint:'Webhook, issues, PRs' },
+  { id:'jira',       icon:'🔷', label:'Jira Spoke',          href:'/spoke/jira',           category:'spoke', hint:'Tickets, transitions' },
+  { id:'gliderecord',icon:'⚙️', label:'GlideRecord API',    href:'/api-reference',        category:'api',   hint:'25 methods' },
+  { id:'keyboard',   icon:'⌨️', label:'Keyboard Shortcuts',  action:'keyboard',            category:'quick', hint:'Show all shortcuts' },
 ];
 
-export default function CommandPalette() {
+const CATEGORY_ORDER = ['quick', 'tools', 'nav', 'spoke', 'api'];
+const CATEGORY_LABELS = { quick:'QUICK ACTIONS', tools:'TOOLS', nav:'NAVIGATE', spoke:'POPULAR SPOKES', api:'APIs' };
+
+function getSession() {
+  if (typeof window === 'undefined') return '';
+  return localStorage.getItem('sn_session') || '';
+}
+
+export default function CommandPalette({ onShowKeyboard }) {
   const router = useRouter();
-  const { data: session } = useSession();
-  const [open,     setOpen]     = useState(false);
-  const [q,        setQ]        = useState('');
-  const [selected, setSelected] = useState(0);
-  const [spokes,   setSpokes]   = useState([]);
-  const [memory,   setMemory]   = useState({ history:[], saved:[] });
-  const [toast,    setToast]    = useState(null);
-  const inputRef = useRef(null);
+  const [open, setOpen]   = useState(false);
+  const [q, setQ]         = useState('');
+  const [idx, setIdx]     = useState(0);
+  const [recent, setRecent] = useState([]);
+  const inputRef  = useRef(null);
+  const listRef   = useRef(null);
+  const mono = { fontFamily:"'JetBrains Mono',monospace" };
 
-  // Show toast
-  const showToast = (msg, type='success') => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 2000);
-  };
-
-  // Load memory
-  const loadMemory = useCallback(async () => {
-    if (!session?.user?.id) return;
-    try {
-      const r = await fetch('/api/user/memory');
-      const d = await r.json();
-      if (d.success) setMemory(d);
-    } catch {}
-  }, [session]);
+  // Load recent searches
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const s = getSession();
+    if (!s) return;
+    fetch(`/api/activity?action=history&session=${s}`)
+      .then(r => r.json())
+      .then(d => setRecent((d.history || []).slice(0, 5)))
+      .catch(() => {});
+  }, [open]);
 
   // Open/close
   useEffect(() => {
-    const handler = (e) => {
+    const h = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setOpen(o => !o);
-        setQ(''); setSelected(0);
+        e.preventDefault(); setOpen(o => !o); setQ(''); setIdx(0);
       }
       if (e.key === 'Escape') setOpen(false);
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
   }, []);
 
   useEffect(() => {
-    if (open) {
-      setTimeout(() => inputRef.current?.focus(), 30);
-      loadMemory();
-    }
+    if (open) setTimeout(() => inputRef.current?.focus(), 50);
   }, [open]);
 
-  // Close on route change
-  useEffect(() => { setOpen(false); }, [router.pathname]);
-
-  // Search spokes
-  useEffect(() => {
-    if (!q.trim() || q.length < 2) { setSpokes([]); return; }
-    const t = setTimeout(async () => {
-      try {
-        const r = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
-        const d = await r.json();
-        setSpokes((d.results||[]).slice(0,4));
-      } catch {}
-    }, 150);
-    return () => clearTimeout(t);
-  }, [q]);
-
-  // Build items list
-  const filtered = q.trim()
-    ? BASE_COMMANDS.filter(c => c.label.toLowerCase().includes(q.toLowerCase()) || c.tag?.includes(q.toLowerCase()))
-    : BASE_COMMANDS;
-
-  const spokeItems = spokes.map(s => ({
-    id:`spoke-${s.slug}`, icon:s.icon||'🔌', label:`${s.name} Spoke`,
-    href:`/spoke/${s.slug}`, category:'spokes', spoke:s,
+  // Build filtered list
+  const recentCommands = recent.map((r, i) => ({
+    id:`recent_${i}`, icon:'↺', label:r.query, action:'search_recent',
+    query: r.query, category:'recent', hint:'recent search',
   }));
 
-  const recentItems = (!q && memory.history?.length)
-    ? memory.history.slice(0,3).map((h,i) => ({
-        id:`hist-${i}`, icon:'🕐', label:h.query, action:'search_recent',
-        query:h.query, category:'recent',
-      }))
-    : [];
+  const allCommands = q.trim()
+    ? BASE_COMMANDS.filter(c =>
+        c.label.toLowerCase().includes(q.toLowerCase()) ||
+        (c.hint || '').toLowerCase().includes(q.toLowerCase())
+      )
+    : BASE_COMMANDS;
 
-  const savedItems = (!q && memory.saved?.length)
-    ? memory.saved.slice(0,3).map(s => ({
-        id:`saved-${s.id}`, icon:'⭐', label:s.name||s.query, action:'search_recent',
-        query:s.query, category:'saved', savedId:s.id,
-      }))
-    : [];
+  const displayCommands = q.trim()
+    ? allCommands
+    : [...(recentCommands.length ? [{ id:'_rhead', type:'header', label:'RECENT', category:'_header' }, ...recentCommands] : []),
+       ...allCommands];
 
-  const allItems = [...recentItems, ...savedItems, ...filtered, ...spokeItems];
+  const selectable = displayCommands.filter(c => c.type !== 'header');
 
-  // Keyboard navigation
+  // Keyboard nav
   useEffect(() => {
     if (!open) return;
-    const handler = (e) => {
-      if (e.key==='ArrowDown') { e.preventDefault(); setSelected(s => Math.min(s+1, allItems.length-1)); }
-      if (e.key==='ArrowUp')   { e.preventDefault(); setSelected(s => Math.max(s-1, 0)); }
-      if (e.key==='Enter')     { e.preventDefault(); execute(allItems[selected]); }
-      // ⌘C — copy selected item label
-      if ((e.metaKey||e.ctrlKey) && e.key==='c' && allItems[selected]) {
+    const h = (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); setIdx(i => Math.min(i+1, selectable.length-1)); }
+      if (e.key === 'ArrowUp')   { e.preventDefault(); setIdx(i => Math.max(i-1, 0)); }
+      if (e.key === 'Enter') {
         e.preventDefault();
-        const item = allItems[selected];
-        const text = item.spoke?.description || item.query || item.label;
-        navigator.clipboard?.writeText(text).then(() => showToast('Copied to clipboard'));
-      }
-      // ⌘S — save to memory
-      if ((e.metaKey||e.ctrlKey) && e.key==='s' && allItems[selected]) {
-        e.preventDefault();
-        const item = allItems[selected];
-        const query = item.query || item.label;
-        if (session?.user?.id) {
-          fetch('/api/user/memory', { method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ action:'save_query', query, name:item.label }) })
-            .then(() => { showToast('Saved to memory ⭐'); loadMemory(); })
-            .catch(() => showToast('Save failed', 'error'));
-        } else {
-          showToast('Sign in to save searches');
-        }
+        const cmd = selectable[idx];
+        if (cmd) execute(cmd);
       }
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [open, selected, allItems, session]);
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [open, idx, selectable]);
 
-  const execute = (item) => {
-    if (!item) return;
-    setOpen(false);
-    if (item.action === 'search' || item.action === 'search_recent') {
-      const query = item.query || q;
-      if (query?.trim()) router.push('/search?q=' + encodeURIComponent(query.trim()));
-    } else if (item.href) {
-      router.push(item.href);
-    }
-  };
+  // Scroll selected into view
+  useEffect(() => {
+    if (!listRef.current) return;
+    const el = listRef.current.querySelector(`[data-idx="${idx}"]`);
+    el?.scrollIntoView({ block:'nearest', behavior:'smooth' });
+  }, [idx]);
 
-  const categoryLabel = { actions:'Actions', tools:'Tools', nav:'Navigation', spokes:'Spokes', recent:'Recent', saved:'Saved' };
+  const execute = useCallback((cmd) => {
+    setOpen(false); setQ('');
+    if (cmd.action === 'focus_search') { router.push('/search'); return; }
+    if (cmd.action === 'keyboard')     { onShowKeyboard?.(); return; }
+    if (cmd.action === 'search_recent'){ router.push(`/search?q=${encodeURIComponent(cmd.query)}`); return; }
+    if (cmd.href)                      { router.push(cmd.href); return; }
+    if (q.trim())                      { router.push(`/search?q=${encodeURIComponent(q.trim())}`); }
+  }, [q, router, onShowKeyboard]);
 
-  // Group items by category
-  const groups = [];
-  let lastCat = null;
-  allItems.forEach((item, idx) => {
-    if (item.category !== lastCat) {
-      groups.push({ type:'label', label:categoryLabel[item.category]||item.category, idx });
-      lastCat = item.category;
-    }
-    groups.push({ type:'item', item, idx });
+  // Group commands by category
+  const grouped = {};
+  displayCommands.forEach(cmd => {
+    if (!grouped[cmd.category]) grouped[cmd.category] = [];
+    grouped[cmd.category].push(cmd);
   });
+
+  let globalIdx = 0;
 
   if (!open) return null;
 
   return (
-    <>
-      {/* Toast */}
-      {toast && (
-        <div style={{ position:'fixed', bottom:'24px', right:'24px', zIndex:10001, padding:'10px 18px', background:toast.type==='error'?'#2d0a0a':'#0a1a12', border:`1px solid ${toast.type==='error'?'rgba(248,113,113,.3)':'rgba(74,222,128,.3)'}`, borderRadius:'10px', color:toast.type==='error'?'#f87171':'#4ade80', fontSize:'13px', fontFamily:"'JetBrains Mono',monospace", boxShadow:'0 8px 32px rgba(0,0,0,.4)' }}>
-          {toast.msg}
+    <div onClick={() => setOpen(false)}
+      style={{ position:'fixed', inset:0, zIndex:9000, background:'rgba(0,0,0,.7)',
+        backdropFilter:'blur(12px)', display:'flex', alignItems:'flex-start',
+        justifyContent:'center', paddingTop:'80px', padding:'80px 16px 16px' }}>
+
+      <style>{`
+        @keyframes paletteIn { from{opacity:0;transform:scale(.96) translateY(-8px)} to{opacity:1;transform:scale(1) translateY(0)} }
+        .cmd-item:hover { background:rgba(108,99,255,.08)!important; }
+        .cmd-item.selected { background:rgba(108,99,255,.12)!important; border-color:rgba(108,99,255,.25)!important; }
+      `}</style>
+
+      <div onClick={e => e.stopPropagation()}
+        style={{ width:'100%', maxWidth:'600px', background:'#06060e',
+          border:'1px solid rgba(255,255,255,.1)', borderRadius:'20px', overflow:'hidden',
+          boxShadow:'0 32px 80px rgba(0,0,0,.8)', animation:'paletteIn .2s cubic-bezier(.22,1,.36,1)' }}>
+
+        {/* Search input */}
+        <div style={{ display:'flex', alignItems:'center', gap:'10px', padding:'14px 16px',
+          borderBottom:'1px solid rgba(255,255,255,.06)' }}>
+          <svg width="16" height="16" fill="none" stroke="#4b5563" strokeWidth="2.2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input ref={inputRef} value={q} onChange={e => { setQ(e.target.value); setIdx(0); }}
+            placeholder="Search commands, spokes, APIs…"
+            style={{ flex:1, background:'none', border:'none', outline:'none',
+              color:'#e8eaf6', fontSize:'15px', fontFamily:"'DM Sans',sans-serif" }} />
+          <kbd style={{ ...mono, fontSize:'10px', padding:'2px 7px', background:'rgba(255,255,255,.05)',
+            border:'1px solid rgba(255,255,255,.1)', borderRadius:'5px', color:'#374151' }}>esc</kbd>
         </div>
-      )}
 
-      {/* Backdrop */}
-      <div style={{ position:'fixed', inset:0, zIndex:9000, background:'rgba(0,0,0,.65)', backdropFilter:'blur(6px)' }} onClick={()=>setOpen(false)} />
-
-      {/* Palette */}
-      <div style={{ position:'fixed', top:'15%', left:'50%', transform:'translateX(-50%)', zIndex:9001, width:'100%', maxWidth:'600px', padding:'0 16px' }}>
-        <div className='spring-in' style={{ background:'#06060e', border:'1px solid #1a1a2e', borderRadius:'16px', overflow:'hidden', boxShadow:'0 24px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(108,99,255,.1)' }}>
-
-          {/* Input */}
-          <div style={{ display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', borderBottom:'1px solid #0d0d18' }}>
-            <svg width="15" height="15" fill="none" stroke="#374151" strokeWidth="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input ref={inputRef} value={q} onChange={e=>{setQ(e.target.value);setSelected(0);}}
-              placeholder="search or type a command..."
-              style={{ flex:1, background:'none', border:'none', outline:'none', color:'#e8eaf6', fontSize:'15px', fontFamily:"'JetBrains Mono',monospace" }}
-            />
-            <div style={{ display:'flex', gap:'4px' }}>
-              <kbd style={{ padding:'1px 6px', background:'#0a0a14', border:'1px solid #1a1a2e', borderRadius:'4px', fontSize:'10px', color:'#374151', fontFamily:"'JetBrains Mono',monospace" }}>esc</kbd>
+        {/* Results */}
+        <div ref={listRef} style={{ maxHeight:'440px', overflowY:'auto', padding:'6px' }}>
+          {selectable.length === 0 && (
+            <div style={{ padding:'32px', textAlign:'center' }}>
+              <div style={{ ...mono, fontSize:'11px', color:'#374151' }}>No commands match "{q}"</div>
+              <button onClick={() => execute({ action:'search_recent', query:q })}
+                style={{ marginTop:'12px', ...mono, fontSize:'11px', padding:'8px 16px',
+                  background:'rgba(108,99,255,.1)', border:'1px solid rgba(108,99,255,.2)',
+                  borderRadius:'8px', color:'#8b85ff', cursor:'pointer' }}>
+                Search for "{q}" →
+              </button>
             </div>
-          </div>
+          )}
 
-          {/* Results */}
-          <div style={{ maxHeight:'380px', overflowY:'auto', padding:'8px' }}>
-            {groups.length === 0 && (
-              <div style={{ padding:'28px', textAlign:'center', color:'#2a2a3a', fontFamily:"'JetBrains Mono',monospace", fontSize:'11px' }}>NO_RESULTS</div>
-            )}
-            {groups.map((g, gi) => g.type === 'label' ? (
-              <div key={`lbl-${gi}`} style={{ padding:'6px 10px 3px', fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#1e1e2e', textTransform:'uppercase', letterSpacing:'1.5px' }}>
-                {g.label}
-              </div>
-            ) : (
-              <div key={g.item.id}
-                style={{ display:'flex', alignItems:'center', gap:'10px', padding:'9px 10px', borderRadius:'9px', cursor:'pointer', background:g.idx===selected?'rgba(108,99,255,.1)':'transparent', border:`1px solid ${g.idx===selected?'rgba(108,99,255,.2)':'transparent'}`, transition:'all .1s' }}
-                onClick={()=>execute(g.item)}
-                onMouseEnter={()=>setSelected(g.idx)}>
-                <span style={{ fontSize:'16px', flexShrink:0, width:'22px', textAlign:'center' }}>{g.item.icon}</span>
-                <span style={{ flex:1, color:g.idx===selected?'#e8eaf6':'#9ca3af', fontSize:'13.5px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
-                  {g.item.label}
-                </span>
-                {g.item.tag && (
-                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#6c63ff', background:'rgba(108,99,255,.08)', padding:'2px 7px', borderRadius:'4px', flexShrink:0 }}>{g.item.tag}</span>
-                )}
-                {g.idx===selected && (
-                  <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#374151', flexShrink:0 }}>↵ open</span>
-                )}
-              </div>
-            ))}
-          </div>
+          {Object.entries(grouped).map(([cat, cmds]) => (
+            <div key={cat}>
+              {cat !== '_header' && cmds.some(c => c.type !== 'header') && (
+                <div style={{ ...mono, fontSize:'9px', color:'#1e1e2e', padding:'8px 10px 4px',
+                  letterSpacing:'1.5px' }}>
+                  {CATEGORY_LABELS[cat] || cat.toUpperCase()}
+                </div>
+              )}
+              {cmds.map((cmd) => {
+                if (cmd.type === 'header') return null;
+                const myIdx = globalIdx++;
+                const isSel = myIdx === idx;
+                return (
+                  <button key={cmd.id}
+                    data-idx={myIdx}
+                    className={`cmd-item${isSel?' selected':''}`}
+                    onClick={() => execute(cmd)}
+                    onMouseEnter={() => setIdx(myIdx)}
+                    style={{ display:'flex', alignItems:'center', gap:'12px', width:'100%',
+                      padding:'9px 10px', background:isSel ? 'rgba(108,99,255,.12)' : 'transparent',
+                      border:`1px solid ${isSel ? 'rgba(108,99,255,.25)' : 'transparent'}`,
+                      borderRadius:'10px', cursor:'pointer', textAlign:'left', transition:'all .1s',
+                      marginBottom:'2px' }}>
+                    <span style={{ fontSize:'16px', flexShrink:0, width:'22px', textAlign:'center' }}>{cmd.icon}</span>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ color:'#e2e8f0', fontSize:'13.5px', fontFamily:"'DM Sans',sans-serif",
+                        fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                        {cmd.label}
+                      </div>
+                      {cmd.hint && (
+                        <div style={{ ...mono, fontSize:'9.5px', color:'#374151', marginTop:'1px' }}>{cmd.hint}</div>
+                      )}
+                    </div>
+                    {isSel && (
+                      <kbd style={{ ...mono, fontSize:'9px', padding:'1px 6px', background:'rgba(108,99,255,.15)',
+                        border:'1px solid rgba(108,99,255,.25)', borderRadius:'4px', color:'#8b85ff', flexShrink:0 }}>↵</kbd>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
 
-          {/* Footer */}
-          <div style={{ padding:'8px 16px', borderTop:'1px solid #0d0d18', display:'flex', gap:'12px', alignItems:'center' }}>
-            {[['↵','open'],['⌘C','copy'],['⌘S','save']].map(([k,l])=>(
-              <div key={k} style={{ display:'flex', gap:'5px', alignItems:'center' }}>
-                <kbd style={{ padding:'1px 6px', background:'#0a0a14', border:'1px solid #1a1a2e', borderRadius:'4px', fontSize:'9px', color:'#374151', fontFamily:"'JetBrains Mono',monospace" }}>{k}</kbd>
-                <span style={{ fontSize:'10px', color:'#1e1e2e', fontFamily:"'JetBrains Mono',monospace" }}>{l}</span>
-              </div>
-            ))}
-            {session?.user?.id && memory.saved?.length > 0 && (
-              <span style={{ marginLeft:'auto', fontSize:'10px', color:'#1e1e2e', fontFamily:"'JetBrains Mono',monospace" }}>{memory.saved.length} saved</span>
-            )}
+        {/* Footer */}
+        <div style={{ padding:'8px 14px', borderTop:'1px solid rgba(255,255,255,.04)',
+          display:'flex', gap:'16px', alignItems:'center' }}>
+          {[['↑↓','navigate'],['↵','open'],['esc','close']].map(([k,l]) => (
+            <div key={k} style={{ display:'flex', gap:'5px', alignItems:'center' }}>
+              <kbd style={{ ...mono, fontSize:'9px', padding:'1px 6px', background:'rgba(255,255,255,.05)',
+                border:'1px solid rgba(255,255,255,.08)', borderRadius:'4px', color:'#374151' }}>{k}</kbd>
+              <span style={{ ...mono, fontSize:'9px', color:'#1e1e2e' }}>{l}</span>
+            </div>
+          ))}
+          <div style={{ marginLeft:'auto', ...mono, fontSize:'9px', color:'#1e1e2e' }}>
+            {selectable.length} commands
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

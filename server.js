@@ -86,7 +86,7 @@ async function runSync(action) {
 
     // ── Tier 1: Static seed ──────────────────────────────────────
     if (['full','spokes','api'].includes(action)) {
-      const SPOKES = require(path.join(__dirname, 'scripts', 'spoke-data.js'));
+      const SPOKES = require('./scripts/spoke-data');
       log(`upserting ${SPOKES.length} spokes...`);
       for (const s of SPOKES) {
         try {
@@ -118,7 +118,7 @@ async function runSync(action) {
     }
 
     if (['full','properties','api'].includes(action)) {
-      const PROPS = require(path.join(__dirname, 'scripts', 'system-properties-data.js'));
+      const PROPS = require('./scripts/system-properties-data');
       log(`upserting ${PROPS.length} system properties...`);
       for (const p of PROPS) {
         try {

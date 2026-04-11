@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { withAdminPage } from '../../lib/adminAuth';
-import axios from 'axios';
+import http from '../../lib/http';
 
 function AdminLogs() {
   const router = useRouter();
@@ -14,7 +14,7 @@ function AdminLogs() {
 
   const fetchLogs = async () => {
     try {
-      const res = await axios.get('/api/admin/logs');
+      const res = await http.get('/api/admin/logs');
       setLogs(res.data.logs || []);
     } catch (err) {
       if (err.response?.status === 401) router.push('/admin');

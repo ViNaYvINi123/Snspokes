@@ -2,7 +2,7 @@ import QuickActionsWidget from './QuickActionsWidget';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import http from '../../lib/http';
 
 const Icon = {
   Dashboard: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
@@ -72,7 +72,7 @@ const NAV_GROUPS = [
 
 // Global axios interceptors
 if (typeof window !== 'undefined') {
-  axios.interceptors.request.use(config => {
+  http.interceptors.request.use(config => {
     const token = localStorage.getItem('admin_token');
     if (token && config.url && config.url.includes('/api/admin')) {
       config.headers['x-admin-token'] = token;
@@ -82,7 +82,7 @@ if (typeof window !== 'undefined') {
   });
 
   // Handle 401 — clear bad token and redirect to login
-  axios.interceptors.response.use(
+  http.interceptors.response.use(
     response => response,
     error => {
       if (error.response && error.response.status === 401 && typeof window !== 'undefined') {
@@ -155,7 +155,7 @@ function NotificationBell() {
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const res = await axios.get('/api/admin/notifications?unread=true');
+        const res = await http.get('/api/admin/notifications?unread=true');
         setCount(res.data.unread_count || 0);
         setNotifs(res.data.notifications || []);
       } catch {}
@@ -166,7 +166,7 @@ function NotificationBell() {
   }, []);
 
   const markRead = async () => {
-    await axios.patch('/api/admin/notifications').catch(() => {});
+    await http.patch('/api/admin/notifications').catch(() => {});
     setCount(0);
   };
 
@@ -181,7 +181,7 @@ function NotificationBell() {
         <div style={{ position: 'absolute', right: 0, top: '36px', width: '320px', background: '#111827', border: '1px solid #1e1e2e', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 100, overflow: 'hidden' }}>
           <div style={{ padding: '12px 14px', borderBottom: '1px solid #1e1e2e', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '13px', fontWeight: '600', color: '#e2e8f0' }}>Notifications</span>
-            <button onClick={() => { axios.delete('/api/admin/notifications').catch(()=>{}); setNotifs([]); }} style={{ background: 'none', border: 'none', fontSize: '11px', color: '#9ca3af', cursor: 'pointer' }}>Clear all</button>
+            <button onClick={() => { http.delete('/api/admin/notifications').catch(()=>{}); setNotifs([]); }} style={{ background: 'none', border: 'none', fontSize: '11px', color: '#9ca3af', cursor: 'pointer' }}>Clear all</button>
           </div>
           <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
             {notifs.length === 0 ? <div style={{ padding: '24px', textAlign: 'center', color: '#9ca3af', fontSize: '13px' }}>No notifications</div>
@@ -220,7 +220,7 @@ export default function AdminLayout({ children, title, breadcrumbs = [] }) {
   const handleLogout = async () => {
     setLoggingOut(true);
     localStorage.removeItem('admin_token');
-    await axios.post('/api/admin/logout').catch(() => {});
+    await http.post('/api/admin/logout').catch(() => {});
     router.push('/admin');
   };
 

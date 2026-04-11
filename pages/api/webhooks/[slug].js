@@ -1,6 +1,6 @@
 import { query } from '../../../lib/db';
 import crypto from 'crypto';
-import axios from 'axios';
+import http from '../../../lib/http';
 import { setSecurityHeaders } from '../../../lib/security';
 
 export default async function handler(req, res) {
@@ -27,7 +27,7 @@ export default async function handler(req, res) {
 
     // Forward to n8n
     if (webhook.forward_to) {
-      axios.post(webhook.forward_to, { webhook_slug: slug, payload: req.body, received_at: new Date().toISOString() }, { timeout: 5000 }).catch(() => {});
+      http.post(webhook.forward_to, { webhook_slug: slug, payload: req.body, received_at: new Date().toISOString() }, { timeout: 5000 }).catch(() => {});
     }
 
     return res.status(200).json({ success: true, message: 'Webhook received' });

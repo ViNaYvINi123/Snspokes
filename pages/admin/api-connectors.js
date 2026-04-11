@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { withAdminPage } from '../../lib/adminAuth';
-import axios from 'axios';
+import http from '../../lib/http';
 
 const METHOD_COLORS = { GET:'#10b981',POST:'#6c63ff',PUT:'#f59e0b',DELETE:'#ef4444',PATCH:'#0ea5e9' };
 const AUTH_TYPES = ['none','api_key','bearer','basic','oauth2'];
@@ -72,7 +72,7 @@ function APIConnectors() {
 
   const fetchConnectors = async () => {
     try {
-      const res = await axios.get('/api/admin/connectors');
+      const res = await http.get('/api/admin/connectors');
       setConnectors(res.data.connectors || []);
     } catch (err) {
       if (err.response?.status === 401) if (typeof window !== 'undefined') window.location.href = '/admin';
@@ -82,8 +82,8 @@ function APIConnectors() {
   const fetchConnectorDetail = async (id) => {
     try {
       const [detailRes, statsRes] = await Promise.all([
-        axios.get(`/api/admin/connectors?id=${id}`),
-        axios.get(`/api/admin/connectors?id=${id}&stats=true`),
+        http.get(`/api/admin/connectors?id=${id}`),
+        http.get(`/api/admin/connectors?id=${id}&stats=true`),
       ]);
       setSelected(detailRes.data.connector);
       setEndpoints(detailRes.data.endpoints || []);
@@ -93,7 +93,7 @@ function APIConnectors() {
 
   const fetchWebhooks = async () => {
     try {
-      const res = await axios.get('/api/admin/webhooks');
+      const res = await http.get('/api/admin/webhooks');
       setWebhooks(res.data.webhooks || []);
     } catch {}
   };
@@ -105,10 +105,10 @@ function APIConnectors() {
     setSaving(true);
     try {
       if (form.id) {
-        await axios.put('/api/admin/connectors', form);
+        await http.put('/api/admin/connectors', form);
         showToast('Connector updated');
       } else {
-        await axios.post('/api/admin/connectors', form);
+        await http.post('/api/admin/connectors', form);
         showToast('Connector created');
       }
       setView('list'); setForm(EMPTY_CONNECTOR);
@@ -120,7 +120,7 @@ function APIConnectors() {
   const handleDeleteConnector = async (id) => {
     if (!confirm('Delete this connector and all its endpoints?')) return;
     try {
-      await axios.delete('/api/admin/connectors', { data: { id } });
+      await http.delete('/api/admin/connectors', { data: { id } });
       showToast('Connector deleted');
       fetchConnectors();
       if (selected?.id === id) { setSelected(null); setView('list'); }
@@ -131,8 +131,8 @@ function APIConnectors() {
     if (!selected) return;
     try {
       const payload = { ...epForm, connector_id: selected.id };
-      if (editEp) { await axios.put('/api/admin/endpoints', { ...payload, id: editEp.id }); showToast('Endpoint updated'); }
-      else { await axios.post('/api/admin/endpoints', payload); showToast('Endpoint added'); }
+      if (editEp) { await http.put('/api/admin/endpoints', { ...payload, id: editEp.id }); showToast('Endpoint updated'); }
+      else { await http.post('/api/admin/endpoints', payload); showToast('Endpoint added'); }
       setEditEp(null); setEpForm(EMPTY_ENDPOINT);
       fetchConnectorDetail(selected.id);
     } catch (err) { showToast(err.response?.data?.error || 'Failed', 'error'); }
@@ -145,7 +145,7 @@ function APIConnectors() {
       let params = {}, body = null;
       try { params = JSON.parse(testConfig.params || '{}'); } catch {}
       try { body = testConfig.method !== 'GET' ? JSON.parse(testConfig.body || '{}') : null; } catch {}
-      const res = await axios.post('/api/admin/api-execute', {
+      const res = await http.post('/api/admin/api-execute', {
         connector_id: selected.id, method: testConfig.method,
         path: testConfig.path, params, body,
       });
@@ -158,7 +158,7 @@ function APIConnectors() {
     const name = prompt('Webhook name:');
     if (!name) return;
     try {
-      const res = await axios.post('/api/admin/webhooks', { name, generate_secret: true });
+      const res = await http.post('/api/admin/webhooks', { name, generate_secret: true });
       showToast('Webhook created');
       fetchWebhooks();
     } catch { showToast('Failed', 'error'); }
@@ -325,7 +325,7 @@ function APIConnectors() {
                       {ep.cache_ttl > 0 && <Badge color='#6c63ff'>cache {ep.cache_ttl}s</Badge>}
                       <div style={{ display:'flex',gap:'5px' }}>
                         <Btn small variant="secondary" onClick={() => { setEditEp(ep); setEpForm({...ep}); }}>Edit</Btn>
-                        <Btn small variant="danger" onClick={async () => { await axios.delete('/api/admin/endpoints',{data:{id:ep.id}}); fetchConnectorDetail(selected.id); }}>×</Btn>
+                        <Btn small variant="danger" onClick={async () => { await http.delete('/api/admin/endpoints',{data:{id:ep.id}}); fetchConnectorDetail(selected.id); }}>×</Btn>
                       </div>
                     </div>
                   ))}
@@ -406,8 +406,8 @@ function APIConnectors() {
                       </td>
                       <td style={{ padding:'12px 16px' }}>
                         <div style={{ display:'flex',gap:'6px' }}>
-                          <Btn small variant="secondary" onClick={async () => { await axios.patch('/api/admin/webhooks',{id:wh.id,is_active:!wh.is_active}); fetchWebhooks(); }}>{wh.is_active ? 'Disable' : 'Enable'}</Btn>
-                          <Btn small variant="danger" onClick={async () => { if (confirm('Delete?')) { await axios.delete('/api/admin/webhooks',{data:{id:wh.id}}); fetchWebhooks(); } }}>Delete</Btn>
+                          <Btn small variant="secondary" onClick={async () => { await http.patch('/api/admin/webhooks',{id:wh.id,is_active:!wh.is_active}); fetchWebhooks(); }}>{wh.is_active ? 'Disable' : 'Enable'}</Btn>
+                          <Btn small variant="danger" onClick={async () => { if (confirm('Delete?')) { await http.delete('/api/admin/webhooks',{data:{id:wh.id}}); fetchWebhooks(); } }}>Delete</Btn>
                         </div>
                       </td>
                     </tr>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import http from '../lib/http';
 
 function getCookieConsent() {
   if (typeof document === 'undefined') return null;
@@ -29,7 +29,7 @@ export default function CookieBanner() {
   const save = async (presets = null) => {
     const data = presets || consent;
     try {
-      await axios.post('/api/cookies', { consent: { ...data, necessary: true } });
+      await http.post('/api/cookies', { consent: { ...data, necessary: true } });
       setSaved(true);
       setTimeout(() => setShow(false), 1000);
     } catch {

@@ -4,7 +4,7 @@ import Head from 'next/head';
 import UpgradeWall from '../../components/UpgradeWall';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
-import axios from 'axios';
+import http from '../../lib/http';
 
 
 function FormatCode({ text }) {
@@ -193,7 +193,7 @@ export default function CodeGenerator() {
     if (!prompt.trim()) return;
     setLoading(true); setResult(null); setError('');
     try {
-      const res = await axios.post('/api/tools/code-generator', { prompt, code_type: codeType, config });
+      const res = await http.post('/api/tools/code-generator', { prompt, code_type: codeType, config });
       setResult(res.data);
       setHistory(h => [{ prompt, code_type: codeType, code: res.data.code, ts: new Date() }, ...h].slice(0, 10));
     } catch (err) {

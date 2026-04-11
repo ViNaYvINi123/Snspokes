@@ -41,6 +41,6 @@ export default async function handler(req, res) {
     `INSERT INTO sn_spoke_submissions (name, plugin_id, description, category, credential_type, min_version, use_cases, store_url, submitter_notes, submitted_by, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'pending')`,
     [cleanName, cleanPluginId, cleanDescription, cleanCategory, sanitizeString(credential_type,100)||null, sanitizeString(min_version,50)||null, sanitizeString(use_cases,1000)||null, cleanStoreUrl, sanitizeString(submitter_notes,500)||null, sanitizeString(submitted_by,255)||null]
   );
-  { success: false }.catch(() => {});
+
   return res.status(200).json({ success: true });
 }

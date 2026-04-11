@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { withAdminPage } from '../../lib/adminAuth';
-import axios from 'axios';
+import http from '../../lib/http';
 
 function Section({ title, icon, children }) {
   return (
@@ -50,7 +50,7 @@ function AdminSettings() {
 
   const fetchPlans = async () => {
     try {
-      const res = await axios.get('/api/admin/plans');
+      const res = await http.get('/api/admin/plans');
       setPlans(res.data.plans || []);
     } catch (err) {
       if (err.response?.status === 401) router.push('/admin');
@@ -60,7 +60,7 @@ function AdminSettings() {
   const savePlan = async () => {
     setSaving(true);
     try {
-      await axios.put('/api/admin/plans', editPlan);
+      await http.put('/api/admin/plans', editPlan);
       setMsg('Plan updated successfully!');
       setEditPlan(null);
       fetchPlans();

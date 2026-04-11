@@ -23,7 +23,10 @@ import { withAdminAuth } from '../../../lib/adminAuth';
 import { query } from '../../../lib/db';
 import { setSecurityHeaders } from '../../../lib/security';
 import { askAI } from '../../../lib/ai';
-import path from 'path';
+import SPOKE_DATA   from '../../../scripts/spoke-data';
+import PROP_DATA    from '../../../scripts/system-properties-data';
+import * as API_DATA_MOD from '../../../scripts/sn-api-data';
+
 
 // ── Tier 2: Fetch ServiceNow community RSS ─────────────────────
 async function fetchCommunityRSS() {
@@ -111,7 +114,7 @@ async function handler(req, res) {
   // ── TIER 1: STATIC SEED ──────────────────────────────────────
   if (['full','spokes'].includes(action)) {
     try {
-      const SPOKES = require(path.join(process.cwd(), 'scripts', 'spoke-data.js'));
+      const SPOKES = SPOKE_DATA;
       result.spokes.total = SPOKES.length;
 
       for (const s of SPOKES) {
@@ -160,7 +163,7 @@ async function handler(req, res) {
   // ── TIER 1: SYSTEM PROPERTIES ────────────────────────────────
   if (['full','properties'].includes(action)) {
     try {
-      const PROPS = require(path.join(process.cwd(), 'scripts', 'system-properties-data.js'));
+      const PROPS = PROP_DATA;
       result.properties.total = PROPS.length;
 
       for (const p of PROPS) {
@@ -236,16 +239,15 @@ async function handler(req, res) {
     // ── Tier 1: API Reference ──────────────────────────────────
     if (['full', 'api'].includes(action)) {
       try {
-        const apiDataPath = path.join(process.cwd(), 'scripts', 'sn-api-data.js');
-        const { REST_APIS, SERVER_APIS, CLIENT_APIS, SCRIPTING_CONTEXTS, SCOPE_COMPARISON } = require(apiDataPath);
+        const { REST_APIS, SERVER_APIS, CLIENT_APIS, SCRIPTING_CONTEXTS, SCOPE_COMPARISON } = API_DATA_MOD;
         const allAPIs = [
           ...REST_APIS.map(a => ({ ...a, api_type: 'rest' })),
           ...SERVER_APIS.map(a => ({ ...a, api_type: 'server' })),
           ...CLIENT_APIS.map(a => ({ ...a, api_type: 'client' })),
           ...SCRIPTING_CONTEXTS.map(a => ({ ...a, api_type: 'context' })),
         ];
-        await query('CREATE TABLE IF NOT EXISTS sn_api_reference (id SERIAL PRIMARY KEY, slug TEXT UNIQUE NOT NULL, name TEXT NOT NULL, category TEXT NOT NULL, api_type TEXT NOT NULL, scope TEXT DEFAULT 'both', global_var TEXT, base_path TEXT, description TEXT, methods JSONB DEFAULT '[]', params JSONB DEFAULT '[]', auth JSONB DEFAULT '[]', code_example TEXT, gotcha TEXT, scoped_differences TEXT, best_practices JSONB DEFAULT '[]', available_vars JSONB DEFAULT '[]', types JSONB DEFAULT '[]', roles_required JSONB DEFAULT '[]', view_count INTEGER DEFAULT 0, last_synced_at TIMESTAMP DEFAULT NOW(), created_at TIMESTAMP DEFAULT NOW(), updated_at TIMESTAMP DEFAULT NOW())').catch(() => {});
-        await query('CREATE TABLE IF NOT EXISTS sn_scope_comparison (id SERIAL PRIMARY KEY, topic TEXT UNIQUE NOT NULL, scoped TEXT, global_col TEXT, gotcha TEXT, created_at TIMESTAMP DEFAULT NOW())').catch(() => {});
+        await query(`CREATE TABLE IF NOT EXISTS sn_api_reference (id SERIAL PRIMARY KEY, slug TEXT UNIQUE NOT NULL, name TEXT NOT NULL, category TEXT NOT NULL, api_type TEXT NOT NULL, scope TEXT DEFAULT 'both', global_var TEXT, base_path TEXT, description TEXT, methods JSONB DEFAULT '[]', params JSONB DEFAULT '[]', auth JSONB DEFAULT '[]', code_example TEXT, gotcha TEXT, scoped_differences TEXT, best_practices JSONB DEFAULT '[]', available_vars JSONB DEFAULT '[]', types JSONB DEFAULT '[]', roles_required JSONB DEFAULT '[]', view_count INTEGER DEFAULT 0, last_synced_at TIMESTAMP DEFAULT NOW(), created_at TIMESTAMP DEFAULT NOW(), updated_at TIMESTAMP DEFAULT NOW())`).catch(() => {});
+        await query(`CREATE TABLE IF NOT EXISTS sn_scope_comparison (id SERIAL PRIMARY KEY, topic TEXT UNIQUE NOT NULL, scoped TEXT, global_col TEXT, gotcha TEXT, created_at TIMESTAMP DEFAULT NOW())`).catch(() => {});
         let apiCount = 0;
         for (const api of allAPIs) {
           try {

@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { withAdminPage } from '../../lib/adminAuth';
-import axios from 'axios';
+import http from '../../lib/http';
 
 const CATEGORIES = ['Integration', 'Communication', 'DevOps', 'Cloud', 'ITSM', 'Security', 'HR', 'CRM'];
 const EMPTY_SPOKE = { slug: '', name: '', description: '', icon: '🔌', category: 'Integration', plugin_id: '', credential_type: 'OAuth 2.0', official_description: '', personal_tip: '', ai_description: '', setup_steps: '', actions: '', common_errors: '', code_example: '', tags: '' };
@@ -27,7 +27,7 @@ function AdminSpokes() {
   const fetchSpokes = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/admin/spokes', { params: { page, limit: 20, search } });
+      const res = await http.get('/api/admin/spokes', { params: { page, limit: 20, search } });
       setSpokes(res.data.spokes);
       setTotal(res.data.total);
       setPages(res.data.pages);
@@ -68,9 +68,9 @@ function AdminSpokes() {
       };
 
       if (editSpoke) {
-        await axios.put('/api/admin/spokes', { ...payload, id: editSpoke.id });
+        await http.put('/api/admin/spokes', { ...payload, id: editSpoke.id });
       } else {
-        await axios.post('/api/admin/spokes', payload);
+        await http.post('/api/admin/spokes', payload);
       }
       setShowModal(false);
       fetchSpokes();
@@ -82,7 +82,7 @@ function AdminSpokes() {
   const handleDelete = async (spoke) => {
     if (!confirm(`Delete spoke "${spoke.name}"? This cannot be undone.`)) return;
     try {
-      await axios.delete('/api/admin/spokes', { data: { id: spoke.id } });
+      await http.delete('/api/admin/spokes', { data: { id: spoke.id } });
       fetchSpokes();
     } catch(e) { setErrMsg('Failed to delete spoke'); }
   };

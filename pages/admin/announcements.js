@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { withAdminPage } from '../../lib/adminAuth';
-import axios from 'axios';
+import http from '../../lib/http';
 
 const TYPE_COLORS = { info:'#2563eb', warning:'#d97706', success:'#16a34a', promo:'#7c3aed' };
 const EMPTY = { title:'', message:'', type:'info', target:'all', cta_text:'', cta_url:'', ends_at:'' };
@@ -17,7 +17,7 @@ function AdminAnnouncements() {
   const showToast = (text, type='success') => { setToast({text,type}); setTimeout(()=>setToast(null),3500); };
 
   const fetch = async () => {
-    try { const r = await axios.get('/api/admin/announcements'); setAnnouncements(r.data.announcements||[]); } catch {}
+    try { const r = await http.get('/api/admin/announcements'); setAnnouncements(r.data.announcements||[]); } catch {}
   };
   useEffect(()=>{ fetch(); },[]);
 
@@ -25,7 +25,7 @@ function AdminAnnouncements() {
     if (!form.title?.trim()||!form.message?.trim()) { showToast('Title and message required','error'); return; }
     setSaving(true);
     try {
-      await axios.post('/api/admin/announcements', form);
+      await http.post('/api/admin/announcements', form);
       showToast('Announcement created');
       setForm(EMPTY); fetch();
     } catch(err) { showToast(err.response?.data?.error||'Failed','error'); }
@@ -33,13 +33,13 @@ function AdminAnnouncements() {
   };
 
   const toggle = async (id, is_active) => {
-    await axios.patch('/api/admin/announcements', {id, is_active: !is_active});
+    await http.patch('/api/admin/announcements', {id, is_active: !is_active});
     fetch();
   };
 
   const del = async (id) => {
     if (!confirm('Delete?')) return;
-    await axios.delete('/api/admin/announcements', {data:{id}});
+    await http.delete('/api/admin/announcements', {data:{id}});
     showToast('Deleted'); fetch();
   };
 

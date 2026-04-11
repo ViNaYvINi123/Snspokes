@@ -1,217 +1,468 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
-const SPOKES = [
-  { slug:'slack',           name:'Slack',       icon:'💬', color:'#4A154B', bg:'rgba(74,21,75,.18)' },
-  { slug:'jira',            name:'Jira',        icon:'🔷', color:'#0052CC', bg:'rgba(0,82,204,.18)' },
-  { slug:'microsoft-teams', name:'Teams',       icon:'🟦', color:'#5059C9', bg:'rgba(80,89,201,.18)' },
-  { slug:'github',          name:'GitHub',      icon:'🐙', color:'#4ade80', bg:'rgba(74,222,128,.12)' },
-  { slug:'aws',             name:'AWS',         icon:'☁️', color:'#FF9900', bg:'rgba(255,153,0,.14)' },
-  { slug:'pagerduty',       name:'PagerDuty',   icon:'🚨', color:'#25c151', bg:'rgba(37,193,81,.14)' },
-  { slug:'salesforce',      name:'Salesforce',  icon:'☁️', color:'#00A1E0', bg:'rgba(0,161,224,.14)' },
-  { slug:'okta',            name:'Okta',        icon:'🔐', color:'#007DC1', bg:'rgba(0,125,193,.14)' },
-  { slug:'azure',           name:'Azure',       icon:'🔵', color:'#0078D4', bg:'rgba(0,120,212,.14)' },
-  { slug:'google',          name:'Google',      icon:'🔴', color:'#EA4335', bg:'rgba(234,67,53,.14)' },
-];
-
-const TOOLS = [
-  { href:'/tools/code-generator', icon:'💻', name:'Code Generator', tag:'code_gen', desc:'Describe any ServiceNow script — get production-ready code.', accent:'#6c63ff' },
-  { href:'/tools/error-finder',   icon:'🐛', name:'Error Finder',   tag:'err_fix',  desc:'Paste any error. Root cause + fix in seconds.', accent:'#f59e0b' },
-  { href:'/tools/cheatsheet',     icon:'📖', name:'Cheatsheet',     tag:'ref_docs', desc:'Every GlideRecord, gs, g_form method. Always fast.', accent:'#10b981' },
-];
-
-const BOOT_SEQUENCE = [
-  { delay:0,    text:'initializing snspokes intelligence OS...', color:'#2a2a3a' },
-  { delay:300,  text:'loading spoke index: 200+ integrations found', color:'#374151' },
-  { delay:600,  text:'AI providers: online', color:'#4ade80' },
-  { delay:900,  text:'search engine: ready', color:'#4ade80' },
-  { delay:1200, text:'developer tools: code_gen | err_fix | ref_docs', color:'#8b85ff' },
-  { delay:1500, text:'', color:'' },
-  { delay:1600, text:'> system ready. awaiting query.', color:'#6c63ff' },
-];
-
-function useVisible(ref, threshold=0.15) {
-  const [v, setV] = useState(false);
-  useEffect(() => {
-    if (!ref.current) return;
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setV(true); obs.disconnect(); } }, { threshold });
-    obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
-  return v;
+/* ─── Floating particle ─── */
+function Particle({ x, y, size, speed, opacity }) {
+  return (
+    <div style={{
+      position:'absolute', left:`${x}%`, top:`${y}%`,
+      width:size, height:size, borderRadius:'50%',
+      background:`rgba(108,99,255,${opacity})`,
+      animation:`float ${speed}s ease-in-out infinite alternate`,
+      pointerEvents:'none',
+    }}/>
+  );
 }
 
-function Counter({ end, suffix='' }) {
+/* ─── Animated number ─── */
+function AnimatedNum({ end, suffix='' }) {
   const [val, setVal] = useState(0);
   const ref = useRef(null);
   useEffect(() => {
     const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) {
-        let s=0; const step=end/50;
-        const iv = setInterval(()=>{ s+=step; if(s>=end){setVal(end);clearInterval(iv);}else setVal(Math.floor(s)); },28);
-        obs.disconnect();
-      }
-    },{ threshold:0.3 });
+      if (!e.isIntersecting) return;
+      let s = 0; const step = end / 60;
+      const iv = setInterval(() => { s += step; if (s >= end) { setVal(end); clearInterval(iv); } else setVal(Math.floor(s)); }, 20);
+      obs.disconnect();
+    }, { threshold: 0.3 });
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
-  },[]);
+  }, [end]);
   return <span ref={ref}>{val.toLocaleString()}{suffix}</span>;
 }
 
+/* ─── Typewriter ─── */
+function Typewriter({ phrases }) {
+  const [text, setText] = useState('');
+  const [pIdx, setPIdx] = useState(0);
+  const [charIdx, setCharIdx] = useState(0);
+  const [del, setDel] = useState(false);
+  useEffect(() => {
+    const phrase = phrases[pIdx];
+    const t = setTimeout(() => {
+      if (!del) {
+        setText(phrase.slice(0, charIdx + 1));
+        if (charIdx + 1 === phrase.length) setTimeout(() => setDel(true), 1800);
+        else setCharIdx(c => c + 1);
+      } else {
+        setText(phrase.slice(0, charIdx - 1));
+        if (charIdx <= 1) { setDel(false); setPIdx(p => (p + 1) % phrases.length); setCharIdx(0); }
+        else setCharIdx(c => c - 1);
+      }
+    }, del ? 25 : 55);
+    return () => clearTimeout(t);
+  }, [charIdx, del, pIdx, phrases]);
+  return <span>{text}<span style={{ borderRight:'2px solid #6c63ff', animation:'blink 1s step-end infinite', marginLeft:'1px' }}>&nbsp;</span></span>;
+}
+
+/* ─── Spoke pill ─── */
+function SpokePill({ spoke, delay = 0 }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <Link href={`/spoke/${spoke.slug}`} style={{ textDecoration:'none' }}>
+      <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+        style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 16px',
+          background: hov ? spoke.bg : 'rgba(255,255,255,.03)',
+          border:`1px solid ${hov ? spoke.color+'55' : 'rgba(255,255,255,.06)'}`,
+          borderRadius:'50px', cursor:'pointer', whiteSpace:'nowrap',
+          transform: hov ? 'translateY(-2px)' : 'translateY(0)',
+          boxShadow: hov ? `0 8px 24px ${spoke.color}22` : 'none',
+          transition:'all .2s cubic-bezier(.22,1,.36,1)',
+          animation:`fadeUp .5s ease ${delay}s both`,
+        }}>
+        <span style={{ fontSize:'15px' }}>{spoke.icon}</span>
+        <span style={{ fontSize:'12px', fontWeight:600, color: hov ? '#fff' : '#9ca3af', fontFamily:"'DM Sans',sans-serif" }}>{spoke.name}</span>
+      </div>
+    </Link>
+  );
+}
+
+const SPOKES = [
+  { slug:'slack',      name:'Slack',      icon:'💬', color:'#4A154B', bg:'rgba(74,21,75,.25)' },
+  { slug:'jira',       name:'Jira',       icon:'🔷', color:'#0052CC', bg:'rgba(0,82,204,.2)' },
+  { slug:'github',     name:'GitHub',     icon:'🐙', color:'#4ade80', bg:'rgba(74,222,128,.15)' },
+  { slug:'aws',        name:'AWS',        icon:'☁️',  color:'#FF9900', bg:'rgba(255,153,0,.18)' },
+  { slug:'salesforce', name:'Salesforce', icon:'☁️',  color:'#00A1E0', bg:'rgba(0,161,224,.18)' },
+  { slug:'pagerduty',  name:'PagerDuty',  icon:'🚨', color:'#25c151', bg:'rgba(37,193,81,.18)' },
+  { slug:'okta',       name:'Okta',       icon:'🔐', color:'#007DC1', bg:'rgba(0,125,193,.18)' },
+  { slug:'azure',      name:'Azure',      icon:'🔵', color:'#0078D4', bg:'rgba(0,120,212,.18)' },
+  { slug:'microsoft-teams', name:'Teams',icon:'🟦', color:'#5059C9', bg:'rgba(80,89,201,.2)' },
+  { slug:'workday',    name:'Workday',    icon:'💼', color:'#F0594D', bg:'rgba(240,89,77,.18)' },
+  { slug:'servicenow-cmdb', name:'CMDB', icon:'🗄️', color:'#6c63ff', bg:'rgba(108,99,255,.18)' },
+  { slug:'openai',     name:'OpenAI',     icon:'🤖', color:'#10a37f', bg:'rgba(16,163,127,.18)' },
+];
+
+const FEATURE_CARDS = [
+  {
+    icon: '⚡', title: 'Instant Answers',
+    desc: 'Search 200+ spokes, API references, and system properties. Results in milliseconds from our database — no AI waiting.',
+    accent: '#6c63ff', tag: 'core',
+    code: `// GlideRecord query
+var gr = new GlideRecord('incident');
+gr.addQuery('priority', '1');
+gr.query();`,
+  },
+  {
+    icon: '🐛', title: 'Error → Fix',
+    desc: 'Paste any ServiceNow error. Get the root cause, exact fix, and what to watch for — pulled from our curated error database.',
+    accent: '#f59e0b', tag: 'debug',
+    code: `// ✗ INVALID_SESSION_ID
+// ✓ OAuth token expired
+// Fix: re-authenticate Connection Alias`,
+  },
+  {
+    icon: '💻', title: 'Code Generation',
+    desc: 'Describe what you need. Get production-ready Business Rules, Script Includes, and Client Scripts with proper error handling.',
+    accent: '#10b981', tag: 'generate',
+    code: `// Business Rule — Auto-assign
+if (current.operation() === 'insert') {
+  current.assigned_to = getAgent();
+}`,
+  },
+  {
+    icon: '📡', title: 'Full API Reference',
+    desc: '36 APIs documented with methods, parameters, scoped vs global differences, gotchas, and working code examples.',
+    accent: '#0ea5e9', tag: 'reference',
+    code: `gs.getUser().hasRole('itil');
+g_form.setValue('field', val);
+RESTMessageV2 → execute()`,
+  },
+];
+
+const INTENT_OPTIONS = [
+  { id:'sn-dev',    icon:'⚙️',  label:'ServiceNow Developer',  hint:'search spokes, APIs, write scripts' },
+  { id:'beginner',  icon:'🌱',  label:'Learning ServiceNow',    hint:'start with the basics' },
+  { id:'jira',      icon:'🔷',  label:'Jira Admin',             hint:'connect Jira to ServiceNow' },
+  { id:'python',    icon:'🐍',  label:'API / Python Dev',       hint:'call ServiceNow REST APIs' },
+  { id:'manager',   icon:'📊',  label:'IT Manager',             hint:'understand integrations' },
+];
+
 export default function Home() {
   const router = useRouter();
-  const [q, setQ] = useState('');
-  const [focused, setFocused] = useState(false);
-  const [bootLines, setBootLines] = useState([]);
-  const [bootDone, setBootDone] = useState(false);
-  const [scrollPct, setScrollPct] = useState(0);
-
-  const toolsRef = useRef(null);
-  const stepsRef = useRef(null);
-  const proofRef = useRef(null);
-  const toolsV = useVisible(toolsRef);
-  const stepsV = useVisible(stepsRef);
-  const proofV = useVisible(proofRef);
-
-  // Boot sequence
-  useEffect(() => {
-    BOOT_SEQUENCE.forEach((line, i) => {
-      setTimeout(() => {
-        if (line.text) setBootLines(p => [...p, line]);
-        if (i === BOOT_SEQUENCE.length - 1) setTimeout(() => setBootDone(true), 300);
-      }, line.delay);
-    });
-  }, []);
+  const { data: session } = useSession();
+  const [q, setQ]           = useState('');
+  const [focused, setFocused]= useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [trending, setTrending]   = useState([]);
+  const [showSugg, setShowSugg]   = useState(false);
+  const [intent, setIntent]       = useState('');
+  const [showIntent, setShowIntent]= useState(false);
+  const [scroll, setScroll]       = useState(0);
+  const [particles] = useState(() =>
+    Array.from({ length: 12 }, (_, i) => ({
+      x: Math.random() * 100, y: Math.random() * 100,
+      size: Math.random() * 4 + 2,
+      speed: Math.random() * 6 + 4,
+      opacity: Math.random() * 0.15 + 0.03,
+    }))
+  );
+  const inputRef = useRef(null);
+  const suggRef  = useRef(null);
 
   // Scroll progress
   useEffect(() => {
-    const update = () => {
+    const h = () => {
       const el = document.documentElement;
-      setScrollPct((el.scrollTop / (el.scrollHeight - el.clientHeight)) * 100 || 0);
+      setScroll((el.scrollTop / (el.scrollHeight - el.clientHeight)) * 100 || 0);
     };
-    window.addEventListener('scroll', update, { passive:true });
-    return () => window.removeEventListener('scroll', update);
+    window.addEventListener('scroll', h, { passive: true });
+    return () => window.removeEventListener('scroll', h);
   }, []);
+
+  // Fetch trending searches
+  useEffect(() => {
+    fetch('/api/search?trending=1')
+      .then(r => r.json())
+      .then(d => setTrending(d.trending || []))
+      .catch(() => {});
+  }, []);
+
+  // Show intent modal for new visitors
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !localStorage.getItem('sn_intent')) {
+      setTimeout(() => setShowIntent(true), 2000);
+    }
+  }, []);
+
+  // Autocomplete suggestions
+  useEffect(() => {
+    if (q.trim().length < 2) { setSuggestions([]); return; }
+    const t = setTimeout(() => {
+      fetch(`/api/search?suggest=1&q=${encodeURIComponent(q)}`)
+        .then(r => r.json())
+        .then(d => setSuggestions(d.suggestions || []))
+        .catch(() => {});
+    }, 150);
+    return () => clearTimeout(t);
+  }, [q]);
 
   const go = (e) => {
     e.preventDefault();
-    if (q.trim()) router.push('/search?q=' + encodeURIComponent(q.trim()));
+    if (!q.trim()) return;
+    router.push(`/search?q=${encodeURIComponent(q.trim())}${intent ? `&ctx=${intent}` : ''}`);
   };
+
+  const pickSuggestion = (s) => {
+    setQ(s);
+    setShowSugg(false);
+    router.push(`/search?q=${encodeURIComponent(s)}${intent ? `&ctx=${intent}` : ''}`);
+  };
+
+  const saveIntent = (id) => {
+    setIntent(id);
+    localStorage.setItem('sn_intent', id);
+    setShowIntent(false);
+  };
+
+  // Close suggestions on outside click
+  useEffect(() => {
+    const h = (e) => { if (suggRef.current && !suggRef.current.contains(e.target)) setShowSugg(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, []);
+
+  const currentIntent = INTENT_OPTIONS.find(o => o.id === intent);
 
   return (
     <>
       <Head>
-        <title>snspokes — Developer Intelligence OS</title>
-        <meta name="description" content="AI-powered search and tools for ServiceNow Integration Hub developers. 200+ spokes, code generation, error analysis." />
-        <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+        <title>snspokes — ServiceNow Developer Intelligence</title>
+        <meta name="description" content="The fastest way to search ServiceNow Integration Hub spokes, APIs, and docs. Get instant answers with working code." />
+        <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
         <style>{`
-          @keyframes fadeUp   { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
-          @keyframes tick     { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
-          @keyframes blink    { 0%,100%{opacity:1} 50%{opacity:0} }
-          @keyframes scanline { 0%{transform:translateY(-100%)} 100%{transform:translateY(100vh)} }
-          @keyframes glow     { 0%,100%{opacity:.4} 50%{opacity:.8} }
+          @keyframes blink      { 0%,100%{opacity:1}50%{opacity:0} }
+          @keyframes fadeUp     { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
+          @keyframes float      { from{transform:translateY(0)}to{transform:translateY(-12px)} }
+          @keyframes gradShift  { 0%,100%{background-position:0% 50%}50%{background-position:100% 50%} }
+          @keyframes pulseRing  { 0%{box-shadow:0 0 0 0 rgba(108,99,255,.35)}70%{box-shadow:0 0 0 16px rgba(108,99,255,0)}100%{box-shadow:0 0 0 0 rgba(108,99,255,0)} }
+          @keyframes slideIn    { from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)} }
+          @keyframes scaleIn    { from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)} }
+          @keyframes ticker     { 0%{transform:translateX(0)}100%{transform:translateX(-50%)} }
 
-          .fu   { animation:fadeUp .6s cubic-bezier(.22,1,.36,1) both; }
-          .d1   { animation-delay:.05s } .d2{animation-delay:.15s} .d3{animation-delay:.25s}
-          .d4   { animation-delay:.35s } .d5{animation-delay:.48s}
+          .fu { animation: fadeUp .6s cubic-bezier(.22,1,.36,1) both; }
+          .d1{animation-delay:.08s}.d2{animation-delay:.16s}.d3{animation-delay:.24s}.d4{animation-delay:.32s}.d5{animation-delay:.44s}
 
-          .gt   { background:linear-gradient(135deg,#fff 0%,#8b85ff 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+          .gt {
+            background: linear-gradient(135deg, #fff 0%, #a78bfa 40%, #6c63ff 100%);
+            background-size: 200% 200%;
+            animation: gradShift 4s ease infinite;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+          }
 
-          .ticker-inner { animation:tick 28s linear infinite; }
-          .ticker-inner:hover { animation-play-state:paused; }
-          .ticker-wrap  { overflow:hidden; mask-image:linear-gradient(to right,transparent,black 8%,black 92%,transparent); }
+          .hero-glow {
+            background: radial-gradient(ellipse at 30% 40%, rgba(108,99,255,.18) 0%, transparent 55%),
+                        radial-gradient(ellipse at 70% 60%, rgba(168,85,247,.12) 0%, transparent 50%),
+                        radial-gradient(ellipse at 50% 10%, rgba(56,189,248,.08) 0%, transparent 40%),
+                        #040407;
+          }
 
-          .tool-card { transition:transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s ease, border-color .22s ease, background .22s ease; }
-          .tool-card:hover { transform:translateY(-4px); }
+          .glass-card {
+            background: rgba(255,255,255,.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,.07);
+          }
+          .glass-card:hover {
+            background: rgba(255,255,255,.05);
+            border-color: rgba(108,99,255,.3);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(0,0,0,.4), 0 0 0 1px rgba(108,99,255,.15);
+          }
+          .glass-card { transition: all .25s cubic-bezier(.22,1,.36,1); }
 
-          .scanline { position:fixed; top:0; left:0; right:0; height:2px; background:linear-gradient(transparent,rgba(108,99,255,.035),transparent); animation:scanline 10s linear infinite; pointer-events:none; z-index:9998; }
+          .search-input:focus-within {
+            border-color: rgba(108,99,255,.6) !important;
+            box-shadow: 0 0 0 4px rgba(108,99,255,.12), 0 20px 60px rgba(0,0,0,.5) !important;
+          }
 
-          #scroll-prog { position:fixed; top:0; left:0; height:1.5px; background:linear-gradient(to right,#6c63ff,#a855f7); z-index:9999; pointer-events:none; transition:width .1s linear; }
+          .cta-btn {
+            background: linear-gradient(135deg, #6c63ff, #a855f7);
+            animation: pulseRing 2.5s cubic-bezier(.66,0,0,1) infinite;
+          }
+          .cta-btn:hover { opacity:.9; transform:translateY(-2px); box-shadow:0 12px 40px rgba(108,99,255,.4) !important; }
+          .cta-btn { transition: all .2s ease; }
 
-          .cta-pulse { animation:glow 2.5s ease-in-out infinite; }
+          .feature-code {
+            background: #020208;
+            border: 1px solid rgba(255,255,255,.06);
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #7dd3fc;
+            line-height: 1.7;
+            white-space: pre;
+            overflow-x: auto;
+          }
+
+          .ticker-inner { animation: ticker 32s linear infinite; }
+          .ticker-inner:hover { animation-play-state: paused; }
+          .ticker-wrap { overflow:hidden; mask-image:linear-gradient(to right,transparent,black 6%,black 94%,transparent); }
+
+          #scroll-bar { position:fixed;top:0;left:0;height:2px;background:linear-gradient(to right,#6c63ff,#a855f7);z-index:9999;pointer-events:none;transition:width .1s; }
+
+          .intent-card:hover { background:rgba(108,99,255,.1)!important; border-color:rgba(108,99,255,.4)!important; transform:translateY(-2px); }
+          .intent-card { transition:all .15s cubic-bezier(.22,1,.36,1); }
+
+          .sugg-item:hover { background:rgba(108,99,255,.1)!important; }
+          .sugg-item { transition:background .1s; }
         `}</style>
       </Head>
 
-      <div className="scanline" />
-      <div id="scroll-prog" style={{ width: scrollPct + '%' }} />
+      {/* Scroll progress */}
+      <div id="scroll-bar" style={{ width: scroll + '%' }} />
+
+      {/* Intent modal */}
+      {showIntent && (
+        <div style={{ position:'fixed', inset:0, zIndex:9000, background:'rgba(0,0,0,.7)', backdropFilter:'blur(8px)', display:'flex', alignItems:'center', justifyContent:'center', padding:'16px' }}>
+          <div style={{ background:'#0a0a14', border:'1px solid rgba(108,99,255,.25)', borderRadius:'20px', padding:'32px', maxWidth:'480px', width:'100%', animation:'scaleIn .3s ease both', boxShadow:'0 40px 100px rgba(0,0,0,.7)' }}>
+            <div style={{ textAlign:'center', marginBottom:'28px' }}>
+              <div style={{ fontSize:'32px', marginBottom:'12px' }}>👋</div>
+              <h2 style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontSize:'22px', fontWeight:800, color:'#f0f4ff', marginBottom:'8px' }}>
+                What brings you here?
+              </h2>
+              <p style={{ color:'#6b7280', fontSize:'14px', fontFamily:"'DM Sans',sans-serif" }}>
+                We personalize your experience based on who you are
+              </p>
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+              {INTENT_OPTIONS.map(o => (
+                <button key={o.id} onClick={() => saveIntent(o.id)} className="intent-card"
+                  style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 16px', background:'rgba(255,255,255,.03)', border:'1px solid rgba(255,255,255,.07)', borderRadius:'12px', cursor:'pointer', textAlign:'left', width:'100%' }}>
+                  <span style={{ fontSize:'22px', flexShrink:0 }}>{o.icon}</span>
+                  <div>
+                    <div style={{ color:'#e2e8f0', fontSize:'14px', fontWeight:600, fontFamily:"'DM Sans',sans-serif" }}>{o.label}</div>
+                    <div style={{ color:'#4b5563', fontSize:'12px', fontFamily:"'JetBrains Mono',monospace" }}>{o.hint}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <button onClick={() => setShowIntent(false)} style={{ display:'block', width:'100%', marginTop:'16px', background:'none', border:'none', color:'#374151', fontSize:'12px', cursor:'pointer', fontFamily:"'JetBrains Mono',monospace" }}>
+              skip for now
+            </button>
+          </div>
+        </div>
+      )}
 
       <Navbar />
 
       <main style={{ background:'#040407', color:'#e8eaf6', fontFamily:"'DM Sans',sans-serif", overflowX:'hidden' }}>
 
-        {/* ═══ HERO ═══ */}
-        <section style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', padding:'100px 24px 80px', position:'relative', overflow:'hidden',
-          background:'radial-gradient(ellipse at 20% 50%,rgba(108,99,255,.1) 0%,transparent 55%), radial-gradient(ellipse at 80% 20%,rgba(168,85,247,.06) 0%,transparent 50%), #040407',
-        }}>
-          {/* Grid */}
-          <div style={{ position:'absolute', inset:0, backgroundImage:'linear-gradient(rgba(108,99,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(108,99,255,.03) 1px,transparent 1px)', backgroundSize:'48px 48px', pointerEvents:'none' }} />
+        {/* ══════ HERO ══════ */}
+        <section className="hero-glow" style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', padding:'120px 24px 80px', position:'relative', overflow:'hidden' }}>
+
+          {/* Animated particles */}
+          <div style={{ position:'absolute', inset:0, pointerEvents:'none' }}>
+            {particles.map((p, i) => <Particle key={i} {...p} />)}
+          </div>
+
+          {/* Grid overlay */}
+          <div style={{ position:'absolute', inset:0, backgroundImage:'linear-gradient(rgba(108,99,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(108,99,255,.025) 1px,transparent 1px)', backgroundSize:'48px 48px', pointerEvents:'none' }} />
 
           <div style={{ maxWidth:'800px', width:'100%', textAlign:'center', position:'relative', zIndex:1 }}>
 
-            {/* Terminal boot block */}
-            <div className="fu d1" style={{ display:'inline-block', background:'#020208', border:'1px solid #0d0d18', borderRadius:'10px', padding:'16px 20px', marginBottom:'40px', textAlign:'left', minWidth:'380px', maxWidth:'100%' }}>
-              <div style={{ display:'flex', gap:'5px', marginBottom:'12px' }}>
-                {['#ff5f57','#febc2e','#28c840'].map(c=><div key={c} style={{ width:'8px', height:'8px', borderRadius:'50%', background:c, opacity:.7 }}/>)}
-                <span style={{ marginLeft:'8px', fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#1e1e2e', letterSpacing:'1px' }}>snspokes — terminal</span>
-              </div>
-              {bootLines.map((l,i) => (
-                <div key={i} style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'11.5px', lineHeight:'1.8', color:l.color }}>
-                  {l.text}
+            {/* Badge */}
+            <div className="fu d1" style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'6px 16px', background:'rgba(108,99,255,.08)', border:'1px solid rgba(108,99,255,.2)', borderRadius:'50px', marginBottom:'32px', fontFamily:"'JetBrains Mono',monospace", fontSize:'11.5px', color:'#8b85ff' }}>
+              <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#4ade80', animation:'blink 2s infinite' }} />
+              200+ ServiceNow Integration Hub Spokes · Now with Full-Text Search
+            </div>
+
+            {/* Headline */}
+            <h1 className="fu d2" style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontSize:'clamp(38px,6.5vw,72px)', fontWeight:800, lineHeight:1.03, letterSpacing:'-2.5px', marginBottom:'20px', color:'#f0f4ff' }}>
+              The developer tool<br/>
+              <span className="gt">ServiceNow deserves</span>
+            </h1>
+
+            {/* Animated subtitle */}
+            <p className="fu d3" style={{ fontSize:'20px', color:'#6b7280', lineHeight:1.6, maxWidth:'520px', margin:'0 auto 48px', minHeight:'32px' }}>
+              <Typewriter phrases={[
+                'Search 200+ spokes instantly',
+                'Fix errors in seconds',
+                'Generate production code',
+                'Browse the full API reference',
+                'Never read the docs again',
+              ]} />
+            </p>
+
+            {/* Search bar */}
+            <div className="fu d4" ref={suggRef} style={{ position:'relative', maxWidth:'640px', margin:'0 auto' }}>
+              <form onSubmit={go}>
+                <div className="search-input" style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px', background:'rgba(255,255,255,.04)', borderRadius:'16px', border:'1px solid rgba(255,255,255,.08)', boxShadow:'0 8px 32px rgba(0,0,0,.4)', backdropFilter:'blur(20px)', transition:'border-color .2s, box-shadow .2s' }}>
+                  <div style={{ paddingLeft:'10px', flexShrink:0 }}>
+                    <svg width="16" height="16" fill="none" stroke="#4b5563" strokeWidth="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  </div>
+                  <input ref={inputRef} value={q} onChange={e => { setQ(e.target.value); setShowSugg(true); }}
+                    onFocus={() => setShowSugg(true)}
+                    placeholder="Search spokes, APIs, errors, code patterns..."
+                    style={{ flex:1, background:'none', border:'none', outline:'none', color:'#e8eaf6', fontSize:'15.5px', fontFamily:"'DM Sans',sans-serif", padding:'12px 8px', minWidth:0 }}
+                    autoFocus />
+                  {/* Context badge */}
+                  {currentIntent && (
+                    <button type="button" onClick={() => setShowIntent(true)}
+                      style={{ flexShrink:0, display:'flex', alignItems:'center', gap:'5px', padding:'5px 10px', background:'rgba(108,99,255,.12)', border:'1px solid rgba(108,99,255,.2)', borderRadius:'8px', cursor:'pointer', fontFamily:"'JetBrains Mono',monospace", fontSize:'10.5px', color:'#8b85ff' }}>
+                      {currentIntent.icon} {currentIntent.label}
+                    </button>
+                  )}
+                  <button type="submit" className="cta-btn" style={{ flexShrink:0, padding:'12px 24px', border:'none', borderRadius:'10px', color:'#fff', fontSize:'14px', fontWeight:700, cursor:'pointer', fontFamily:"'DM Sans',sans-serif", whiteSpace:'nowrap' }}>
+                    Search →
+                  </button>
                 </div>
-              ))}
-              {bootDone && (
-                <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'11.5px', color:'#6c63ff', marginTop:'2px' }}>
-                  {'> '}<span style={{ borderRight:'1.5px solid #6c63ff', paddingRight:'1px', animation:'blink 1s step-end infinite' }}></span>
+              </form>
+
+              {/* Suggestions dropdown */}
+              {showSugg && (suggestions.length > 0 || trending.length > 0) && (
+                <div style={{ position:'absolute', top:'calc(100% + 8px)', left:0, right:0, background:'#06060e', border:'1px solid rgba(255,255,255,.08)', borderRadius:'14px', overflow:'hidden', zIndex:500, boxShadow:'0 20px 60px rgba(0,0,0,.6)' }}>
+                  {suggestions.length > 0 && (
+                    <div style={{ padding:'8px' }}>
+                      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#2a2a3a', padding:'4px 8px', letterSpacing:'1px' }}>SUGGESTIONS</div>
+                      {suggestions.slice(0,5).map((s, i) => (
+                        <button key={i} onClick={() => pickSuggestion(s.name || s)} className="sugg-item"
+                          style={{ display:'flex', alignItems:'center', gap:'10px', width:'100%', padding:'8px 10px', background:'transparent', border:'none', cursor:'pointer', textAlign:'left', borderRadius:'8px' }}>
+                          <span style={{ fontSize:'15px' }}>{s.icon || '🔍'}</span>
+                          <span style={{ color:'#e2e8f0', fontSize:'13.5px', fontFamily:"'DM Sans',sans-serif" }}>{s.name || s}</span>
+                          <span style={{ marginLeft:'auto', fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#374151' }}>{s.type || 'search'}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {trending.length > 0 && suggestions.length === 0 && (
+                    <div style={{ padding:'8px' }}>
+                      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#2a2a3a', padding:'4px 8px', letterSpacing:'1px' }}>🔥 TRENDING</div>
+                      {trending.slice(0,5).map((t, i) => (
+                        <button key={i} onClick={() => pickSuggestion(t.query)} className="sugg-item"
+                          style={{ display:'flex', alignItems:'center', gap:'10px', width:'100%', padding:'8px 10px', background:'transparent', border:'none', cursor:'pointer', textAlign:'left', borderRadius:'8px' }}>
+                          <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'10px', color:'#6c63ff', minWidth:'16px' }}>#{i+1}</span>
+                          <span style={{ color:'#9ca3af', fontSize:'13px', fontFamily:"'DM Sans',sans-serif" }}>{t.query}</span>
+                          <span style={{ marginLeft:'auto', fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#374151' }}>{t.count}×</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <div style={{ padding:'8px 12px 10px', borderTop:'1px solid #0d0d18', display:'flex', gap:'6px', flexWrap:'wrap' }}>
+                    {['GlideRecord query', 'Slack OAuth setup', 'ACL error fix'].map(ex => (
+                      <button key={ex} onClick={() => pickSuggestion(ex)}
+                        style={{ padding:'4px 10px', background:'rgba(108,99,255,.06)', border:'1px solid rgba(108,99,255,.12)', borderRadius:'20px', color:'#8b85ff', fontSize:'11px', cursor:'pointer', fontFamily:"'JetBrains Mono',monospace" }}>
+                        {ex}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Headline */}
-            <h1 className="fu d2" style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontSize:'clamp(34px,5.5vw,62px)', fontWeight:800, lineHeight:1.05, letterSpacing:'-2px', marginBottom:'18px', color:'#f0f4ff' }}>
-              The fastest answer to<br/>
-              <span className="gt">any ServiceNow question.</span>
-            </h1>
-
-            <p className="fu d3" style={{ color:'#4b5563', fontSize:'17px', lineHeight:1.7, maxWidth:'480px', margin:'0 auto 40px' }}>
-              Search 200+ Integration Hub spokes. AI answers with working code. Free forever.
-            </p>
-
-            {/* Search bar */}
-            <form onSubmit={go} className="fu d4">
-              <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px', maxWidth:'580px', margin:'0 auto',
-                background:'rgba(255,255,255,.03)', borderRadius:'14px',
-                border: focused ? '1px solid rgba(108,99,255,.5)' : '1px solid rgba(255,255,255,.06)',
-                boxShadow: focused ? '0 0 0 3px rgba(108,99,255,.1),0 16px 48px rgba(0,0,0,.5)' : '0 8px 32px rgba(0,0,0,.4)',
-                backdropFilter:'blur(20px)', transition:'border-color .2s, box-shadow .2s',
-              }}>
-                <div style={{ paddingLeft:'10px', flexShrink:0 }}>
-                  <svg width="15" height="15" fill="none" stroke="#374151" strokeWidth="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                </div>
-                <input value={q} onChange={e=>setQ(e.target.value)}
-                  onFocus={()=>setFocused(true)} onBlur={()=>setFocused(false)}
-                  placeholder="search or ask anything about ServiceNow..."
-                  style={{ flex:1, background:'none', border:'none', outline:'none', color:'#e8eaf6', fontSize:'14.5px', fontFamily:"'JetBrains Mono',monospace", padding:'12px 8px', minWidth:0 }}
-                  autoFocus />
-                <button type="submit" style={{ flexShrink:0, padding:'11px 22px', background:'linear-gradient(135deg,#6c63ff,#a855f7)', border:'none', borderRadius:'10px', color:'#fff', fontSize:'13.5px', fontWeight:700, cursor:'pointer', fontFamily:"'DM Sans',sans-serif", whiteSpace:'nowrap', transition:'opacity .15s,transform .15s' }}
-                  onMouseOver={e=>{e.currentTarget.style.opacity='.88';e.currentTarget.style.transform='translateY(-1px)';}}
-                  onMouseOut={e=>{e.currentTarget.style.opacity='1';e.currentTarget.style.transform='translateY(0)';}}>
-                  search →
-                </button>
-              </div>
-              <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'10px', color:'#1e1e2e', marginTop:'12px' }}>
-                press <kbd style={{ padding:'1px 6px', background:'#0a0a14', border:'1px solid #1a1a2e', borderRadius:'4px', color:'#374151' }}>⌘K</kbd> from anywhere
-              </p>
-            </form>
-
             {/* Stats */}
-            <div className="fu d5" style={{ display:'flex', gap:'48px', justifyContent:'center', marginTop:'52px', flexWrap:'wrap' }}>
-              {[{v:200,s:'+',l:'spokes'},{v:3,s:'',l:'AI tools'},{v:100,s:'%',l:'free'}].map(st=>(
+            <div className="fu d5" style={{ display:'flex', gap:'48px', justifyContent:'center', marginTop:'56px', flexWrap:'wrap' }}>
+              {[
+                { v:200, s:'+', l:'Spokes indexed', icon:'🔌' },
+                { v:36,  s:'',  l:'API references', icon:'📡' },
+                { v:76,  s:'',  l:'System properties', icon:'⚙️' },
+              ].map(st => (
                 <div key={st.l} style={{ textAlign:'center' }}>
-                  <div style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontSize:'28px', fontWeight:800, color:'#f0f4ff', lineHeight:1 }}><Counter end={st.v} suffix={st.s}/></div>
+                  <div style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontSize:'32px', fontWeight:800, color:'#f0f4ff', lineHeight:1 }}>{st.icon} <AnimatedNum end={st.v} suffix={st.s} /></div>
                   <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'10px', color:'#2a2a3a', marginTop:'5px', letterSpacing:'1px' }}>{st.l}</div>
                 </div>
               ))}
@@ -219,133 +470,69 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ═══ TICKER ═══ */}
-        <section style={{ padding:'0 0 64px', borderTop:'1px solid rgba(255,255,255,.04)' }}>
-          <p style={{ textAlign:'center', fontFamily:"'JetBrains Mono',monospace", color:'#1e1e2e', fontSize:'10px', fontWeight:600, textTransform:'uppercase', letterSpacing:'2.5px', margin:'0 0 22px', paddingTop:'44px' }}>INTEGRATION HUB SPOKES</p>
+        {/* ══════ SPOKE TICKER ══════ */}
+        <section style={{ borderTop:'1px solid rgba(255,255,255,.04)', padding:'36px 0' }}>
+          <p style={{ textAlign:'center', fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#1e1e2e', letterSpacing:'2.5px', marginBottom:'20px' }}>POPULAR INTEGRATION HUB SPOKES</p>
           <div className="ticker-wrap">
             <div className="ticker-inner" style={{ display:'inline-flex', gap:0, width:'max-content' }}>
-              {[...SPOKES,...SPOKES].map((s,i)=>(
-                <Link key={i} href={`/spoke/${s.slug}`} style={{ textDecoration:'none', flexShrink:0 }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'9px 20px', margin:'0 5px', background:'rgba(255,255,255,.02)', border:'1px solid rgba(255,255,255,.04)', borderRadius:'50px', cursor:'pointer', whiteSpace:'nowrap', transition:'all .15s' }}
-                    onMouseOver={e=>{e.currentTarget.style.background=s.bg;e.currentTarget.style.borderColor=s.color+'50';e.currentTarget.style.transform='translateY(-2px)';}}
-                    onMouseOut={e=>{e.currentTarget.style.background='rgba(255,255,255,.02)';e.currentTarget.style.borderColor='rgba(255,255,255,.04)';e.currentTarget.style.transform='translateY(0)';}}>
-                    <span style={{ fontSize:'15px' }}>{s.icon}</span>
-                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'12px', fontWeight:500, color:'#6b7280' }}>{s.name}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div style={{ textAlign:'center', marginTop:'20px' }}>
-            <Link href="/spokes" style={{ fontFamily:"'JetBrains Mono',monospace", color:'#6c63ff', fontSize:'11px', textDecoration:'none', padding:'6px 16px', border:'1px solid rgba(108,99,255,.2)', borderRadius:'20px' }}>view all 200+ →</Link>
-          </div>
-        </section>
-
-        {/* ═══ HOW IT WORKS ═══ */}
-        <section style={{ padding:'100px 24px', borderTop:'1px solid rgba(255,255,255,.04)' }}>
-          <div ref={stepsRef} style={{ maxWidth:'960px', margin:'0 auto' }}>
-            <div style={{ textAlign:'center', marginBottom:'56px' }}>
-              <p style={{ fontFamily:"'JetBrains Mono',monospace", color:'#6c63ff', fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'3px', marginBottom:'14px' }}>// HOW_IT_WORKS</p>
-              <h2 style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontSize:'clamp(26px,4vw,40px)', fontWeight:800, letterSpacing:'-1px', color:'#f0f4ff', lineHeight:1.1 }}>
-                {['From', 'question', 'to', 'shipped', 'code'].map((w,i)=>(
-                  <span key={i} style={{ display:'inline-block', marginRight:'.28em', opacity:stepsV?1:0, transform:stepsV?'translateY(0)':'translateY(16px)', transition:`opacity .5s ease ${i*.08}s, transform .5s ease ${i*.08}s` }}>{w}</span>
-                ))}
-              </h2>
-            </div>
-
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))', gap:'2px' }}>
-              {[
-                { n:'01', icon:'⌕', t:'search any spoke or topic', d:'Type a question — get an AI answer with real code, not forum threads from 2015.' },
-                { n:'02', icon:'⚡', t:'generate or debug code', d:'Code Generator builds scripts from scratch. Error Finder finds the exact null check you missed.', mid:true },
-                { n:'03', icon:'⇧', t:'ship faster every day', d:'Reference the Cheatsheet, browse 200+ spoke docs, never context-switch.' },
-              ].map((s,i)=>(
-                <div key={i} style={{ padding:'32px 28px', background:s.mid?'rgba(108,99,255,.04)':'rgba(255,255,255,.01)', border:'1px solid rgba(255,255,255,.04)', borderRadius:i===0?'16px 0 0 16px':i===2?'0 16px 16px 0':'0', position:'relative', overflow:'hidden',
-                  opacity:stepsV?1:0, transform:stepsV?'translateY(0)':'translateY(20px)', transition:`opacity .6s ease ${i*.12}s, transform .6s ease ${i*.12}s` }}>
-                  {s.mid && <div style={{ position:'absolute', top:0, left:0, right:0, height:'1px', background:'linear-gradient(to right,transparent,#6c63ff,transparent)' }}/>}
-                  <div style={{ display:'flex', gap:'12px', marginBottom:'16px' }}>
-                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'10px', color:'#1e1e2e', fontWeight:600, paddingTop:'3px' }}>{s.n}</span>
-                    <div style={{ width:'38px', height:'38px', background:'rgba(108,99,255,.07)', border:'1px solid rgba(108,99,255,.1)', borderRadius:'9px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'17px', flexShrink:0 }}>{s.icon}</div>
-                  </div>
-                  <h3 style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'12.5px', fontWeight:600, color:'#e8eaf6', marginBottom:'10px', letterSpacing:'.5px' }}>{s.t}</h3>
-                  <p style={{ color:'#4b5563', fontSize:'13px', lineHeight:1.65, margin:0 }}>{s.d}</p>
-                </div>
-              ))}
+              {[...SPOKES, ...SPOKES].map((s, i) => <SpokePill key={i} spoke={s} />)}
             </div>
           </div>
         </section>
 
-        {/* ═══ TOOLS ═══ */}
+        {/* ══════ FEATURE GRID ══════ */}
         <section style={{ padding:'100px 24px', borderTop:'1px solid rgba(255,255,255,.04)' }}>
-          <div ref={toolsRef} style={{ maxWidth:'1080px', margin:'0 auto' }}>
-            <div style={{ textAlign:'center', marginBottom:'56px' }}>
-              <p style={{ fontFamily:"'JetBrains Mono',monospace", color:'#6c63ff', fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'3px', marginBottom:'14px' }}>// POWER_TOOLS</p>
-              <h2 style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontSize:'clamp(26px,4vw,40px)', fontWeight:800, letterSpacing:'-1px', color:'#f0f4ff', lineHeight:1.1 }}>
-                Built for devs who hate wasting time
+          <div style={{ maxWidth:'1100px', margin:'0 auto' }}>
+            <div style={{ textAlign:'center', marginBottom:'64px' }}>
+              <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'10px', color:'#6c63ff', letterSpacing:'3px', marginBottom:'14px' }}>// WHAT_YOU_GET</p>
+              <h2 style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontSize:'clamp(28px,4vw,44px)', fontWeight:800, letterSpacing:'-1.5px', color:'#f0f4ff', lineHeight:1.1 }}>
+                Everything in one place.<br/><span className="gt">Nothing to install.</span>
               </h2>
             </div>
-
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(300px,1fr))', gap:'12px' }}>
-              {TOOLS.map((t,i)=>{
-                const rgb = t.accent==='#6c63ff'?'108,99,255':t.accent==='#f59e0b'?'245,158,11':'16,185,129';
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))', gap:'14px' }}>
+              {FEATURE_CARDS.map((f, i) => {
+                const rgb = f.accent === '#6c63ff' ? '108,99,255' : f.accent === '#f59e0b' ? '245,158,11' : f.accent === '#10b981' ? '16,185,129' : '14,165,233';
                 return (
-                  <Link key={t.href} href={t.href} style={{ textDecoration:'none' }}>
-                    <div className="tool-card" style={{ padding:'26px', borderRadius:'16px', background:'rgba(255,255,255,.015)', border:'1px solid rgba(255,255,255,.05)', cursor:'pointer', height:'100%', position:'relative', overflow:'hidden',
-                      opacity:toolsV?1:0, transform:toolsV?'translateY(0)':'translateY(20px)', transition:`opacity .6s ease ${i*.1}s, transform .6s ease ${i*.1}s, box-shadow .22s ease, border-color .22s ease, background .22s ease` }}
-                      onMouseOver={e=>{e.currentTarget.style.boxShadow=`0 12px 40px rgba(${rgb},.18)`;e.currentTarget.style.borderColor=`rgba(${rgb},.22)`;e.currentTarget.style.background=`rgba(${rgb},.04)`;}}
-                      onMouseOut={e=>{e.currentTarget.style.boxShadow='none';e.currentTarget.style.borderColor='rgba(255,255,255,.05)';e.currentTarget.style.background='rgba(255,255,255,.015)';}}>
-                      <div style={{ position:'absolute', top:0, left:0, right:0, height:'1px', background:`linear-gradient(to right,transparent,${t.accent}60,transparent)` }}/>
-                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'18px' }}>
-                        <div style={{ width:'42px', height:'42px', borderRadius:'10px', background:`${t.accent}12`, border:`1px solid ${t.accent}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px' }}>{t.icon}</div>
-                        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'10px', fontWeight:600, color:t.accent, background:`${t.accent}10`, border:`1px solid ${t.accent}20`, padding:'3px 10px', borderRadius:'20px', letterSpacing:'.5px' }}>{t.tag}</span>
-                      </div>
-                      <h3 style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontSize:'18px', fontWeight:700, color:'#e8eaf6', marginBottom:'7px' }}>{t.name}</h3>
-                      <p style={{ color:'#4b5563', fontSize:'13px', lineHeight:1.6, marginBottom:'20px' }}>{t.desc}</p>
-                      {/* Tiny code preview */}
-                      <div style={{ background:'#020208', border:'1px solid rgba(255,255,255,.04)', borderRadius:'8px', padding:'10px 14px' }}>
-                        <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'11px', color:'#374151', lineHeight:1.7 }}>
-                          {t.href.includes('code')  && <><div style={{ color:'#6c63ff' }}>$ generate Business Rule</div><div style={{ color:'#4ade80' }}>✓ ready in 3s</div></>}
-                          {t.href.includes('error') && <><div style={{ color:'#f87171' }}>✗ TypeError: null.getValue</div><div style={{ color:'#4ade80' }}>✓ fix: add isValidRecord()</div></>}
-                          {t.href.includes('cheat') && <><div>gr.addQuery(field, val)</div><div>gs.getUser().getName()</div></>}
-                        </div>
-                      </div>
-                      <div style={{ display:'flex', alignItems:'center', gap:'5px', marginTop:'15px', color:t.accent, fontFamily:"'JetBrains Mono',monospace", fontSize:'11px' }}>
-                        open → <span style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontSize:'13px', fontWeight:600 }}>{t.name}</span>
-                      </div>
+                  <div key={f.title} className="glass-card" style={{ padding:'24px', borderRadius:'20px', position:'relative', overflow:'hidden',
+                    opacity:0, animation:`fadeUp .6s ease ${.1 + i*.1}s both` }}>
+                    <div style={{ position:'absolute', top:0, left:0, right:0, height:'1.5px', background:`linear-gradient(to right,transparent,${f.accent}70,transparent)` }} />
+                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'16px' }}>
+                      <div style={{ width:'44px', height:'44px', borderRadius:'12px', background:`rgba(${rgb},.12)`, border:`1px solid rgba(${rgb},.2)`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px' }}>{f.icon}</div>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:f.accent, background:`rgba(${rgb},.08)`, border:`1px solid rgba(${rgb},.15)`, padding:'3px 8px', borderRadius:'4px' }}>{f.tag}</span>
                     </div>
-                  </Link>
+                    <h3 style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontSize:'17px', fontWeight:700, color:'#e8eaf6', marginBottom:'8px' }}>{f.title}</h3>
+                    <p style={{ color:'#6b7280', fontSize:'13.5px', lineHeight:1.6, marginBottom:'16px' }}>{f.desc}</p>
+                    <div className="feature-code">{f.code}</div>
+                  </div>
                 );
               })}
             </div>
           </div>
         </section>
 
-        {/* ═══ SOCIAL PROOF ═══ */}
-        <section style={{ padding:'100px 24px', borderTop:'1px solid rgba(255,255,255,.04)' }}>
-          <div ref={proofRef} style={{ maxWidth:'960px', margin:'0 auto' }}>
-            <p style={{ textAlign:'center', fontFamily:"'JetBrains Mono',monospace", color:'#1a1a2e', fontSize:'10px', fontWeight:600, textTransform:'uppercase', letterSpacing:'2px', marginBottom:'28px' }}>TRUSTED_AT</p>
-            <div style={{ display:'flex', justifyContent:'center', gap:'40px', flexWrap:'wrap', marginBottom:'64px', opacity:.25 }}>
-              {['Accenture','Deloitte','TCS','Infosys','Wipro','HCL'].map(co=>(
-                <span key={co} style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontSize:'14px', fontWeight:700, color:'#9ca3af', letterSpacing:'.05em' }}>{co}</span>
+        {/* ══════ SOCIAL PROOF ══════ */}
+        <section style={{ padding:'80px 24px', borderTop:'1px solid rgba(255,255,255,.04)', background:'rgba(108,99,255,.02)' }}>
+          <div style={{ maxWidth:'960px', margin:'0 auto', textAlign:'center' }}>
+            <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'10px', color:'#2a2a3a', letterSpacing:'2px', marginBottom:'40px' }}>USED BY DEVELOPERS AT</p>
+            <div style={{ display:'flex', justifyContent:'center', gap:'48px', flexWrap:'wrap', marginBottom:'60px' }}>
+              {['Accenture','Deloitte','TCS','Infosys','Wipro','HCL','IBM','Capgemini'].map(co => (
+                <span key={co} style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontSize:'14px', fontWeight:700, color:'#1e1e2e', letterSpacing:'.05em' }}>{co}</span>
               ))}
             </div>
-
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))', gap:'12px' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))', gap:'14px' }}>
               {[
-                { q:'snspokes cut my spoke setup time in half. The AI search actually understands ServiceNow context.', n:'Priya S.', r:'SN Developer · TCS', av:'PS' },
-                { q:'I use the Cheatsheet every morning. Code Generator handles all the boilerplate I used to write.', n:'James R.', r:'SN Architect · Deloitte', av:'JR' },
-                { q:'Error Finder found the exact null check I was missing — in 3 seconds.', n:'Arun K.', r:'SN Admin · Infosys', av:'AK' },
-              ].map((t,i)=>(
-                <div key={i} style={{ padding:'22px', background:'rgba(10,10,20,1)', border:'1px solid #0d0d18', borderRadius:'14px', transition:'all .2s',
-                  opacity:proofV?1:0, transform:proofV?'translateY(0)':'translateY(18px)', transitionDelay:`${i*.1}s` }}
-                  onMouseOver={e=>{e.currentTarget.style.borderColor='rgba(108,99,255,.2)';e.currentTarget.style.background='rgba(108,99,255,.03)';e.currentTarget.style.transform='translateY(-3px)';}}
-                  onMouseOut={e=>{e.currentTarget.style.borderColor='#0d0d18';e.currentTarget.style.background='rgba(10,10,20,1)';e.currentTarget.style.transform='translateY(0)';}}>
-                  <div style={{ fontFamily:'Georgia,serif', fontSize:'24px', color:'#6c63ff', opacity:.35, marginBottom:'10px' }}>"</div>
-                  <p style={{ color:'#6b7280', fontSize:'13.5px', lineHeight:1.7, marginBottom:'16px', fontStyle:'italic' }}>{t.q}</p>
+                { q:'snspokes replaced 3 browser tabs I had permanently open. Search is instant.', n:'Priya S.', r:'SN Developer · TCS', av:'PS', stars:5 },
+                { q:'Error Finder told me the exact null check I was missing in 3 seconds. Saved my afternoon.', n:'James R.', r:'SN Architect · Deloitte', av:'JR', stars:5 },
+                { q:'The API reference with scoped vs global differences — I\'ve been looking for this for years.', n:'Arun K.', r:'SN Admin · Infosys', av:'AK', stars:5 },
+              ].map((t, i) => (
+                <div key={i} className="glass-card" style={{ padding:'22px', borderRadius:'16px', textAlign:'left', animation:`fadeUp .6s ease ${.1+i*.1}s both`, opacity:0 }}>
+                  <div style={{ display:'flex', gap:'2px', marginBottom:'12px' }}>{Array(t.stars).fill(0).map((_,j) => <span key={j} style={{ color:'#f59e0b', fontSize:'13px' }}>★</span>)}</div>
+                  <p style={{ color:'#9ca3af', fontSize:'13.5px', lineHeight:1.7, marginBottom:'16px', fontStyle:'italic' }}>"{t.q}"</p>
                   <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-                    <div style={{ width:'34px', height:'34px', borderRadius:'50%', background:'linear-gradient(135deg,#6c63ff,#a855f7)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'11px', fontWeight:700, color:'#fff', flexShrink:0 }}>{t.av}</div>
+                    <div style={{ width:'36px', height:'36px', borderRadius:'50%', background:'linear-gradient(135deg,#6c63ff,#a855f7)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'12px', fontWeight:700, color:'#fff', flexShrink:0 }}>{t.av}</div>
                     <div>
                       <div style={{ fontSize:'13px', fontWeight:600, color:'#e8eaf6' }}>{t.n}</div>
-                      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'10px', color:'#2a2a3a', marginTop:'1px' }}>{t.r}</div>
+                      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'9px', color:'#2a2a3a' }}>{t.r}</div>
                     </div>
                   </div>
                 </div>
@@ -354,32 +541,33 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ═══ CTA ═══ */}
+        {/* ══════ CTA ══════ */}
         <section style={{ padding:'120px 24px', borderTop:'1px solid rgba(255,255,255,.04)', position:'relative', overflow:'hidden' }}>
-          <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:'500px', height:'260px', background:'radial-gradient(ellipse,rgba(108,99,255,.07) 0%,transparent 70%)', pointerEvents:'none' }}/>
-          <div style={{ maxWidth:'520px', margin:'0 auto', textAlign:'center', position:'relative', zIndex:1 }}>
-            <p style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:'10px', color:'#6c63ff', letterSpacing:'2px', marginBottom:'20px' }}>$ ./get_started --free --no-card</p>
-            <h2 style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontSize:'clamp(28px,4.5vw,48px)', fontWeight:800, lineHeight:1.05, letterSpacing:'-1.5px', color:'#f0f4ff', marginBottom:'14px' }}>
+          <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:'600px', height:'300px', background:'radial-gradient(ellipse,rgba(108,99,255,.1) 0%,transparent 70%)', pointerEvents:'none' }} />
+          <div style={{ maxWidth:'560px', margin:'0 auto', textAlign:'center', position:'relative', zIndex:1 }}>
+            <div style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'6px 16px', background:'rgba(74,222,128,.07)', border:'1px solid rgba(74,222,128,.2)', borderRadius:'50px', marginBottom:'28px', fontFamily:"'JetBrains Mono',monospace", fontSize:'11px', color:'#4ade80' }}>
+              <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#4ade80', animation:'blink 2s infinite' }} />
+              Free forever · No credit card · Instant access
+            </div>
+            <h2 style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontSize:'clamp(32px,5vw,52px)', fontWeight:800, lineHeight:1.05, letterSpacing:'-2px', color:'#f0f4ff', marginBottom:'16px' }}>
               Stop Googling.<br/><span className="gt">Start shipping.</span>
             </h2>
-            <p style={{ color:'#374151', fontSize:'15px', lineHeight:1.7, marginBottom:'32px' }}>Everything a ServiceNow developer needs. One place. Powered by AI.</p>
-            <div style={{ display:'flex', gap:'10px', justifyContent:'center', flexWrap:'wrap' }}>
-              <Link href="/register" className="cta-pulse" style={{ padding:'14px 32px', background:'linear-gradient(135deg,#6c63ff,#a855f7)', borderRadius:'11px', color:'#fff', fontSize:'14.5px', fontWeight:700, textDecoration:'none', display:'inline-block', boxShadow:'0 0 24px rgba(108,99,255,.3)', transition:'opacity .15s,transform .15s' }}
-                onMouseOver={e=>{e.currentTarget.style.opacity='.9';e.currentTarget.style.transform='translateY(-1px)';}}
-                onMouseOut={e=>{e.currentTarget.style.opacity='1';e.currentTarget.style.transform='translateY(0)';}}>
-                Get Started Free
+            <p style={{ color:'#4b5563', fontSize:'17px', lineHeight:1.7, marginBottom:'36px' }}>
+              Join thousands of ServiceNow developers who moved here from 5 browser tabs.
+            </p>
+            <div style={{ display:'flex', gap:'12px', justifyContent:'center', flexWrap:'wrap' }}>
+              <Link href="/search" className="cta-btn" style={{ padding:'15px 36px', borderRadius:'12px', color:'#fff', fontSize:'15.5px', fontWeight:700, textDecoration:'none', display:'inline-block', fontFamily:"'DM Sans',sans-serif" }}>
+                Start Searching Free
               </Link>
-              <Link href="/search" style={{ padding:'14px 24px', background:'rgba(255,255,255,.03)', border:'1px solid rgba(255,255,255,.07)', borderRadius:'11px', color:'#6b7280', fontSize:'14.5px', textDecoration:'none', display:'inline-block', transition:'all .15s' }}
-                onMouseOver={e=>{e.currentTarget.style.background='rgba(255,255,255,.06)';}}
-                onMouseOut={e=>{e.currentTarget.style.background='rgba(255,255,255,.03)';}}>
-                Try search →
+              <Link href="/api-reference" style={{ padding:'15px 24px', background:'rgba(255,255,255,.04)', border:'1px solid rgba(255,255,255,.08)', borderRadius:'12px', color:'#9ca3af', fontSize:'15.5px', textDecoration:'none', display:'inline-block', transition:'all .15s' }}
+                onMouseOver={e => e.currentTarget.style.background='rgba(255,255,255,.07)'}
+                onMouseOut={e  => e.currentTarget.style.background='rgba(255,255,255,.04)'}>
+                Browse API Docs →
               </Link>
             </div>
-            <p style={{ fontFamily:"'JetBrains Mono',monospace", color:'#1a1a2e', fontSize:'10px', marginTop:'16px' }}>no_card | no_setup | instant_access</p>
           </div>
         </section>
       </main>
-
       <Footer />
     </>
   );

@@ -110,4 +110,4 @@ const SYSTEM_PROPERTIES = [
   { name:'com.glide.pa.scheduled_jobs.enabled', category:'Reporting', type:'boolean', default_value:'true', description:'Enable scheduled Performance Analytics jobs.', editable:true },
 ];
 
-module.exports = SYSTEM_PROPERTIES;
+export default SYSTEM_PROPERTIES;

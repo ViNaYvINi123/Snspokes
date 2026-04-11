@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { withAdminPage } from '../../lib/adminAuth';
-import axios from 'axios';
+import http from '../../lib/http';
 
 function AdminUsers() {
   const router = useRouter();
@@ -27,7 +27,7 @@ function AdminUsers() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/admin/users', { params: { page, limit: 20, search, plan: planFilter } });
+      const res = await http.get('/api/admin/users', { params: { page, limit: 20, search, plan: planFilter } });
       setUsers(res.data.users);
       setTotal(res.data.total);
       setPages(res.data.pages);
@@ -39,7 +39,7 @@ function AdminUsers() {
   const handleBan = async () => {
     setActionLoading(selectedUser.id);
     try {
-      await axios.patch('/api/admin/users', { id: selectedUser.id, action: 'ban', reason: banReason });
+      await http.patch('/api/admin/users', { id: selectedUser.id, action: 'ban', reason: banReason });
       setShowBanModal(false); setBanReason('');
       fetchUsers();
     } catch (err) { setErrMsg('Failed to ban user'); }
@@ -49,7 +49,7 @@ function AdminUsers() {
   const handleUnban = async (user) => {
     setActionLoading(user.id);
     try {
-      await axios.patch('/api/admin/users', { id: user.id, action: 'unban' });
+      await http.patch('/api/admin/users', { id: user.id, action: 'unban' });
       fetchUsers();
     } catch(e) { setErrMsg('Failed to unban user'); }
     finally { setActionLoading(null); }
@@ -59,7 +59,7 @@ function AdminUsers() {
     if (!confirm(`Delete user ${user.email}? This cannot be undone.`)) return;
     setActionLoading(user.id);
     try {
-      await axios.delete('/api/admin/users', { data: { id: user.id } });
+      await http.delete('/api/admin/users', { data: { id: user.id } });
       fetchUsers();
     } catch(e) { setErrMsg('Failed to delete user'); }
     finally { setActionLoading(null); }
@@ -68,7 +68,7 @@ function AdminUsers() {
   const handleUpgrade = async () => {
     setActionLoading(selectedUser.id);
     try {
-      await axios.patch('/api/admin/users', { id: selectedUser.id, action: 'upgrade', plan: upgradePlan });
+      await http.patch('/api/admin/users', { id: selectedUser.id, action: 'upgrade', plan: upgradePlan });
       setShowUpgradeModal(false);
       fetchUsers();
     } catch(e) { setErrMsg('Failed to upgrade user'); }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import axios from 'axios';
+import http from '../../lib/http';
 
 
 export default function AdminLogin() {
@@ -28,7 +28,7 @@ export default function AdminLogin() {
     e.preventDefault();
     setError(''); setLoading(true);
     try {
-      const res = await axios.post('/api/admin/login', form);
+      const res = await http.post('/api/admin/login', form);
       if (res.data.success) {
         localStorage.setItem('admin_token', res.data.token);
         router.push('/admin/dashboard');

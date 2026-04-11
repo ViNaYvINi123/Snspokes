@@ -418,4 +418,4 @@ const SPOKES = [
     min_version:'New York', tags:['flow-designer','automation','core'] },
 ];
 
-module.exports = SPOKES;
+export default SPOKES;

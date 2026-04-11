@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Head from 'next/head';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { withAdminPage } from '../../lib/adminAuth';
-import axios from 'axios';
+import http from '../../lib/http';
 
 // ── Constants ──
 const TYPES = ['string', 'boolean', 'integer', 'password', 'list', 'json'];
@@ -165,7 +165,7 @@ function AdminProperties() {
   const fetchProps = useCallback(async (p = 1, s = search, c = catFilter) => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/admin/properties', { params: { page: p, limit: 50, search: s, category: c } });
+      const res = await http.get('/api/admin/properties', { params: { page: p, limit: 50, search: s, category: c } });
       setProps(res.data.properties || []);
       setCategories(res.data.categories || []);
       setTotal(res.data.total || 0);
@@ -190,10 +190,10 @@ function AdminProperties() {
   const handleSave = async (form) => {
     try {
       if (editProp) {
-        await axios.put('/api/admin/properties', { ...form, id: editProp.id });
+        await http.put('/api/admin/properties', { ...form, id: editProp.id });
         showToast('Property updated successfully ✅');
       } else {
-        await axios.post('/api/admin/properties', form);
+        await http.post('/api/admin/properties', form);
         showToast('Property created successfully ✅');
       }
       setShowModal(false);
@@ -208,7 +208,7 @@ function AdminProperties() {
     if (!confirm(`Delete property "${prop.name}"?\n\nThis cannot be undone.`)) return;
     setDeleting(prop.id);
     try {
-      await axios.delete('/api/admin/properties', { data: { id: prop.id } });
+      await http.delete('/api/admin/properties', { data: { id: prop.id } });
       showToast('Property deleted');
       fetchProps(page);
     } catch (err) {
@@ -220,7 +220,7 @@ function AdminProperties() {
 
   const handleToggleActive = async (prop) => {
     try {
-      await axios.put('/api/admin/properties', { ...prop, id: prop.id, is_active: !prop.is_active });
+      await http.put('/api/admin/properties', { ...prop, id: prop.id, is_active: !prop.is_active });
       fetchProps(page);
     } catch {
       showToast('Failed to update status', 'error');

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { withAdminPage } from '../../lib/adminAuth';
-import axios from 'axios';
+import http from '../../lib/http';
 
 const ENV_COLORS = { all: '#6c63ff', beta: '#f59e0b', prod: '#10b981', dev: '#0ea5e9' };
 
@@ -45,7 +45,7 @@ function AdminFlags() {
 
   const fetchFlags = async () => {
     try {
-      const res = await axios.get('/api/admin/flags');
+      const res = await http.get('/api/admin/flags');
       setFlags(res.data.flags || []);
     } catch (err) {
       if (err.response?.status === 401) if (typeof window !== 'undefined') window.location.href = '/admin';
@@ -57,7 +57,7 @@ function AdminFlags() {
   const handleToggle = async (flag) => {
     setToggling(flag.id);
     try {
-      await axios.patch('/api/admin/flags', { id: flag.id, enabled: !flag.enabled });
+      await http.patch('/api/admin/flags', { id: flag.id, enabled: !flag.enabled });
       setFlags(prev => prev.map(f => f.id === flag.id ? { ...f, enabled: !f.enabled } : f));
       showToast(`${flag.label} ${!flag.enabled ? 'enabled' : 'disabled'}`);
     } catch { showToast('Failed to toggle', 'error'); }
@@ -71,10 +71,10 @@ function AdminFlags() {
     setSaving(true);
     try {
       if (editFlag) {
-        await axios.put('/api/admin/flags', { ...form, id: editFlag.id });
+        await http.put('/api/admin/flags', { ...form, id: editFlag.id });
         showToast('Flag updated');
       } else {
-        await axios.post('/api/admin/flags', form);
+        await http.post('/api/admin/flags', form);
         showToast('Flag created');
       }
       setShowModal(false); setEditFlag(null); setForm(EMPTY);
@@ -87,7 +87,7 @@ function AdminFlags() {
   const handleDelete = async (flag) => {
     if (!confirm(`Delete flag "${flag.key}"?`)) return;
     try {
-      await axios.delete('/api/admin/flags', { data: { id: flag.id } });
+      await http.delete('/api/admin/flags', { data: { id: flag.id } });
       showToast('Flag deleted');
       fetchFlags();
     } catch { showToast('Failed to delete', 'error'); }

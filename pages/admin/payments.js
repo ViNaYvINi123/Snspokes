@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { withAdminPage } from '../../lib/adminAuth';
-import axios from 'axios';
+import http from '../../lib/http';
 
 function AdminPayments() {
   const router = useRouter();
@@ -20,7 +20,7 @@ function AdminPayments() {
   const fetchPayments = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/admin/payments', { params: { page, limit: 20, status: statusFilter } });
+      const res = await http.get('/api/admin/payments', { params: { page, limit: 20, status: statusFilter } });
       setPayments(res.data.payments);
       setSummary(res.data.summary);
       setTotal(res.data.total);

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { withAdminPage } from '../../lib/adminAuth';
-import axios from 'axios';
+import http from '../../lib/http';
 
 function AdminDatabase() {
   const [status, setStatus] = useState(null);
@@ -20,7 +20,7 @@ function AdminDatabase() {
   const fetchStatus = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/admin/database?action=status');
+      const res = await http.get('/api/admin/database?action=status');
       setStatus(res.data);
     } catch (err) {
       setStatus({ success: false, status: 'error', error: err.response?.data?.error || err.message });
@@ -31,7 +31,7 @@ function AdminDatabase() {
     if (!sqlQuery.trim()) return;
     setQueryLoading(true); setQueryError(''); setQueryResult(null);
     try {
-      const res = await axios.get('/api/admin/database', { params: { action: 'query', sql: sqlQuery } });
+      const res = await http.get('/api/admin/database', { params: { action: 'query', sql: sqlQuery } });
       setQueryResult(res.data);
     } catch (err) { setQueryError(err.response?.data?.error || 'Query failed'); }
     finally { setQueryLoading(false); }
@@ -42,7 +42,7 @@ function AdminDatabase() {
     if (!confirm('Run this migration? This cannot be undone.')) return;
     setMigrationLoading(true); setMigrationMsg('');
     try {
-      const res = await axios.post('/api/admin/database', { action: 'run_migration', sql: migrationSql });
+      const res = await http.post('/api/admin/database', { action: 'run_migration', sql: migrationSql });
       setMigrationMsg('✅ ' + res.data.message);
       fetchStatus();
     } catch (err) { setMigrationMsg('❌ ' + (err.response?.data?.error || 'Migration failed')); }

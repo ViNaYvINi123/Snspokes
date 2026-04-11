@@ -5,7 +5,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
-import axios from 'axios';
+import http from '../../lib/http';
 import { useSession } from 'next-auth/react';
 
 function CopyBtn({ text }) {
@@ -107,7 +107,7 @@ export default function SpokePage() {
   const fetchSpoke = async (s) => {
     setLoading(true); setError('');
     try {
-      const res = await axios.post('/api/spoke', { slug: s }, { timeout: 90000 });
+      const res = await http.post('/api/spoke', { slug: s }, { timeout: 90000 });
       if (res.data?.success && res.data?.spoke) {
         setSpoke(res.data.spoke);
       } else {

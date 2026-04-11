@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { withAdminPage } from '../../lib/adminAuth';
-import axios from 'axios';
+import http from '../../lib/http';
 
 function AdminBackup() {
   const [backups, setBackups] = useState([]);
@@ -14,7 +14,7 @@ function AdminBackup() {
 
   const fetchBackups = async () => {
     try {
-      const res = await axios.get('/api/admin/backup');
+      const res = await http.get('/api/admin/backup');
       setBackups(res.data.backups || []);
     } catch (err) {
       if (err.response?.status === 401) if (typeof window !== 'undefined') window.location.href = '/admin';
@@ -26,7 +26,7 @@ function AdminBackup() {
   const runBackup = async () => {
     setRunning(true);
     try {
-      const res = await axios.post('/api/admin/backup');
+      const res = await http.post('/api/admin/backup');
       showToast(`Backup created: ${res.data.file} (${(res.data.size_bytes / 1024).toFixed(1)}KB)`);
       fetchBackups();
     } catch (err) {

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useToast } from './Toast';
-import axios from 'axios';
+import http from '../lib/http';
 
 const SUGGESTED = [
   { icon: '🔌', text: 'How do I setup the Slack spoke?' },
@@ -90,7 +90,7 @@ export default function Chatbot() {
     setInput('');
     setLoading(true);
     try {
-      const res = await axios.post('/api/chatbot', {
+      const res = await http.post('/api/chatbot', {
         session_id: sessionId,
         question,
         history: messages.slice(-8).map(m => ({ role: m.role, content: m.text }))

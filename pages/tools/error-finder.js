@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import Head from 'next/head';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
-import axios from 'axios';
+import http from '../../lib/http';
 
 const CATEGORIES = ['All','Script','API','Flow','DB','Auth','Spoke','Platform'];
 const SEV_COLORS = { critical:'#dc2626', high:'#ea580c', medium:'#d97706', low:'#16a34a' };
@@ -25,7 +25,7 @@ export default function ErrorFinder() {
     if (!q.trim() && !cat) { setResults([]); return; }
     setLoading(true);
     try {
-      const res = await axios.get('/api/tools/error-search', { params: { q, category: cat } });
+      const res = await http.get('/api/tools/error-search', { params: { q, category: cat } });
       setResults(res.data.errors || []);
     } catch {} finally { setLoading(false); }
   };
@@ -42,7 +42,7 @@ export default function ErrorFinder() {
     setAiResult(null);
     setAiError('');
     try {
-      const res = await axios.post('/api/tools/error-search', { action: 'ai_analyze', error_message: query, context });
+      const res = await http.post('/api/tools/error-search', { action: 'ai_analyze', error_message: query, context });
       // Handle both structured (n8n) and plain text (direct AI) responses
       const d = res.data;
       if (d.analysis && !d.title) {
@@ -57,7 +57,7 @@ export default function ErrorFinder() {
   };
 
   const markHelpful = (id) => {
-    axios.post('/api/tools/error-search', { action: 'helpful', id }).catch(() => {});
+    http.post('/api/tools/error-search', { action: 'helpful', id }).catch(() => {});
     setResults(r => r.map(e => e.id === id ? { ...e, helpful_count: (e.helpful_count || 0) + 1 } : e));
   };
 
