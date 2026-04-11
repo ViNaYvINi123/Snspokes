@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
+import { useSession } from 'next-auth/react';
 import Head from 'next/head';
 import Link from 'next/link';
 
@@ -49,6 +50,18 @@ const s = {
 
 export default function Register() {
   const router = useRouter();
+  const { status } = useSession();
+
+  useEffect(() => {
+    if (status === 'authenticated') router.push('/dashboard');
+  }, [status]);
+
+  if (status === 'loading') return (
+    <div style={{ minHeight:'100vh', background:'#080810', display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div style={{ width:'32px', height:'32px', border:'2px solid rgba(108,99,255,0.2)', borderTopColor:'#6c63ff', borderRadius:'50%', animation:'spin 0.7s linear infinite' }} />
+      <style>{'@keyframes spin{to{transform:rotate(360deg)}}'}</style>
+    </div>
+  );
   const { plan, ref } = router.query;
   const [form,        setForm]        = useState({ name:'', email:'', password:'' });
   const [showPwd,     setShowPwd]     = useState(false);

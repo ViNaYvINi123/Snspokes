@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
@@ -46,9 +46,20 @@ export default function Login() {
   const [loading,     setLoading]     = useState(false);
   const [oauthLoading,setOauthLoading]= useState('');
 
-  if (status === 'authenticated') { router.push('/dashboard'); return null; }
-
   const callbackUrl = router.query.callbackUrl || '/dashboard';
+
+  // Redirect AFTER render, not during
+  useEffect(() => {
+    if (status === 'authenticated') router.push(callbackUrl);
+  }, [status]);
+
+  // Show spinner while checking session (prevents flash of form then redirect)
+  if (status === 'loading') return (
+    <div style={{ minHeight:'100vh', background:'#080810', display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div style={{ width:'32px', height:'32px', border:'2px solid rgba(108,99,255,0.2)', borderTopColor:'#6c63ff', borderRadius:'50%', animation:'spin 0.7s linear infinite' }} />
+      <style>{'@keyframes spin{to{transform:rotate(360deg)}}'}</style>
+    </div>
+  );
   const isBanned    = router.query.error === 'banned';
 
   const handleSubmit = async (e) => {
