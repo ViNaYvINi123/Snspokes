@@ -29,7 +29,7 @@ class ErrorBoundary extends Component {
 }
 import { SessionProvider, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import '../styles/globals.css';
 import AnnouncementBanner from '../components/AnnouncementBanner';
 import CookieBanner from '../components/CookieBanner';
@@ -37,6 +37,44 @@ import Chatbot from '../components/Chatbot';
 import CommandPalette from '../components/CommandPalette';
 import { ToastProvider } from '../components/Toast';
 import { KeyboardHelp } from '../components/CommandPalette';
+
+
+// Pages that require authentication
+const PROTECTED_PATHS = ['/dashboard', '/admin', '/onboarding', '/settings'];
+
+function SessionGuard({ children }) {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const prevStatus = useRef(null);
+
+  useEffect(() => {
+    if (status === 'loading') return;
+
+    const isProtected = PROTECTED_PATHS.some(p => router.pathname.startsWith(p));
+    const isAuthPage   = ['/login', '/register'].includes(router.pathname);
+
+    // Session just expired mid-use (was authenticated, now not)
+    if (prevStatus.current === 'authenticated' && status === 'unauthenticated') {
+      if (!isAuthPage) {
+        router.push('/login?reason=expired');
+      }
+    }
+    // Trying to access protected page without a session
+    else if (isProtected && status === 'unauthenticated') {
+      const cb = encodeURIComponent(router.asPath);
+      router.push('/login?reason=required&callbackUrl=' + cb);
+    }
+
+    // Handle banned users
+    if (session?.error === 'BannedUser' && !isAuthPage) {
+      router.push('/login?error=banned');
+    }
+
+    prevStatus.current = status;
+  }, [status, session, router.pathname]);
+
+  return children;
+}
 
 // Pages that don't need the onboarding check
 const PUBLIC_PAGES = ['/login', '/register', '/onboarding', '/forgot-password', '/404', '/join-team', '/privacy', '/terms'];
@@ -98,6 +136,7 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
   return (
     <ErrorBoundary>
       <SessionProvider session={session}>
+        <SessionGuard>
         <MaintenanceCheck>
           <ToastProvider>
           <OnboardingGuard>
@@ -110,6 +149,7 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
           </OnboardingGuard>
           </ToastProvider>
         </MaintenanceCheck>
+        </SessionGuard>
       </SessionProvider>
     </ErrorBoundary>
   );

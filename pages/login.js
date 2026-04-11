@@ -47,6 +47,13 @@ export default function Login() {
   const [oauthLoading,setOauthLoading]= useState('');
 
   const callbackUrl = router.query.callbackUrl || '/dashboard';
+  const reason = router.query.reason;
+
+  const SESSION_MESSAGES = {
+    expired:  { text: 'Your session has expired. Please sign in again.', color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)', icon: '⏱️' },
+    required: { text: 'Please sign in to access that page.',             color: '#60a5fa', bg: 'rgba(96,165,250,0.08)', border: 'rgba(96,165,250,0.2)', icon: '🔒' },
+  };
+  const sessionMsg = SESSION_MESSAGES[reason] || null;
 
   // Redirect AFTER render, not during
   useEffect(() => {
@@ -96,6 +103,13 @@ export default function Login() {
           </div>
 
           {isBanned && <div style={{ ...s.error, marginBottom:'20px' }}>Your account has been suspended. Contact support for help.</div>}
+
+          {sessionMsg && (
+            <div style={{ background: sessionMsg.bg, border: '1px solid ' + sessionMsg.border, borderRadius: '10px', padding: '11px 14px', fontSize: '13px', color: sessionMsg.color, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>{sessionMsg.icon}</span>
+              {sessionMsg.text}
+            </div>
+          )}
 
           <button onClick={() => { setOauthLoading('google'); signIn('google', { callbackUrl }); }} disabled={!!oauthLoading}
             style={{ ...s.oauth, opacity: oauthLoading === 'google' ? 0.7 : 1 }}
