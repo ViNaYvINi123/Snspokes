@@ -3,6 +3,8 @@ import { cacheGet, cacheSet, checkRateLimit } from '../../lib/redis';
 import { checkSearchLimit } from '../../lib/plans';
 import { setSecurityHeaders } from '../../lib/security';
 import { withTrace } from '../../lib/requestTrace';
+import { askAI } from '../../lib/ai';
+import { getAICachedResponse, setAICachedResponse } from '../../lib/aiCache';
 
 // In-memory snippets + methods for instant search
 const SNIPPETS = [
@@ -71,6 +73,32 @@ async function handler(req, res) {
     // Log search
     if (q) query('INSERT INTO sn_search_analytics (query,user_id,results,user_ip) VALUES ($1,$2,$3,$4)', [q.substring(0, 200), userId, parseInt(countR.rows[0].total), ip]).catch(() => {});
 
+    // 4. AI answer (if search query exists and no cache hit)
+    let aiAnswer = null;
+    let aiModel = null;
+    if (q) {
+      try {
+        const aiCached = await getAICachedResponse(q, 'search');
+        if (aiCached?.answer) {
+          aiAnswer = aiCached.answer;
+          aiModel  = (aiCached.model || '') + ' (cached)';
+        } else {
+          const aiResult = await askAI(q, {
+            systemPrompt: `You are snspokes AI — a ServiceNow Integration Hub expert.
+Answer this developer question concisely. Include relevant code if applicable.
+Use markdown: **bold**, \`code\`, \`\`\`js code blocks\`\`\`, bullet lists.`,
+            maxTokens: 800,
+            timeout: 20000,
+          });
+          if (aiResult.success) {
+            aiAnswer = aiResult.answer;
+            aiModel  = aiResult.model;
+            setAICachedResponse(q, aiAnswer, aiModel, 'search').catch(() => {});
+          }
+        }
+      } catch {}
+    }
+
     const result = {
       success: true,
       results: dataR.rows,
@@ -80,6 +108,8 @@ async function handler(req, res) {
       page, pages: Math.ceil(parseInt(countR.rows[0].total) / limit),
       query: q,
       remaining: rl.remaining,
+      ai_answer: aiAnswer,
+      ai_model: aiModel,
     };
 
     await cacheSet(cacheKey, JSON.stringify(result), 300);

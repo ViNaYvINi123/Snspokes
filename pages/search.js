@@ -374,7 +374,12 @@ export default function Search() {
         setResults(res.data.results || []);
         setSnippets(res.data.snippets || []);
         setErrors(res.data.errors || []);
-        setAiAnswer(null); // AI is separate now
+        // Use AI answer from search response if available
+        if (res.data.ai_answer) {
+          setAiAnswer({ answer: res.data.ai_answer, model: res.data.ai_model || 'AI' });
+        } else {
+          setAiAnswer(null);
+        }
         setMeta({ cached: res.data.cached, latency: Date.now() - start });
       } else { setError(res.data.error || 'Search failed'); }
     } catch (err) {

@@ -155,6 +155,7 @@ function useScrollReveal() {
 }
 
 export default function App({ Component, pageProps: { session, ...pageProps } }) {
+  const router = useRouter();
   useScrollReveal();
 
   return (
@@ -165,7 +166,7 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
           <ToastProvider>
           <OnboardingGuard>
             <AnnouncementBanner />
-            <div key={typeof window !== 'undefined' ? window.location.pathname : ''} className='page-mount'><Component {...pageProps} /></div>
+            <div key={router.asPath} className='page-mount'><Component {...pageProps} /></div>
             <CommandPalette />
             <ShortcutHelp />
             <Chatbot />

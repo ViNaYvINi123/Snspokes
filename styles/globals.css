@@ -42,16 +42,7 @@ body {
   background-size: 50px 50px;
 }
 
-/* ── Card hover ───────────────────────────────────────────── */
-.card-hover {
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-  border: 1px solid #1e1e2e;
-}
-.card-hover:hover {
-  border-color: #6c63ff;
-  box-shadow: 0 0 24px rgba(108,99,255,0.12);
-  transform: translateY(-2px);
-}
+/* card-hover moved to UX enhancements block */
 
 /* ── Form elements ────────────────────────────────────────── */
 input:focus,

@@ -78,8 +78,11 @@ async function handler(req, res) {
       const planWhere = plan_filter && plan_filter !== 'all' ? `WHERE plan='${plan_filter}' AND is_active=true` : 'WHERE is_active=true';
       const users = await query(`SELECT email, name FROM sn_users ${planWhere} LIMIT 1000`);
       // Queue emails via n8n
-      const { callN8n } = await import('../../../lib/n8n');
-      await callN8n('sn-bulk-email', { subject, body, recipients: users.rows });
+      // Bulk email via nodemailer (direct, no n8n)
+      const { sendEmail } = await import('../../../lib/email');
+      for (const u of users.rows) {
+        sendEmail({ to: u.email, subject, html: body }).catch(() => {});
+      }
       logger.info(`[admin] Bulk email to ${users.rows.length} users by ${req.admin?.username}`);
       return res.status(200).json({ success: true, message: `Queued email to ${users.rows.length} users` });
     }
