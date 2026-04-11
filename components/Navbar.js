@@ -19,11 +19,19 @@ const NAV_LINKS = [
 export default function Navbar() {
   const router = useRouter();
   const { data: session } = useSession();
+  const [scrolled,   setScrolled]   = useState(false);
   const [toolsOpen,  setToolsOpen]  = useState(false);
   const [userOpen,   setUserOpen]   = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const toolsRef = useRef(null);
   const userRef  = useRef(null);
+
+  // Navbar scroll shrink
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', handler, { passive: true });
+    return () => window.removeEventListener('scroll', handler);
+  }, []);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -42,9 +50,9 @@ export default function Navbar() {
 
   return (
     <>
-      <nav style={{ position:'fixed', top:0, left:0, right:0, zIndex:100, borderBottom:'1px solid #1e1e2e', background:'rgba(8,8,16,0.92)', backdropFilter:'blur(16px)' }}>
+      <nav style={{ position:'fixed', top:0, left:0, right:0, zIndex:100, borderBottom:'1px solid #1e1e2e', background:'rgba(8,8,16,0.92)', backdropFilter:'blur(16px)', transition:'all 0.3s ease' }} className={scrolled ? 'nav-scrolled' : ''}>
         <div style={{ maxWidth:'1200px', margin:'0 auto', padding:'0 24px' }}>
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', height:'64px' }}>
+          <div className='nav-height' style={{ display:'flex', alignItems:'center', justifyContent:'space-between', height:'64px', transition:'height 0.3s ease' }}>
 
             {/* Logo */}
             <Link href="/" style={{ textDecoration:'none', display:'flex', alignItems:'center', gap:'10px', flexShrink:0 }}>

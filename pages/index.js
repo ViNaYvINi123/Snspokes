@@ -191,7 +191,7 @@ export default function Home() {
               AI search across 200+ Integration Hub spokes, instant code generation, and a debug tool that finds your error before you finish reading the stack trace.
             </p>
             <form onSubmit={handleSearch} className="snfu snd4">
-              <div className={'snswrap' + (focused ? ' snsfoc' : '')} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'7px', maxWidth:'620px', margin:'0 auto', borderRadius:'20px', background:'rgba(13,13,22,.9)', border:'1px solid rgba(255,255,255,.07)', backdropFilter:'blur(24px)', boxShadow:'0 8px 40px rgba(0,0,0,.5)' }}>
+              <div className={'snswrap input-glow' + (focused ? ' snsfoc' : '')} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'7px', maxWidth:'620px', margin:'0 auto', borderRadius:'20px', background:'rgba(13,13,22,.9)', border:'1px solid rgba(255,255,255,.07)', backdropFilter:'blur(24px)', boxShadow:'0 8px 40px rgba(0,0,0,.5)' }}>
                 <div style={{ paddingLeft:'14px', display:'flex', alignItems:'center', flexShrink:0 }}>
                   <svg width="17" height="17" fill="none" stroke="#4b5563" strokeWidth="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 </div>
@@ -221,7 +221,7 @@ export default function Home() {
                 })}
               </div>
             </form>
-            <div className="snfu snd5" style={{ display:'flex', gap:'48px', justifyContent:'center', marginTop:'60px', flexWrap:'wrap' }}>
+            <div className="snfu snd5 reveal" style={{ display:'flex', gap:'48px', justifyContent:'center', marginTop:'60px', flexWrap:'wrap' }}>
               {[{v:200,s:'+',l:'Integration Spokes'},{v:3,s:'',l:'AI-Powered Tools'},{v:100,s:'%',l:'Free to Use'}].map(function(st) {
                 return (
                   <div key={st.l} style={{ textAlign:'center' }}>
@@ -244,7 +244,7 @@ export default function Home() {
               {[...SPOKES, ...SPOKES].map(function(s, i) {
                 return (
                   <Link key={s.slug + '-' + i} href={'/spoke/' + s.slug} style={{ textDecoration:'none', flexShrink:0 }}>
-                    <div className="snspk" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'10px 22px', margin:'0 6px', background:'rgba(255,255,255,.03)', border:'1px solid rgba(255,255,255,.06)', borderRadius:'50px', cursor:'pointer', whiteSpace:'nowrap' }}
+                    <div className="snspk spoke-hover" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'10px 22px', margin:'0 6px', background:'rgba(255,255,255,.03)', border:'1px solid rgba(255,255,255,.06)', borderRadius:'50px', cursor:'pointer', whiteSpace:'nowrap' }}
                       onMouseOver={function(e) { e.currentTarget.style.background=s.bg; e.currentTarget.style.borderColor=s.color+'50'; }}
                       onMouseOut={function(e) { e.currentTarget.style.background='rgba(255,255,255,.03)'; e.currentTarget.style.borderColor='rgba(255,255,255,.06)'; }}>
                       <span style={{ fontSize:'17px' }}>{s.icon}</span>
@@ -256,7 +256,7 @@ export default function Home() {
             </div>
           </div>
           <div style={{ textAlign:'center', marginTop:'28px' }}>
-            <Link href="/spokes" style={{ color:'#6c63ff', fontSize:'13px', fontWeight:600, textDecoration:'none', padding:'8px 20px', border:'1px solid rgba(108,99,255,.2)', borderRadius:'20px' }}>View all 200+ spokes →</Link>
+            <Link href="/spokes" style={{ color:'#6c63ff', fontSize:'13px', fontWeight:600, textDecoration:'none', padding:'8px 20px', border:'1px solid rgba(108,99,255,.2)', borderRadius:'20px' }} className="link-arrow">View all 200+ spokes →</Link>
           </div>
         </section>
 
@@ -272,7 +272,7 @@ export default function Home() {
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:'2px' }}>
               {STEPS.map(function(step, i) {
                 return (
-                  <div key={i} style={{ padding:'36px 32px', background: i===1 ? 'rgba(108,99,255,.05)' : 'rgba(255,255,255,.015)', border:'1px solid rgba(255,255,255,.05)', borderRadius: i===0 ? '20px 0 0 20px' : i===2 ? '0 20px 20px 0' : '0', position:'relative', overflow:'hidden' }}>
+                  <div key={i} className={'reveal reveal-delay-' + (i+1)} style={{ padding:'36px 32px', background: i===1 ? 'rgba(108,99,255,.05)' : 'rgba(255,255,255,.015)', border:'1px solid rgba(255,255,255,.05)', borderRadius: i===0 ? '20px 0 0 20px' : i===2 ? '0 20px 20px 0' : '0', position:'relative', overflow:'hidden' }}>
                     {i===1 && <div style={{ position:'absolute', top:0, left:0, right:0, height:'2px', background:'linear-gradient(to right,transparent,#6c63ff,transparent)' }} />}
                     <div style={{ display:'flex', alignItems:'flex-start', gap:'16px', marginBottom:'16px' }}>
                       <span className="snm" style={{ fontSize:'11px', color:'#374151', fontWeight:600, paddingTop:'2px', flexShrink:0 }}>{step.n}</span>
@@ -303,7 +303,7 @@ export default function Home() {
                 return (
                   <Link key={t.href} href={t.href} style={{ textDecoration:'none' }}>
                     <div className="sncard"
-                      onMouseOver={function(e) { e.currentTarget.style.background='rgba('+rgb+',.05)'; e.currentTarget.style.borderColor=t.accent+'30'; e.currentTarget.style.boxShadow='0 12px 40px '+t.glow; }}
+                      className={'sncard card-lift reveal reveal-delay-' + (i+1)} onMouseOver={function(e) { e.currentTarget.style.background='rgba('+rgb+',.05)'; e.currentTarget.style.borderColor=t.accent+'30'; e.currentTarget.style.boxShadow='0 12px 40px '+t.glow; }}
                       onMouseOut={function(e) { e.currentTarget.style.background='rgba(255,255,255,.02)'; e.currentTarget.style.borderColor='rgba(255,255,255,.06)'; e.currentTarget.style.boxShadow='none'; }}
                       style={{ padding:'28px', borderRadius:'20px', background:'rgba(255,255,255,.02)', border:'1px solid rgba(255,255,255,.06)', cursor:'pointer', height:'100%', position:'relative', overflow:'hidden' }}>
                       <div style={{ position:'absolute', top:0, left:0, right:0, height:'1px', background:'linear-gradient(to right,transparent,'+t.accent+'60,transparent)' }} />
@@ -346,7 +346,7 @@ export default function Home() {
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))', gap:'16px' }}>
               {TESTIMONIALS.map(function(t, i) {
                 return (
-                  <div key={i} className="sncard"
+                  <div key={i} className="sncard card-lift reveal" style={{transitionDelay: i*0.1+'s'}}
                     onMouseOver={function(e) { e.currentTarget.style.borderColor='rgba(108,99,255,.25)'; e.currentTarget.style.background='rgba(108,99,255,.04)'; }}
                     onMouseOut={function(e) { e.currentTarget.style.borderColor='rgba(255,255,255,.06)'; e.currentTarget.style.background='rgba(255,255,255,.02)'; }}
                     style={{ padding:'24px', background:'rgba(255,255,255,.02)', border:'1px solid rgba(255,255,255,.06)', borderRadius:'18px', overflow:'hidden' }}>
@@ -380,8 +380,8 @@ export default function Home() {
             </h2>
             <p style={{ color:'#6b7280', fontSize:'16px', lineHeight:1.7, marginBottom:'36px' }}>Everything a ServiceNow developer needs, in one place, powered by AI.</p>
             <div style={{ display:'flex', gap:'12px', justifyContent:'center', flexWrap:'wrap' }}>
-              <Link href="/register" className="snbtnp">Get Started Free</Link>
-              <Link href="/search" className="snbtng">Try search first →</Link>
+              <Link href="/register" className="snbtnp btn-pulse btn-interact">Get Started Free</Link>
+              <Link href="/search" className="snbtng btn-interact">Try search first →</Link>
             </div>
             <p style={{ color:'#374151', fontSize:'12px', marginTop:'20px' }}>No credit card · No setup · Instant access</p>
           </div>

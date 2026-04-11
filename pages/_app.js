@@ -132,7 +132,31 @@ function ShortcutHelp() {
   return <KeyboardHelp open={show} onClose={() => setShow(false)} />;
 }
 
+
+// Global scroll-reveal: watches all .reveal elements site-wide
+function useScrollReveal() {
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    );
+    const targets = document.querySelectorAll('.reveal');
+    targets.forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  });
+}
+
 export default function App({ Component, pageProps: { session, ...pageProps } }) {
+  useScrollReveal();
+
   return (
     <ErrorBoundary>
       <SessionProvider session={session}>
@@ -141,7 +165,7 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
           <ToastProvider>
           <OnboardingGuard>
             <AnnouncementBanner />
-            <Component {...pageProps} />
+            <div key={typeof window !== 'undefined' ? window.location.pathname : ''} className='page-mount'><Component {...pageProps} /></div>
             <CommandPalette />
             <ShortcutHelp />
             <Chatbot />
