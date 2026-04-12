@@ -16,6 +16,7 @@ const TOOLS = [
   { href:'/tools/error-finder',   icon:'🐛', label:'Error Finder',    desc:'Paste error → get fix' },
   { href:'/tools/cheatsheet',     icon:'📖', label:'Cheatsheet',      desc:'GlideRecord quick ref' },
   { href:'/tools/formatter',      icon:'🔧', label:'Formatter',       desc:'Clean up your scripts' },
+  { href:'/tools/snippets',       icon:'📋', label:'Snippets',        desc:'Copy-paste ready scripts' },
 ];
 
 export default function Navbar() {

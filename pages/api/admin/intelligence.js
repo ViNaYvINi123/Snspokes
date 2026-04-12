@@ -3,10 +3,11 @@
  * What users search → what fails → what to build next
  */
 import { query }             from '../../../lib/db';
-import { verifyAdminToken }  from '../../../lib/auth';
+import { verifyAdminToken }  from '../../../lib/adminAuth';
 
 export default async function handler(req, res) {
-  if (!verifyAdminToken(req)) return res.status(401).json({ error: 'Unauthorized' });
+  const tok = req.headers['x-admin-token'] || '';
+  if (!verifyAdminToken(tok)) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
     const [

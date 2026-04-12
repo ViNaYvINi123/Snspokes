@@ -36,7 +36,6 @@ import CookieBanner from '../components/CookieBanner';
 import Chatbot from '../components/Chatbot';
 import CommandPalette from '../components/CommandPalette';
 import { ToastProvider } from '../components/Toast';
-import { KeyboardHelp } from '../components/CommandPalette';
 
 
 // Pages that require authentication
@@ -129,7 +128,7 @@ function ShortcutHelp() {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, []);
-  return <KeyboardHelp open={show} onClose={() => setShow(false)} />;
+  return <CommandPalette open={show} onClose={() => setShow(false)} />;
 }
 
 
