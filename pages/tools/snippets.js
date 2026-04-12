@@ -536,3 +536,5 @@ export default function SnippetsPage() {
     </>
   );
 }
+
+export const dynamic = 'force-dynamic';

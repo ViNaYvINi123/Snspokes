@@ -207,3 +207,5 @@ export default function ErrorFinder() {
     </>
   );
 }
+
+export const dynamic = 'force-dynamic';

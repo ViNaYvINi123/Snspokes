@@ -14,7 +14,7 @@ export default function Error500() {
           We hit an unexpected error on our end. Our team has been notified. Please try again.
         </p>
         <div style={{ display:'flex', gap:'12px', flexWrap:'wrap', justifyContent:'center' }}>
-          <button onClick={() => window.location.reload()}
+          <button onClick={() => typeof window !== 'undefined' && window.location.reload()}
             style={{ padding:'10px 24px', background:'linear-gradient(135deg,#6c63ff,#a855f7)', border:'none', borderRadius:'10px', color:'#fff', fontSize:'13px', fontWeight:'700', cursor:'pointer', fontFamily:"'Syne', sans-serif" }}>
             Try Again
           </button>

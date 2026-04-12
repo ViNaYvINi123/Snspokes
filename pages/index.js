@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
@@ -153,6 +155,7 @@ export default function Home() {
   const [intent, setIntent]       = useState('');
   const [showIntent, setShowIntent]= useState(false);
   const [scroll, setScroll]       = useState(0);
+  const [stats, setStats]          = useState({ spokes: 50, apis: 36, properties: 76 });
   const [particles] = useState(() =>
     Array.from({ length: 12 }, (_, i) => ({
       x: Math.random() * 100, y: Math.random() * 100,
@@ -457,7 +460,7 @@ export default function Home() {
             {/* Stats */}
             <div className="fu d5" style={{ display:'flex', gap:'48px', justifyContent:'center', marginTop:'56px', flexWrap:'wrap' }}>
               {[
-                { v:200, s:'+', l:'Spokes indexed', icon:'🔌' },
+                { v:stats.spokes, s:'+', l:'Spokes indexed', icon:'🔌' },
                 { v:36,  s:'',  l:'API references', icon:'📡' },
                 { v:76,  s:'',  l:'System properties', icon:'⚙️' },
               ].map(st => (

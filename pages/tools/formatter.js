@@ -272,3 +272,5 @@ export default function FormatterPage() {
     </>
   );
 }
+
+export const dynamic = 'force-dynamic';

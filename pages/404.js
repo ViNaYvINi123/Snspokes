@@ -1,6 +1,5 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import Navbar from '../components/Navbar';
 
 export default function NotFound() {
   const suggestions = [
@@ -13,7 +12,10 @@ export default function NotFound() {
   return (
     <>
       <Head><title>Page Not Found — snspokes</title></Head>
-      <Navbar />
+      <nav style={{ position:'fixed', top:0, left:0, right:0, padding:'16px 24px', display:'flex', alignItems:'center', gap:'12px', zIndex:100, background:'rgba(8,8,16,.95)', backdropFilter:'blur(12px)', borderBottom:'1px solid #0d0d1a' }}>
+        <a href="/" style={{ fontFamily:"'JetBrains Mono',monospace", fontWeight:700, color:'#6c63ff', fontSize:'14px', textDecoration:'none' }}>sn<span style={{color:'#fff'}}>spokes</span></a>
+        <a href="/search" style={{ marginLeft:'auto', padding:'7px 16px', background:'linear-gradient(135deg,#6c63ff,#a855f7)', borderRadius:'8px', color:'#fff', fontSize:'12px', textDecoration:'none', fontWeight:600 }}>Search →</a>
+      </nav>
       <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center', padding:'24px', fontFamily:"'Syne', system-ui, sans-serif" }}>
 
         {/* Big 404 */}

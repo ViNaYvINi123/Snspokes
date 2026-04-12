@@ -93,3 +93,5 @@ export default function Spokes() {
     </>
   );
 }
+
+export const dynamic = 'force-dynamic';

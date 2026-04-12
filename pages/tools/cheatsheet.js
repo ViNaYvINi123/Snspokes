@@ -138,3 +138,5 @@ export default function Cheatsheet() {
     </>
   );
 }
+
+export const dynamic = 'force-dynamic';

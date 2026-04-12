@@ -1,4 +1,10 @@
 const nextConfig = {
+  // Limit build parallelism to prevent worker crashes in constrained environments
+  experimental: {
+    workerThreads: false,
+    cpus: 1,
+  },
+
   // ── Output mode: standalone = smallest Docker image ────
   output: 'standalone',
 

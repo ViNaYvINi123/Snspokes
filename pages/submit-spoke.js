@@ -154,3 +154,5 @@ function Field({ label, error, children }) {
     </div>
   );
 }
+
+export const dynamic = 'force-dynamic';

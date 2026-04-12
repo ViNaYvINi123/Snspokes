@@ -59,3 +59,5 @@ export default function SharedScript() {
     </>
   );
 }
+
+export const dynamic = 'force-dynamic';

@@ -356,3 +356,5 @@ export default function CodeGenerator() {
     </>
   );
 }
+
+export const dynamic = 'force-dynamic';

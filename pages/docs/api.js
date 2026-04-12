@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { useState } from 'react';
 import Head from 'next/head';
 import Navbar from '../../components/Navbar';

@@ -173,3 +173,5 @@ export default function TeamPage() {
     </>
   );
 }
+
+export const dynamic = 'force-dynamic';
