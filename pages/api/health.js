@@ -1,6 +1,7 @@
 import { healthCheck } from '../../lib/db';
 import { isRedisAvailable } from '../../lib/redis';
 import { setSecurityHeaders } from '../../lib/security';
+import pkg from '../../package.json';
 
 const startTime = Date.now();
 
@@ -10,9 +11,9 @@ export default async function handler(req, res) {
 
   const [db] = await Promise.allSettled([healthCheck()]);
 
-  const dbOk    = db.status === 'fulfilled' && db.value.healthy;
+  const dbOk    = db.status === 'fulfilled' && db.value?.healthy;
   const redisOk = isRedisAvailable();
-  const allOk   = dbOk; // DB is the only true critical dependency
+  const allOk   = dbOk;
 
   let poolStats = null;
   try { const m = await import('../../lib/db'); poolStats = await m.getPoolStats(); } catch {}
@@ -27,13 +28,13 @@ export default async function handler(req, res) {
   const response = {
     maintenance_mode: maintenanceMode,
     status: allOk ? 'ok' : 'degraded',
-    version: '33.9.0',
+    version: pkg.version,
     uptime_seconds: Math.floor((Date.now() - startTime) / 1000),
     timestamp: new Date().toISOString(),
     checks: {
       database: { ok: dbOk, latency_ms: db.value?.latency_ms, pool: poolStats },
       redis:    { ok: redisOk, note: redisOk ? 'connected' : 'using memory fallback' },
-      ai:       { ok: true,  note: 'Round-robin: OpenRouter → Puter → Gemini → Ollama' },
+      ai:       { ok: true,  note: 'Gemini → Groq → Ollama' },
     },
   };
 
