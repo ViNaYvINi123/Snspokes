@@ -5,3 +5,7 @@ node_modules/
 *.log
 .DS_Store
 .env
+
+# Security
+.env.production
+secrets/

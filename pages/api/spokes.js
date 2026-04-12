@@ -5,7 +5,7 @@ import { setSecurityHeaders } from '../../lib/security';
 
 export default async function handler(req, res) {
   setSecurityHeaders(res);
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', process.env.NEXTAUTH_URL || 'https://snspokes.com');
   if (req.method !== 'GET') return apiError(res, 'Method not allowed', 405);
 
   try {

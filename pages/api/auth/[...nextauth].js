@@ -3,6 +3,14 @@ import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { query } from '../../../lib/db';
+
+// Log login attempts for security monitoring
+async function logLoginAttempt(email, success, ip) {
+  try {
+    await query('INSERT INTO sn_login_attempts (email, ip, success, created_at) VALUES ($1,$2,$3,NOW())', 
+      [email, ip || 'unknown', success]);
+  } catch {}
+}
 import logger from '../../../lib/logger';
 
 const PLAN_REFRESH_INTERVAL = 5 * 60;
@@ -30,9 +38,10 @@ export const authOptions = {
           if (r.rows[0].is_banned) return null;
 
           const valid = await bcrypt.compare(credentials.password, r.rows[0].password_hash);
-          if (!valid) return null;
+          if (!valid) { logLoginAttempt(credentials.email, false, null); return null; }
 
           await query('UPDATE sn_users SET last_login=NOW() WHERE id=$1', [r.rows[0].id]);
+          logLoginAttempt(credentials.email, true, null);
 
           return {
             id:        String(r.rows[0].id),
@@ -165,6 +174,12 @@ export const authOptions = {
     },
   },
 
+  cookies: {
+    sessionToken: {
+      name: 'next-auth.session-token',
+      options: { httpOnly: true, sameSite: 'lax', path: '/', secure: process.env.NODE_ENV === 'production' },
+    },
+  },
   pages:   { signIn: '/login', error: '/login' },
   session: { strategy: 'jwt', maxAge: 30 * 24 * 60 * 60 },
   secret:  process.env.NEXTAUTH_SECRET,

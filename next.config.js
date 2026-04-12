@@ -68,4 +68,10 @@ const nextConfig = {
   },
 };
 
+// ── API body size limit (prevent abuse) ──────────────────
+nextConfig.api = {
+  bodyParser: { sizeLimit: '1mb' },
+  responseLimit: '4mb',
+};
+
 module.exports = nextConfig;
