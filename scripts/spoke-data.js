@@ -7,10 +7,32 @@ const SPOKES = [
   { slug:'slack', name:'Slack', icon:'💬', category:'Communication', tier:'professional',
     plugin_id:'com.snc.slack_spoke', credential_type:'OAuth 2.0',
     description:'Send messages, manage channels, look up users, and post notifications to Slack workspaces directly from ServiceNow flows.',
-    actions:['Send Message','Create Channel','Look Up User','Add User to Channel','Post Notification','Create Direct Message','Look Up Channel','Archive Channel','Update Message'],
-    setup_steps:['Install Slack spoke from ServiceNow Store','Create Slack App at api.slack.com','Configure OAuth 2.0 scopes: channels:write, chat:write, users:read','Add Bot Token to Connection Alias in ServiceNow','Test connection with Send Message action'],
-    common_errors:['channel_not_found — ensure channel ID not name','not_authed — OAuth token expired, re-authenticate','missing_scope — add required scope in Slack App settings'],
-    min_version:'Orlando', tags:['messaging','notifications','chatops'] },
+    actions:[
+      {name:'Send Message',description:'Post a message to a Slack channel or user',inputs:[{name:'channel',type:'String',required:true,description:'Channel ID (e.g. C01ABCDEF)'},{name:'text',type:'String',required:true,description:'Message body (supports mrkdwn formatting)'},{name:'thread_ts',type:'String',required:false,description:'Thread timestamp for replies'}],outputs:[{name:'ts',type:'String',description:'Timestamp ID of sent message'},{name:'ok',type:'Boolean',description:'Success status'}]},
+      {name:'Create Channel',description:'Create a new public or private Slack channel',inputs:[{name:'name',type:'String',required:true,description:'Channel name (lowercase, no spaces)'},{name:'is_private',type:'Boolean',required:false,description:'Create as private channel'}],outputs:[{name:'channel_id',type:'String',description:'ID of created channel'}]},
+      {name:'Look Up User',description:'Find a Slack user by email address',inputs:[{name:'email',type:'String',required:true,description:'User email address'}],outputs:[{name:'user_id',type:'String',description:'Slack user ID'},{name:'display_name',type:'String',description:'User display name'}]},
+      {name:'Add User to Channel',description:'Add a user to a Slack channel',inputs:[{name:'channel',type:'String',required:true,description:'Channel ID'},{name:'users',type:'String',required:true,description:'Comma-separated user IDs'}],outputs:[{name:'ok',type:'Boolean',description:'Success status'}]},
+      {name:'Post Notification',description:'Send a rich notification with attachments',inputs:[{name:'channel',type:'String',required:true,description:'Channel ID'},{name:'text',type:'String',required:true,description:'Notification text'},{name:'attachments',type:'JSON',required:false,description:'Rich attachment blocks'}],outputs:[{name:'ts',type:'String',description:'Message timestamp'}]},
+      {name:'Update Message',description:'Edit an existing message',inputs:[{name:'channel',type:'String',required:true,description:'Channel ID'},{name:'ts',type:'String',required:true,description:'Original message timestamp'},{name:'text',type:'String',required:true,description:'Updated message text'}],outputs:[{name:'ok',type:'Boolean',description:'Success status'}]}
+    ],
+    setup_steps:[
+      'Navigate to ServiceNow Store → Search "Slack" → Install the Slack spoke plugin',
+      'Go to api.slack.com/apps → Create New App → From Scratch → Give it a name and select your workspace',
+      'Under OAuth & Permissions, add Bot Token Scopes: channels:write, channels:read, chat:write, chat:write.public, users:read, users:read.email',
+      'Install the app to your workspace → Copy the Bot User OAuth Token (starts with xoxb-)',
+      'In ServiceNow: navigate to Connections & Credentials → Connection Alias → Create new for Slack',
+      'Set Connection Type to "Credential", paste the Bot Token as Bearer Token',
+      'Test: Flow Designer → New Action → Slack → Send Message → Pick a channel → Send test message'
+    ],
+    common_errors:[
+      {error:'channel_not_found',fix:'Use channel ID (C01ABCDEF) not the channel name (#general). Get ID from Look Up Channel action.'},
+      {error:'not_authed — OAuth token expired',fix:'Go to Connection Alias → Re-enter the Bot Token. Tokens can expire if the Slack App is reinstalled.'},
+      {error:'missing_scope',fix:'Add the required OAuth scope in your Slack App settings at api.slack.com, then reinstall the app to workspace.'},
+      {error:'invalid_auth — token revoked',fix:'The app was uninstalled from the workspace. Reinstall and generate a new Bot Token.'},
+      {error:'message_too_long',fix:'Slack messages have a 40,000 character limit. Split long messages into multiple Send Message actions.'}
+    ],
+    prerequisites:['ServiceNow Orlando or later','Integration Hub subscription (Professional+)','Slack workspace with admin access','Slack App with Bot Token Scopes configured'],
+    min_version:'Orlando', tags:['messaging','notifications','chatops','automation'] },
 
   { slug:'microsoft-teams', name:'Microsoft Teams', icon:'🟦', category:'Communication', tier:'professional',
     plugin_id:'com.snc.microsoft_teams_spoke', credential_type:'OAuth 2.0',
@@ -38,12 +60,32 @@ const SPOKES = [
 
   // ── PROJECT MANAGEMENT ──────────────────────────────────────
   { slug:'jira', name:'Jira', icon:'🔷', category:'Project Management', tier:'professional',
-    plugin_id:'com.snc.jira_spoke', credential_type:'Basic Auth / OAuth 2.0',
-    description:'Create, update, and sync Jira issues with ServiceNow incidents and changes. Bi-directional integration for ITSM and agile development.',
-    actions:['Create Issue','Update Issue','Look Up Issue','Add Comment','Transition Issue','Look Up Project','Assign Issue','Create Epic','Look Up Sprint','Add Attachment'],
-    setup_steps:['Install Jira spoke from ServiceNow Store','Generate Jira API Token at id.atlassian.com','Create Connection Alias with Basic Auth (email + API token)','Map ServiceNow fields to Jira fields in flow','Set up bi-directional webhook for real-time sync'],
-    common_errors:['401 Unauthorized — API token vs password confusion (use API token)','Project not found — use project key not name','Transition not available — issue must be in correct state'],
-    min_version:'New York', tags:['agile','devops','ticketing'] },
+    plugin_id:'com.snc.jira_spoke', credential_type:'OAuth 2.0 / API Token',
+    description:'Create, update, and manage Jira issues, projects, and boards directly from ServiceNow Flow Designer. Supports Jira Cloud and Jira Data Center.',
+    actions:[
+      {name:'Create Issue',description:'Create a new Jira issue (Story, Bug, Task, Epic)',inputs:[{name:'project_key',type:'String',required:true,description:'Jira project key (e.g. PROJ)'},{name:'summary',type:'String',required:true,description:'Issue title'},{name:'issue_type',type:'String',required:true,description:'Story, Bug, Task, Epic, Sub-task'},{name:'description',type:'String',required:false,description:'Issue description (supports Jira markdown)'},{name:'priority',type:'String',required:false,description:'Highest, High, Medium, Low, Lowest'},{name:'assignee',type:'String',required:false,description:'Jira username or email'}],outputs:[{name:'issue_key',type:'String',description:'Created issue key (e.g. PROJ-123)'},{name:'issue_id',type:'String',description:'Jira issue ID'},{name:'self',type:'String',description:'API URL of created issue'}]},
+      {name:'Update Issue',description:'Update fields on an existing Jira issue',inputs:[{name:'issue_key',type:'String',required:true,description:'Issue key (e.g. PROJ-123)'},{name:'fields',type:'JSON',required:true,description:'Fields to update as JSON object'}],outputs:[{name:'success',type:'Boolean',description:'Update success status'}]},
+      {name:'Add Comment',description:'Add a comment to a Jira issue',inputs:[{name:'issue_key',type:'String',required:true,description:'Issue key'},{name:'comment',type:'String',required:true,description:'Comment body'}],outputs:[{name:'comment_id',type:'String',description:'Created comment ID'}]},
+      {name:'Transition Issue',description:'Move issue through workflow (e.g. To Do → In Progress → Done)',inputs:[{name:'issue_key',type:'String',required:true,description:'Issue key'},{name:'transition_id',type:'String',required:true,description:'Workflow transition ID'}],outputs:[{name:'success',type:'Boolean',description:'Transition success'}]},
+      {name:'Look Up Issue',description:'Get full details of a Jira issue',inputs:[{name:'issue_key',type:'String',required:true,description:'Issue key'}],outputs:[{name:'summary',type:'String',description:'Issue title'},{name:'status',type:'String',description:'Current status'},{name:'assignee',type:'String',description:'Assigned user'},{name:'priority',type:'String',description:'Priority level'}]}
+    ],
+    setup_steps:[
+      'Install Jira spoke from ServiceNow Store (search "Jira")',
+      'In Jira Cloud: Settings → Apps → OAuth 2.0 → Create new integration',
+      'For Jira Cloud: copy Client ID and Client Secret. For Data Center: generate API Token at id.atlassian.com/manage-profile/security/api-tokens',
+      'In ServiceNow: navigate to Connections & Credentials → Connection Alias → Create "Jira"',
+      'Set Connection URL to your Jira instance (e.g. https://yourcompany.atlassian.net)',
+      'Configure credential with OAuth 2.0 or Basic Auth (email + API token)',
+      'Test: Flow Designer → New Action → Jira → Look Up Issue → Enter a known issue key'
+    ],
+    common_errors:[
+      {error:'404 Issue Does Not Exist',fix:'Verify the issue key is correct and the API user has permission to view the project.'},
+      {error:'401 Unauthorized',fix:'API token may have expired. Regenerate at id.atlassian.com and update the Connection Alias credential.'},
+      {error:'Field "customfield_10001" cannot be set',fix:'Custom fields require exact field IDs. Use /rest/api/3/field to list available fields and their IDs.'},
+      {error:'Transition not available',fix:'The issue may not be in the correct status for that transition. Check the workflow in Jira project settings.'}
+    ],
+    prerequisites:['ServiceNow Paris or later','Jira Cloud or Data Center instance','API Token or OAuth 2.0 credentials','Project admin access in Jira'],
+    min_version:'Paris', tags:['project-management','atlassian','issues','agile','devops'] },
 
   { slug:'github', name:'GitHub', icon:'🐙', category:'DevOps', tier:'professional',
     plugin_id:'com.snc.github_spoke', credential_type:'OAuth 2.0 / Personal Access Token',
