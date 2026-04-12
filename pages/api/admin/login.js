@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const ip = getClientIp(req);
-  const rl = await checkRateLimit(`admin_login:${ip}`, 5, 900);
+  const rl = await checkRateLimit(`admin_login:${ip}`, 15, 900);
   if (!rl.allowed) {
     logger.warn(`[security] Admin brute force from ${ip}`);
     return res.status(429).json({ success: false, error: `Too many attempts. Try again in ${Math.ceil(rl.resetIn / 60)} min.` });

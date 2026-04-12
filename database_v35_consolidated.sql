@@ -649,3 +649,36 @@ SELECT 'v35 migration complete — all tables ready' AS status;
 ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS provider_id TEXT;
 ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN DEFAULT false;
 ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS image TEXT;
+
+-- ══════════════════════════════════════════════════════════
+-- v36 additions — ensure ALL columns exist
+-- ══════════════════════════════════════════════════════════
+
+-- Auth columns needed by NextAuth
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS provider_id TEXT;
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN DEFAULT false;
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS image TEXT;
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS provider TEXT DEFAULT 'credentials';
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP;
+
+-- Spokes columns needed by search/answer engine
+ALTER TABLE sn_spokes ADD COLUMN IF NOT EXISTS official_description TEXT;
+ALTER TABLE sn_spokes ADD COLUMN IF NOT EXISTS setup_steps TEXT;
+ALTER TABLE sn_spokes ADD COLUMN IF NOT EXISTS actions TEXT;
+ALTER TABLE sn_spokes ADD COLUMN IF NOT EXISTS common_errors TEXT;
+ALTER TABLE sn_spokes ADD COLUMN IF NOT EXISTS ai_description TEXT;
+ALTER TABLE sn_spokes ADD COLUMN IF NOT EXISTS personal_tip TEXT;
+ALTER TABLE sn_spokes ADD COLUMN IF NOT EXISTS avg_rating NUMERIC DEFAULT 0;
+ALTER TABLE sn_spokes ADD COLUMN IF NOT EXISTS rating_count INTEGER DEFAULT 0;
+ALTER TABLE sn_spokes ADD COLUMN IF NOT EXISTS tier TEXT DEFAULT 'professional';
+ALTER TABLE sn_spokes ADD COLUMN IF NOT EXISTS last_synced_at TIMESTAMP;
+
+-- Extensions
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+-- Search indexes
+CREATE INDEX IF NOT EXISTS idx_spokes_slug ON sn_spokes(slug);
+CREATE INDEX IF NOT EXISTS idx_spokes_category ON sn_spokes(category);
+CREATE INDEX IF NOT EXISTS idx_users_email ON sn_users(email);
+
+SELECT 'v36 migration complete' AS status;
