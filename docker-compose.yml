@@ -53,7 +53,56 @@ services:
       timeout: 3s
       retries: 3
 
-  # ── Next.js ────────────────────────────────────────────
+  # ── Next.js ───────────────────────────────────────────
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    logging: *default-logging
+    restart: always
+    ports:
+      - "9443:9443"  # Portainer UI only
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks: [external]
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: snspokes_n8n
+    logging: *default-logging
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    environment:
+      - WEBHOOK_URL=https://n8n.snspokes.com
+      - N8N_PROTOCOL=https
+      - N8N_HOST=n8n.snspokes.com
+      - N8N_BASIC_AUTH_ACTIVE=false
+      - N8N_TRUST_PROXY=true
+      - N8N_PROXY_HOPS=1
+      - N8N_PORT=5678
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=db
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=snspokes
+      - DB_POSTGRESDB_USER=snspokes_user
+      - DB_POSTGRESDB_PASSWORD=${DB_PASSWORD:-changeme}
+      - EXECUTIONS_PROCESS=main
+      - QUEUE_BULL_REDIS_HOST=redis
+      - QUEUE_BULL_REDIS_PORT=6379
+      - GENERIC_TIMEZONE=UTC
+      - OPENROUTER_API_KEY=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
+    # ports: ["5678:5678"]  # Accessed via nginx (n8n.snspokes.com)
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [internal, external]
+    volumes:
+      - n8ndata:/home/node/.n8n
+
+
   nextjs:
     build:
       context: .
