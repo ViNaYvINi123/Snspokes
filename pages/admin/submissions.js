@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { withAdminPage } from '../../lib/adminAuth';
 
+function getAdminToken() {
+  if (typeof window === 'undefined') return '';
+  return localStorage.getItem('admin_token') || '';
+}
+
 function SubmissionsPage() {
   const h = { 'Content-Type':'application/json', 'x-admin-token': typeof window !== 'undefined' ? getAdminToken() : '' };
   const [items, setItems] = useState([]);
@@ -11,11 +16,11 @@ function SubmissionsPage() {
   const [reviewNote, setReviewNote] = useState('');
   const [toast, setToast] = useState(null);
 
-  useEffect(() => { fetch(); }, [filter]);
+  useEffect(() => { loadData(); }, [filter]);
 
-  async function fetch() {
+  async function loadData() {
     setLoading(true);
-    const res = await fetch(`/api/admin/submissions?status=${filter}`);
+    const res = await window.fetch(`/api/admin/submissions?status=${filter}`, { headers: { 'x-admin-token': getAdminToken() } });
     const data = await res.json();
     setItems(data.submissions || []);
     setLoading(false);

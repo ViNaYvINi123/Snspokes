@@ -64,3 +64,22 @@ INSERT INTO sn_feature_flags (name, description, enabled) VALUES
 ON CONFLICT (name) DO NOTHING;
 
 SELECT 'v36 fix complete — all columns added' AS status;
+
+-- v36.1 — More missing columns
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS ban_reason TEXT;
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS search_count INTEGER DEFAULT 0;
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN DEFAULT false;
+
+-- Submissions table
+ALTER TABLE sn_spoke_submissions ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMP;
+ALTER TABLE sn_spoke_submissions ADD COLUMN IF NOT EXISTS reviewer_notes TEXT;
+
+-- Scope comparison
+ALTER TABLE sn_scope_comparison ADD COLUMN IF NOT EXISTS global_col TEXT;
+
+-- Submissions table
+ALTER TABLE sn_spoke_submissions ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMP;
+ALTER TABLE sn_spoke_submissions ADD COLUMN IF NOT EXISTS reviewer_notes TEXT;
+
+-- Scope comparison
+ALTER TABLE sn_scope_comparison ADD COLUMN IF NOT EXISTS global_col TEXT;

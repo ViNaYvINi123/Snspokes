@@ -186,9 +186,10 @@ export default function SpokePage() {
 
   if (!spoke) return null;
 
-  const setupSteps = Array.isArray(spoke.setup_steps) ? spoke.setup_steps : [];
-  const actions = Array.isArray(spoke.actions) ? spoke.actions : [];
-  const commonErrors = Array.isArray(spoke.common_errors) ? spoke.common_errors : [];
+  const parseJSON = (v) => { try { return typeof v === 'string' ? JSON.parse(v) : (Array.isArray(v) ? v : []); } catch { return []; } };
+  const setupSteps = parseJSON(spoke.setup_steps);
+  const actions = parseJSON(spoke.actions);
+  const commonErrors = parseJSON(spoke.common_errors);
   const relatedSpokes = Array.isArray(spoke.related_spokes) ? spoke.related_spokes.filter(Boolean) : [];
   const tags = Array.isArray(spoke.tags) ? spoke.tags : [];
   const hasContent = spoke.ai_description || spoke.official_description || setupSteps.length > 0 || actions.length > 0;

@@ -26,7 +26,11 @@ export default async function handler(req, res) {
     const dbRes = await query('SELECT * FROM sn_spokes WHERE slug=$1 LIMIT 1', [cleanSlug]);
     if (dbRes.rows.length > 0) {
       const spoke = dbRes.rows[0];
-      const hasContent = spoke.ai_description?.length > 50 && Array.isArray(spoke.setup_steps) && spoke.setup_steps.length > 0;
+      // Parse JSON text fields
+      try { if (typeof spoke.setup_steps === 'string') spoke.setup_steps = JSON.parse(spoke.setup_steps); } catch { spoke.setup_steps = []; }
+      try { if (typeof spoke.actions === 'string') spoke.actions = JSON.parse(spoke.actions); } catch { spoke.actions = []; }
+      try { if (typeof spoke.common_errors === 'string') spoke.common_errors = JSON.parse(spoke.common_errors); } catch { spoke.common_errors = []; }
+      const hasContent = spoke.description?.length > 20 || (Array.isArray(spoke.setup_steps) && spoke.setup_steps.length > 0);
       if (hasContent) {
         query('UPDATE sn_spokes SET view_count=view_count+1 WHERE slug=$1', [cleanSlug]).catch(() => {});
         await cacheSet(cacheKey, JSON.stringify(spoke), 3600);
