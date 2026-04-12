@@ -39,7 +39,7 @@ export default async function handler(req, res) {
     const results = await query(`
       SELECT slug, name, category, api_type, scope, global_var, base_path,
              description, gotcha, code_example,
-             jsonb_array_length(methods) as method_count
+             CASE WHEN pg_typeof(methods)::text = 'jsonb' THEN jsonb_array_length(COALESCE(methods,'[]'::jsonb)) ELSE 0 END as method_count
       FROM sn_api_reference
       ${where}
       ORDER BY
@@ -50,7 +50,7 @@ export default async function handler(req, res) {
           WHEN 'context' THEN 4
           ELSE 5
         END,
-        view_count DESC
+        COALESCE(view_count,0) DESC
       LIMIT $${limitIdx}
     `, params);
 
