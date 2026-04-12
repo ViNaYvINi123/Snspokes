@@ -51,7 +51,12 @@ const SPOKES = [
   { slug:'zoom', name:'Zoom', icon:'📹', category:'Communication', tier:'starter',
     plugin_id:'com.snc.zoom_spoke', credential_type:'OAuth 2.0',
     description:'Create and manage Zoom meetings, look up users, and send notifications from ServiceNow.',
-    actions:['Create Meeting','Look Up User','Delete Meeting','Update Meeting','Get Meeting Details'],
+    actions:[
+      {name:'Create Meeting',description:'Schedule a Zoom meeting',inputs:[{name:'topic',type:'String',required:true,description:'Meeting topic'},{name:'start_time',type:'DateTime',required:true,description:'Start time (ISO 8601)'},{name:'duration',type:'Integer',required:false,description:'Duration in minutes'},{name:'type',type:'Integer',required:false,description:'1=instant, 2=scheduled'}],outputs:[{name:'meeting_id',type:'Long',description:'Meeting ID'},{name:'join_url',type:'String',description:'Join URL'},{name:'password',type:'String',description:'Meeting password'}]},
+      {name:'Look Up User',description:'Find a Zoom user',inputs:[{name:'email',type:'String',required:true,description:'User email'}],outputs:[{name:'user_id',type:'String',description:'Zoom user ID'},{name:'type',type:'Integer',description:'User type (1=basic, 2=licensed)'}]},
+      {name:'Delete Meeting',description:'Delete/cancel a meeting',inputs:[{name:'meeting_id',type:'Long',required:true,description:'Meeting ID'}],outputs:[{name:'success',type:'Boolean',description:'Deleted'}]},
+      {name:'Get Meeting Details',description:'Get full meeting info',inputs:[{name:'meeting_id',type:'Long',required:true,description:'Meeting ID'}],outputs:[{name:'topic',type:'String',description:'Topic'},{name:'status',type:'String',description:'waiting, started, finished'},{name:'join_url',type:'String',description:'Join URL'}]}
+    ],
     setup_steps:['Create Zoom OAuth App at marketplace.zoom.us','Configure scopes: meeting:write, user:read','Add credentials to ServiceNow Connection Alias'],
     common_errors:['invalid_token — OAuth flow needs to be re-completed','User not found — use Zoom user email not name'],
     min_version:'Quebec', tags:['video','meetings'] },
@@ -111,7 +116,12 @@ const SPOKES = [
   { slug:'gitlab', name:'GitLab', icon:'🦊', category:'DevOps', tier:'professional',
     plugin_id:'com.snc.gitlab_spoke', credential_type:'Personal Access Token',
     description:'Manage GitLab issues, merge requests, and CI/CD pipelines from ServiceNow change workflows.',
-    actions:['Create Issue','Look Up Issue','Create Merge Request','Trigger Pipeline','Look Up Project','Add Comment'],
+    actions:[
+      {name:'Create Issue',description:'Create a GitLab issue',inputs:[{name:'project_id',type:'Integer',required:true,description:'Project ID'},{name:'title',type:'String',required:true,description:'Title'},{name:'description',type:'String',required:false,description:'Body (Markdown)'},{name:'labels',type:'String',required:false,description:'Comma-separated labels'}],outputs:[{name:'iid',type:'Integer',description:'Issue IID'},{name:'web_url',type:'String',description:'URL'}]},
+      {name:'Create Merge Request',description:'Open a merge request',inputs:[{name:'project_id',type:'Integer',required:true,description:'Project ID'},{name:'title',type:'String',required:true,description:'MR title'},{name:'source_branch',type:'String',required:true,description:'Source'},{name:'target_branch',type:'String',required:true,description:'Target'}],outputs:[{name:'iid',type:'Integer',description:'MR IID'},{name:'web_url',type:'String',description:'URL'}]},
+      {name:'Trigger Pipeline',description:'Trigger CI/CD pipeline',inputs:[{name:'project_id',type:'Integer',required:true,description:'Project ID'},{name:'ref',type:'String',required:true,description:'Branch or tag'}],outputs:[{name:'pipeline_id',type:'Integer',description:'Pipeline ID'},{name:'status',type:'String',description:'Status'}]},
+      {name:'Add Comment',description:'Add comment to issue or MR',inputs:[{name:'project_id',type:'Integer',required:true,description:'Project ID'},{name:'issue_iid',type:'Integer',required:true,description:'Issue IID'},{name:'body',type:'String',required:true,description:'Comment body'}],outputs:[{name:'note_id',type:'Integer',description:'Note ID'}]}
+    ],
     setup_steps:['Generate GitLab Personal Access Token (scope: api)','Create Connection Alias with Bearer Token','Test with Look Up Project action'],
     common_errors:['401 Unauthorized — token needs api scope','Project not found — use numeric project ID'],
     min_version:'Quebec', tags:['git','devops','cicd'] },
@@ -159,7 +169,13 @@ const SPOKES = [
   { slug:'google-workspace', name:'Google Workspace', icon:'🔴', category:'Productivity', tier:'professional',
     plugin_id:'com.snc.google_workspace_spoke', credential_type:'OAuth 2.0',
     description:'Manage Google Workspace users, groups, Drive files, and Calendar events from ServiceNow.',
-    actions:['Create User','Update User','Suspend User','Look Up User','Add to Group','Create Drive File','Share Drive File','Create Calendar Event'],
+    actions:[
+      {name:'Create User',description:'Create a Google Workspace user',inputs:[{name:'email',type:'String',required:true,description:'User email'},{name:'firstName',type:'String',required:true,description:'First name'},{name:'lastName',type:'String',required:true,description:'Last name'},{name:'password',type:'String',required:true,description:'Initial password'},{name:'orgUnit',type:'String',required:false,description:'Org unit path'}],outputs:[{name:'userId',type:'String',description:'Google user ID'},{name:'email',type:'String',description:'Created email'}]},
+      {name:'Create Drive File',description:'Create a Google Drive file',inputs:[{name:'name',type:'String',required:true,description:'File name'},{name:'content',type:'String',required:true,description:'File content'},{name:'mimeType',type:'String',required:false,description:'MIME type'},{name:'parentFolder',type:'String',required:false,description:'Parent folder ID'}],outputs:[{name:'fileId',type:'String',description:'Drive file ID'},{name:'webLink',type:'String',description:'View link'}]},
+      {name:'Create Calendar Event',description:'Create a Google Calendar event',inputs:[{name:'summary',type:'String',required:true,description:'Event title'},{name:'start',type:'DateTime',required:true,description:'Start time'},{name:'end',type:'DateTime',required:true,description:'End time'},{name:'attendees',type:'Array',required:false,description:'Attendee emails'}],outputs:[{name:'eventId',type:'String',description:'Event ID'},{name:'htmlLink',type:'String',description:'Calendar link'}]},
+      {name:'Suspend User',description:'Suspend a Google Workspace user',inputs:[{name:'userId',type:'String',required:true,description:'User ID or email'}],outputs:[{name:'suspended',type:'Boolean',description:'Suspended status'}]},
+      {name:'Look Up User',description:'Find a Workspace user',inputs:[{name:'email',type:'String',required:true,description:'Email'}],outputs:[{name:'userId',type:'String',description:'User ID'},{name:'fullName',type:'String',description:'Full name'},{name:'suspended',type:'Boolean',description:'Is suspended'}]}
+    ],
     setup_steps:['Create OAuth credentials in Google Cloud Console','Enable Admin SDK, Drive API, Calendar API','Configure domain-wide delegation','Create Connection Alias in ServiceNow'],
     common_errors:['403 insufficientPermissions — OAuth scope missing','Domain not found — verify domain ownership in Google Console'],
     min_version:'Quebec', tags:['google','identity','cloud'] },
@@ -190,7 +206,12 @@ const SPOKES = [
   { slug:'zendesk', name:'Zendesk', icon:'🎫', category:'Customer Service', tier:'professional',
     plugin_id:'com.snc.zendesk_spoke', credential_type:'OAuth 2.0 / API Token',
     description:'Create, update, and sync Zendesk tickets with ServiceNow cases and incidents.',
-    actions:['Create Ticket','Update Ticket','Look Up Ticket','Add Comment','Look Up User','Create User','Close Ticket','Look Up Organization'],
+    actions:[
+      {name:'Create Ticket',description:'Create a Zendesk ticket',inputs:[{name:'subject',type:'String',required:true,description:'Ticket subject'},{name:'description',type:'String',required:true,description:'Body'},{name:'priority',type:'String',required:false,description:'urgent, high, normal, low'},{name:'requester_email',type:'String',required:false,description:'Requester email'}],outputs:[{name:'ticket_id',type:'Integer',description:'Ticket ID'},{name:'url',type:'String',description:'URL'}]},
+      {name:'Update Ticket',description:'Update ticket fields',inputs:[{name:'ticket_id',type:'Integer',required:true,description:'Ticket ID'},{name:'status',type:'String',required:false,description:'open, pending, solved'},{name:'priority',type:'String',required:false,description:'Priority'}],outputs:[{name:'success',type:'Boolean',description:'Updated'}]},
+      {name:'Add Comment',description:'Add a comment to ticket',inputs:[{name:'ticket_id',type:'Integer',required:true,description:'Ticket ID'},{name:'body',type:'String',required:true,description:'Comment text'},{name:'public',type:'Boolean',required:false,description:'Public or internal'}],outputs:[{name:'comment_id',type:'Integer',description:'Comment ID'}]},
+      {name:'Look Up Ticket',description:'Get ticket details',inputs:[{name:'ticket_id',type:'Integer',required:true,description:'Ticket ID'}],outputs:[{name:'subject',type:'String',description:'Subject'},{name:'status',type:'String',description:'Status'},{name:'priority',type:'String',description:'Priority'}]}
+    ],
     setup_steps:['Enable API access in Zendesk Admin','Generate API token or configure OAuth','Create Connection Alias in ServiceNow','Map ticket fields between platforms'],
     common_errors:['401 Unauthorized — use email/token format not just token','Record Not Found — ticket ID is numeric'],
     min_version:'Quebec', tags:['crm','support','customer'] },
@@ -198,7 +219,13 @@ const SPOKES = [
   { slug:'servicenow-itsm', name:'ServiceNow ITSM', icon:'🔧', category:'ITSM', tier:'starter',
     plugin_id:'com.snc.itsm_spoke', credential_type:'Basic Auth / OAuth 2.0',
     description:'Connect multiple ServiceNow instances — create incidents, changes, and problems across instances using the Remote Instance spoke.',
-    actions:['Create Incident','Update Incident','Create Change Request','Create Problem','Look Up Record','Create Task','Update Task'],
+    actions:[
+      {name:'Create Incident',description:'Create a ServiceNow incident',inputs:[{name:'short_description',type:'String',required:true,description:'Summary'},{name:'description',type:'String',required:false,description:'Details'},{name:'priority',type:'Integer',required:false,description:'1=Critical, 2=High, 3=Medium'},{name:'assignment_group',type:'String',required:false,description:'Group sys_id'},{name:'caller_id',type:'String',required:false,description:'Caller sys_id'}],outputs:[{name:'sys_id',type:'String',description:'Incident sys_id'},{name:'number',type:'String',description:'INC number'}]},
+      {name:'Create Change Request',description:'Open a change request',inputs:[{name:'short_description',type:'String',required:true,description:'Change summary'},{name:'type',type:'String',required:false,description:'normal, standard, emergency'},{name:'risk',type:'String',required:false,description:'high, moderate, low'}],outputs:[{name:'sys_id',type:'String',description:'Change sys_id'},{name:'number',type:'String',description:'CHG number'}]},
+      {name:'Create Problem',description:'Create a problem record',inputs:[{name:'short_description',type:'String',required:true,description:'Problem summary'},{name:'priority',type:'Integer',required:false,description:'1-5'}],outputs:[{name:'sys_id',type:'String',description:'sys_id'},{name:'number',type:'String',description:'PRB number'}]},
+      {name:'Look Up Record',description:'Look up any ServiceNow record',inputs:[{name:'table',type:'String',required:true,description:'Table name (incident, change_request)'},{name:'sys_id',type:'String',required:true,description:'Record sys_id'}],outputs:[{name:'record',type:'Object',description:'Full record data'}]},
+      {name:'Create Task',description:'Create a task record',inputs:[{name:'short_description',type:'String',required:true,description:'Task summary'},{name:'parent',type:'String',required:false,description:'Parent record sys_id'}],outputs:[{name:'sys_id',type:'String',description:'Task sys_id'},{name:'number',type:'String',description:'TASK number'}]}
+    ],
     setup_steps:['Configure MID Server if connecting on-prem instances','Create service account on target instance','Set up OAuth or Basic Auth Connection Alias','Test REST call to target instance'],
     common_errors:['SSL Certificate error — configure trusted cert on MID Server','ACL restriction — service account needs appropriate roles'],
     min_version:'New York', tags:['itsm','multi-instance'] },
@@ -207,7 +234,13 @@ const SPOKES = [
   { slug:'okta', name:'Okta', icon:'🔐', category:'Identity', tier:'professional',
     plugin_id:'com.snc.okta_spoke', credential_type:'API Token',
     description:'Provision, deprovision, and manage Okta users and groups from ServiceNow HR and ITSM workflows. Automate joiner-mover-leaver processes.',
-    actions:['Create User','Deactivate User','Activate User','Look Up User','Add to Group','Remove from Group','Look Up Group','Reset Password','Suspend User','List User Groups'],
+    actions:[
+      {name:'Create User',description:'Create a new Okta user',inputs:[{name:'email',type:'String',required:true,description:'User email'},{name:'firstName',type:'String',required:true,description:'First name'},{name:'lastName',type:'String',required:true,description:'Last name'},{name:'activate',type:'Boolean',required:false,description:'Activate immediately'}],outputs:[{name:'userId',type:'String',description:'Okta user ID'},{name:'status',type:'String',description:'User status'}]},
+      {name:'Deactivate User',description:'Deactivate an Okta user',inputs:[{name:'userId',type:'String',required:true,description:'Okta user ID'}],outputs:[{name:'status',type:'String',description:'deactivated'}]},
+      {name:'Add to Group',description:'Add user to group',inputs:[{name:'userId',type:'String',required:true,description:'User ID'},{name:'groupId',type:'String',required:true,description:'Group ID'}],outputs:[{name:'success',type:'Boolean',description:'Added'}]},
+      {name:'Reset Password',description:'Send password reset',inputs:[{name:'userId',type:'String',required:true,description:'User ID'}],outputs:[{name:'resetUrl',type:'String',description:'Reset link'}]},
+      {name:'Look Up User',description:'Find user by email',inputs:[{name:'search',type:'String',required:true,description:'Email or login'}],outputs:[{name:'userId',type:'String',description:'ID'},{name:'email',type:'String',description:'Email'},{name:'status',type:'String',description:'Status'}]}
+    ],
     setup_steps:['Generate Okta API token with Super Admin','Create Connection Alias in ServiceNow with Bearer Token auth','Configure Okta domain URL in connection properties','Test with Look Up User action'],
     common_errors:['E0000011 — invalid token, check token not expired','E0000095 — user already in group','E0000007 — resource not found, verify user email format'],
     min_version:'Quebec', tags:['identity','sso','provisioning'] },
