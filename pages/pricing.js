@@ -35,22 +35,6 @@ const PLANS = [
     ],
     cta: 'Start Pro', ctaLink: '/register?plan=pro',
   },
-  {
-    id: 'enterprise', name: 'Enterprise', price: 4999, yearlyPrice: 3999, color: 'yellow',
-    description: 'For teams and enterprises',
-    features: [
-      'Everything in Pro',
-      'Team seats (up to 20)',
-      'Org-level admin panel',
-      'Custom webhook notifications',
-      'Spoke submission priority',
-      'SLA guarantee (99.9%)',
-      'Dedicated Slack support',
-      'Custom integrations',
-      'Invoice billing',
-    ],
-    cta: 'Contact Sales', ctaLink: 'mailto:sales@snspokes.com',
-  },
 ];
 
 const FAQ = [
@@ -83,7 +67,7 @@ export default function Pricing() {
               Simple, <span className="text-purple-400">transparent</span> pricing
             </h1>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Start free. Upgrade when you need more AI power, API access, or team features.
+              Start free. Upgrade when you need more AI power, API access, or more power.
             </p>
             {/* Yearly toggle */}
             <div className="flex items-center justify-center gap-3 mt-8">
@@ -161,7 +145,6 @@ export default function Pricing() {
                   ['Error encyclopedia', '✓', '✓', '✓'],
                   ['Saved queries', '✗', '✓', '✓'],
                   ['API key access', '✗', '✓', '✓'],
-                  ['Team seats', '✗', '✗', 'Up to 20'],
                   ['Webhook notifications', '✗', '✗', '✓'],
                   ['SLA guarantee', '✗', '✗', '99.9%'],
                   ['Support', 'Community', 'Priority email', 'Dedicated Slack'],

@@ -260,7 +260,7 @@ async function handler(req, res) {
           await query('INSERT INTO sn_scope_comparison (topic,scoped,global_col,gotcha) VALUES ($1,$2,$3,$4) ON CONFLICT (topic) DO UPDATE SET scoped=$2,global_col=$3,gotcha=$4', [s.topic, s.scoped, s.global, s.gotcha]).catch(() => {});
         }
         result.apis = { total: allAPIs.length, upserted: apiCount };
-        log('API reference: ' + apiCount + ' entries upserted');
+        console.log('[sync] API reference: ' + apiCount + ' entries upserted');
       } catch(e) { result.errors.push('API: ' + e.message.slice(0,80)); }
     }
 
