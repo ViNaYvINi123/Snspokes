@@ -64,11 +64,11 @@ export default function Onboarding() {
   }
 
   const S = {
-    page:   { minHeight:'100vh', background:'#0a0a0f', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'24px', fontFamily:"'Syne', system-ui, sans-serif" },
+    page:   { minHeight:'100vh', background:'#0a0a0f', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'24px', fontFamily:"'DM Sans', system-ui, sans-serif" },
     card:   { width:'100%', maxWidth:'520px', background:'#0f0f1a', border:'1px solid #1e1e2e', borderRadius:'20px', padding:'32px', boxShadow:'0 24px 80px rgba(0,0,0,0.4)' },
-    btn:    (active) => ({ display:'flex', alignItems:'center', gap:'12px', padding:'14px 16px', background: active?'rgba(108,99,255,0.12)':'transparent', border:`1px solid ${active?'#6c63ff':'#1e1e2e'}`, borderRadius:'12px', cursor:'pointer', textAlign:'left', width:'100%', transition:'all 0.15s', fontFamily:"'Syne', sans-serif", marginBottom:'8px' }),
-    chip:   (active) => ({ padding:'10px 14px', background: active?'rgba(108,99,255,0.12)':'transparent', border:`1px solid ${active?'#6c63ff':'#1e1e2e'}`, borderRadius:'10px', cursor:'pointer', fontSize:'13px', fontWeight: active?600:400, color: active?'#fff':'#9999bb', transition:'all 0.15s', fontFamily:"'Syne', sans-serif" }),
-    navBtn: (primary) => ({ flex:1, padding:'12px', background: primary?'linear-gradient(135deg,#6c63ff,#a855f7)':'transparent', border:`1px solid ${primary?'transparent':'#1e1e2e'}`, borderRadius:'10px', color: primary?'#fff':'#9999bb', fontSize:'14px', fontWeight:'600', cursor:'pointer', fontFamily:"'Syne', sans-serif" }),
+    btn:    (active) => ({ display:'flex', alignItems:'center', gap:'12px', padding:'14px 16px', background: active?'rgba(108,99,255,0.12)':'transparent', border:`1px solid ${active?'#6c63ff':'#1e1e2e'}`, borderRadius:'12px', cursor:'pointer', textAlign:'left', width:'100%', transition:'all 0.15s', fontFamily:"'DM Sans', sans-serif", marginBottom:'8px' }),
+    chip:   (active) => ({ padding:'10px 14px', background: active?'rgba(108,99,255,0.12)':'transparent', border:`1px solid ${active?'#6c63ff':'#1e1e2e'}`, borderRadius:'10px', cursor:'pointer', fontSize:'13px', fontWeight: active?600:400, color: active?'#fff':'#9999bb', transition:'all 0.15s', fontFamily:"'DM Sans', sans-serif" }),
+    navBtn: (primary) => ({ flex:1, padding:'12px', background: primary?'linear-gradient(135deg,#6c63ff,#a855f7)':'transparent', border:`1px solid ${primary?'transparent':'#1e1e2e'}`, borderRadius:'10px', color: primary?'#fff':'#9999bb', fontSize:'14px', fontWeight:'600', cursor:'pointer', fontFamily:"'DM Sans', sans-serif" }),
   };
 
   return (
@@ -86,7 +86,7 @@ export default function Onboarding() {
             await update({ onboarded: true });
           } catch {}
           router.push('/dashboard');
-        }} style={{ background:'none', border:'none', color:'#6b7280', fontSize:'12px', cursor:'pointer', fontFamily:"'Syne', sans-serif" }}>Skip for now →</button>
+        }} style={{ background:'none', border:'none', color:'#6b7280', fontSize:'12px', cursor:'pointer', fontFamily:"'DM Sans', sans-serif" }}>Skip for now →</button>
       </div>
 
       <div style={{ ...S.page, paddingTop:'80px' }}>

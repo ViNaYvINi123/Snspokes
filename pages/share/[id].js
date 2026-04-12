@@ -51,7 +51,7 @@ export default function SharedScript() {
               <a href={'https://twitter.com/intent/tweet?text=' + encodeURIComponent((script.title || 'ServiceNow script') + ' — shared via snspokes') + '&url=' + encodeURIComponent('https://snspokes.com/share/' + id)} target="_blank" rel="noopener" style={{ padding: '8px 16px', background: 'rgba(29,161,242,0.1)', border: '1px solid rgba(29,161,242,0.2)', borderRadius: '8px', color: '#1da1f2', fontSize: '12px', textDecoration: 'none', fontWeight: '600' }}>Share on X</a>
               <a href={'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent('https://snspokes.com/share/' + id)} target="_blank" rel="noopener" style={{ padding: '8px 16px', background: 'rgba(10,102,194,0.1)', border: '1px solid rgba(10,102,194,0.2)', borderRadius: '8px', color: '#0a66c2', fontSize: '12px', textDecoration: 'none', fontWeight: '600' }}>Share on LinkedIn</a>
             </div>
-            <Link href="/tools/snippets" style={{ color: '#6c63ff', fontSize: '13px', fontWeight: '600', textDecoration: 'none' }}>Browse more snippets →</Link>
+            <Link href="/search" style={{ color: '#6c63ff', fontSize: '13px', fontWeight: '600', textDecoration: 'none' }}>Search more code →</Link>
           </div>
         </div>
       </main>

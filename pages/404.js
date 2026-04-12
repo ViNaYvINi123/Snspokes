@@ -16,7 +16,7 @@ export default function NotFound() {
         <a href="/" style={{ fontFamily:"'JetBrains Mono',monospace", fontWeight:700, color:'#6c63ff', fontSize:'14px', textDecoration:'none' }}>sn<span style={{color:'#fff'}}>spokes</span></a>
         <a href="/search" style={{ marginLeft:'auto', padding:'7px 16px', background:'linear-gradient(135deg,#6c63ff,#a855f7)', borderRadius:'8px', color:'#fff', fontSize:'12px', textDecoration:'none', fontWeight:600 }}>Search →</a>
       </nav>
-      <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center', padding:'24px', fontFamily:"'Syne', system-ui, sans-serif" }}>
+      <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center', padding:'24px', fontFamily:"'DM Sans', system-ui, sans-serif" }}>
 
         {/* Big 404 */}
         <div style={{ fontSize:'120px', fontWeight:'800', lineHeight:1, background:'linear-gradient(135deg,#6c63ff,#a855f7)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', marginBottom:'16px', letterSpacing:'-0.04em' }}>

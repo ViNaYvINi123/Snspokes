@@ -35,7 +35,7 @@ export default function AnnouncementBanner() {
   const style = TYPE_STYLES[ann.type] || TYPE_STYLES.info;
 
   return (
-    <div style={{ background: style.bg, borderBottom: `1px solid ${style.border}`, padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', fontFamily: "'Syne', system-ui, sans-serif", position: 'relative', zIndex: 99 }}>
+    <div style={{ background: style.bg, borderBottom: `1px solid ${style.border}`, padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', fontFamily: "'DM Sans', system-ui, sans-serif", position: 'relative', zIndex: 99 }}>
       <span style={{ fontSize: '15px', flexShrink: 0 }}>{style.icon}</span>
       <span style={{ fontSize: '13px', color: style.color, fontWeight: '500', textAlign: 'center' }}>
         {ann.title && <strong style={{ marginRight: '4px' }}>{ann.title}</strong>}

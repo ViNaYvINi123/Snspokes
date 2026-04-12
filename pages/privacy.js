@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
 export default function Privacy() {
-  const s = { page: { minHeight:'100vh', background:'#080810', fontFamily:"'Syne', system-ui, sans-serif" }, content: { maxWidth:'720px', margin:'0 auto', padding:'80px 24px 60px', color:'#c4c4e0', lineHeight:'1.8', fontSize:'14px' }, h1: { fontSize:'28px', fontWeight:'800', color:'#e2e8f0', marginBottom:'24px' }, h2: { fontSize:'18px', fontWeight:'700', color:'#e2e8f0', margin:'32px 0 12px' }, p: { marginBottom:'16px' } };
+  const s = { page: { minHeight:'100vh', background:'#080810', fontFamily:"'DM Sans', system-ui, sans-serif" }, content: { maxWidth:'720px', margin:'0 auto', padding:'80px 24px 60px', color:'#c4c4e0', lineHeight:'1.8', fontSize:'14px' }, h1: { fontSize:'28px', fontWeight:'800', color:'#e2e8f0', marginBottom:'24px' }, h2: { fontSize:'18px', fontWeight:'700', color:'#e2e8f0', margin:'32px 0 12px' }, p: { marginBottom:'16px' } };
 
   return (
     <>

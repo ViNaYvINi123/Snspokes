@@ -12,7 +12,7 @@ function CopyBtn({ text }) {
   const [copied, setCopied] = useState(false);
   return (
     <button onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      style={{ position: 'absolute', top: '10px', right: '10px', padding: '4px 10px', background: copied ? 'rgba(34,197,94,0.2)' : 'rgba(108,99,255,0.2)', border: `1px solid ${copied ? 'rgba(34,197,94,0.4)' : 'rgba(108,99,255,0.4)'}`, borderRadius: '6px', color: copied ? '#4ade80' : '#8b85ff', fontSize: '11px', cursor: 'pointer', fontFamily: 'Syne, sans-serif' }}>
+      style={{ position: 'absolute', top: '10px', right: '10px', padding: '4px 10px', background: copied ? 'rgba(34,197,94,0.2)' : 'rgba(108,99,255,0.2)', border: `1px solid ${copied ? 'rgba(34,197,94,0.4)' : 'rgba(108,99,255,0.4)'}`, borderRadius: '6px', color: copied ? '#4ade80' : '#8b85ff', fontSize: '11px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
       {copied ? '✓ Copied' : 'Copy'}
     </button>
   );
@@ -176,7 +176,7 @@ export default function SpokePage() {
         <h2 style={{ color: '#fff', marginBottom: '12px' }}>Could not load spoke</h2>
         <p style={{ color: '#6b6b8a', marginBottom: '24px' }}>{error}</p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-          <button onClick={() => fetchSpoke(slug)} style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontFamily: 'Syne, sans-serif' }}>Try Again</button>
+          <button onClick={() => fetchSpoke(slug)} style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>Try Again</button>
           <Link href="/search" style={{ padding: '10px 24px', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.3)', borderRadius: '8px', color: '#8b85ff', textDecoration: 'none' }}>← Back to Search</Link>
         </div>
       </div>
@@ -236,17 +236,17 @@ export default function SpokePage() {
               </div>
               {/* Bookmark button */}
               <button onClick={toggleBookmark} disabled={bookmarkLoading}
-                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', background: bookmarked ? 'rgba(108,99,255,0.15)' : 'transparent', border: `1px solid ${bookmarked ? '#6c63ff' : '#1e1e2e'}`, borderRadius: '8px', color: bookmarked ? '#8b85ff' : '#6b6b8a', fontSize: '13px', cursor: 'pointer', fontFamily: 'Syne, sans-serif', transition: 'all 0.15s' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', background: bookmarked ? 'rgba(108,99,255,0.15)' : 'transparent', border: `1px solid ${bookmarked ? '#6c63ff' : '#1e1e2e'}`, borderRadius: '8px', color: bookmarked ? '#8b85ff' : '#6b6b8a', fontSize: '13px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', transition: 'all 0.15s' }}>
                 {bookmarked ? '🔖' : '🔖'} {bookmarked ? 'Bookmarked' : 'Bookmark'}
               </button>
               {/* Rating buttons */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <button onClick={() => submitRating(1)} disabled={ratingLoading}
-                  style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '7px 12px', background: rating === 1 ? 'rgba(74,222,128,0.15)' : 'transparent', border: `1px solid ${rating === 1 ? '#4ade80' : '#1e1e2e'}`, borderRadius: '8px', color: rating === 1 ? '#4ade80' : '#6b6b8a', fontSize: '13px', cursor: 'pointer', fontFamily: 'Syne, sans-serif', transition: 'all 0.15s' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '7px 12px', background: rating === 1 ? 'rgba(74,222,128,0.15)' : 'transparent', border: `1px solid ${rating === 1 ? '#4ade80' : '#1e1e2e'}`, borderRadius: '8px', color: rating === 1 ? '#4ade80' : '#6b6b8a', fontSize: '13px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', transition: 'all 0.15s' }}>
                   👍 {ratingStats.upvotes > 0 && <span>{ratingStats.upvotes}</span>}
                 </button>
                 <button onClick={() => submitRating(-1)} disabled={ratingLoading}
-                  style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '7px 12px', background: rating === -1 ? 'rgba(248,113,113,0.15)' : 'transparent', border: `1px solid ${rating === -1 ? '#f87171' : '#1e1e2e'}`, borderRadius: '8px', color: rating === -1 ? '#f87171' : '#6b6b8a', fontSize: '13px', cursor: 'pointer', fontFamily: 'Syne, sans-serif', transition: 'all 0.15s' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '7px 12px', background: rating === -1 ? 'rgba(248,113,113,0.15)' : 'transparent', border: `1px solid ${rating === -1 ? '#f87171' : '#1e1e2e'}`, borderRadius: '8px', color: rating === -1 ? '#f87171' : '#6b6b8a', fontSize: '13px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', transition: 'all 0.15s' }}>
                   👎 {ratingStats.downvotes > 0 && <span>{ratingStats.downvotes}</span>}
                 </button>
               </div>
@@ -266,7 +266,7 @@ export default function SpokePage() {
                     <div style={{ fontSize: '40px', marginBottom: '16px' }}>🔄</div>
                     <h3 style={{ color: '#fff', marginBottom: '8px' }}>Generating content...</h3>
                     <p style={{ color: '#6b6b8a', marginBottom: '24px' }}>AI is generating detailed content for this spoke. Please refresh in a moment.</p>
-                    <button onClick={() => fetchSpoke(slug)} style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontFamily: 'Syne, sans-serif' }}>Refresh</button>
+                    <button onClick={() => fetchSpoke(slug)} style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #6c63ff, #a855f7)', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>Refresh</button>
                   </div>
                 )}
 

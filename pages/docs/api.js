@@ -64,33 +64,11 @@ const ENDPOINTS = [
         rateLimit: '50/day (free)',
       },
       {
-        method: 'POST', path: '/api/tools/script-linter', title: 'Script Linter',
-        desc: 'Lint ServiceNow scripts with 15+ rules. Optionally request AI-powered deep review.',
-        body: '{ "script": "var gr = new GlideRecord(\'incident\');...", "script_type": "server", "ai_review": true }',
-        response: '{ "success": true, "score": 85, "grade": "B+", "issues": [...], "ai_review": "..." }',
-        rateLimit: '30/min',
-      },
-      {
         method: 'POST', path: '/api/tools/error-search', title: 'Error Analyzer',
         desc: 'Analyze ServiceNow errors. Searches pre-indexed solutions first, falls back to AI analysis.',
         body: '{ "action": "ai_analyze", "error_message": "ACL restricts access to this record" }',
         response: '{ "success": true, "title": "...", "root_cause": "...", "fix_steps": [...] }',
         rateLimit: '20/min',
-      },
-      {
-        method: 'POST', path: '/api/tools/query-builder', title: 'Query Builder',
-        desc: 'Build GlideRecord scripts from visual conditions. Includes AI optimization.',
-        body: '{ "action": "build", "tableName": "incident", "conditions": [{ "field": "active", "operator": "=", "value": "true" }], "limit": 10 }',
-        response: '{ "success": true, "script": "var gr = new GlideRecord(\'incident\');...", "encoded_query": "active=true" }',
-        rateLimit: '30/min',
-      },
-      {
-        method: 'GET', path: '/api/tools/version-matrix', title: 'Version Matrix',
-        desc: 'Check feature availability across ServiceNow versions (Rome → Yokohama).',
-        body: null,
-        params: '?q=flow+designer&type=feature',
-        response: '{ "success": true, "features": [{ "feature_name": "Flow Designer", "versions": { "Tokyo": true, ... } }] }',
-        rateLimit: 'Unlimited',
       },
     ]
   },

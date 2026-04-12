@@ -69,7 +69,7 @@ function AdminAnnouncements() {
               </div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
                 <div><label style={lbl}>CTA Button Text</label><input style={inp} value={form.cta_text} onChange={e=>setForm(f=>({...f,cta_text:e.target.value}))} placeholder="Learn More" /></div>
-                <div><label style={lbl}>CTA URL</label><input style={inp} value={form.cta_url} onChange={e=>setForm(f=>({...f,cta_url:e.target.value}))} placeholder="/tools/query-builder" /></div>
+                <div><label style={lbl}>CTA URL</label><input style={inp} value={form.cta_url} onChange={e=>setForm(f=>({...f,cta_url:e.target.value}))} placeholder="/tools/code-generator" /></div>
               </div>
               <div><label style={lbl}>Expires At (optional)</label><input style={inp} type="datetime-local" value={form.ends_at} onChange={e=>setForm(f=>({...f,ends_at:e.target.value}))} /></div>
               <button onClick={save} disabled={saving} style={{ padding:'10px', background:'#6c63ff', border:'none', borderRadius:'8px', color:'#fff', fontSize:'13px', fontWeight:'600', cursor:'pointer', fontFamily:'inherit' }}>

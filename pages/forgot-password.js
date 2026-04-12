@@ -4,10 +4,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 const S = {
-  page:  { minHeight:'100vh', background:'#080810', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'24px', fontFamily:"'Syne', system-ui, sans-serif" },
+  page:  { minHeight:'100vh', background:'#080810', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'24px', fontFamily:"'DM Sans', system-ui, sans-serif" },
   card:  { width:'100%', maxWidth:'420px', background:'#0f0f1a', border:'1px solid #1e1e2e', borderRadius:'20px', padding:'32px', boxShadow:'0 24px 80px rgba(0,0,0,0.4)' },
-  input: { width:'100%', background:'#111827', border:'1px solid #2a2a3e', borderRadius:'12px', padding:'12px 16px', color:'#e2e8f0', fontSize:'14px', fontFamily:"'Syne', sans-serif", outline:'none', boxSizing:'border-box', transition:'border-color 0.2s, box-shadow 0.2s' },
-  btn:   { width:'100%', padding:'13px', background:'linear-gradient(135deg,#6c63ff,#a855f7)', border:'none', borderRadius:'12px', color:'#fff', fontSize:'14px', fontWeight:'700', cursor:'pointer', fontFamily:"'Syne', sans-serif" },
+  input: { width:'100%', background:'#111827', border:'1px solid #2a2a3e', borderRadius:'12px', padding:'12px 16px', color:'#e2e8f0', fontSize:'14px', fontFamily:"'DM Sans', sans-serif", outline:'none', boxSizing:'border-box', transition:'border-color 0.2s, box-shadow 0.2s' },
+  btn:   { width:'100%', padding:'13px', background:'linear-gradient(135deg,#6c63ff,#a855f7)', border:'none', borderRadius:'12px', color:'#fff', fontSize:'14px', fontWeight:'700', cursor:'pointer', fontFamily:"'DM Sans', sans-serif" },
   err:   { background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.25)', color:'#f87171', borderRadius:'10px', padding:'10px 14px', fontSize:'13px', marginBottom:'16px' },
 };
 const focus = { borderColor:'#6c63ff', boxShadow:'0 0 0 3px rgba(108,99,255,0.12)' };
@@ -104,7 +104,7 @@ export default function ForgotPassword() {
               <h2 style={{ color:'#fff', fontSize:'20px', fontWeight:'800', marginBottom:'8px' }}>Check your inbox</h2>
               <p style={{ color:'#6b7280', fontSize:'13px', marginBottom:'6px' }}>We sent a reset link to <strong style={{ color:'#e2e8f0' }}>{email}</strong></p>
               <p style={{ color:'#4b4b6a', fontSize:'12px', marginBottom:'20px' }}>Link expires in 1 hour. Check spam if you don't see it.</p>
-              <button onClick={() => setStep('request')} style={{ background:'none', border:'none', color:'#6c63ff', fontSize:'13px', cursor:'pointer', fontFamily:"'Syne', sans-serif", fontWeight:'600' }}>← Try different email</button>
+              <button onClick={() => setStep('request')} style={{ background:'none', border:'none', color:'#6c63ff', fontSize:'13px', cursor:'pointer', fontFamily:"'DM Sans', sans-serif", fontWeight:'600' }}>← Try different email</button>
             </div>
           )}
 

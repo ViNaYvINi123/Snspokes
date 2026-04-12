@@ -98,9 +98,7 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" style={{ textDecoration:'none', display:'flex', alignItems:'center',
           gap:'9px', flexShrink:0, marginRight:'24px' }}>
-          <div style={{ width:'30px', height:'30px', borderRadius:'8px', flexShrink:0,
-            background:'linear-gradient(135deg,#6c63ff,#a855f7)',
-            display:'flex', alignItems:'center', justifyContent:'center', fontSize:'15px' }}>⚡</div>
+          <img src="/logo.svg" alt="snspokes" width="30" height="30" style={{ borderRadius:'8px', flexShrink:0 }} />
           <span style={{ fontFamily:"'Bricolage Grotesque',sans-serif", fontWeight:800,
             fontSize:'17px', color:'#f0f4ff', letterSpacing:'-0.5px' }}>snspokes</span>
         </Link>
@@ -198,8 +196,6 @@ export default function Navbar() {
                   </div>
                   {[
                     { href:'/dashboard', label:'Dashboard' },
-                    { href:'/dashboard/saved', label:'Saved Items' },
-                    { href:'/settings', label:'Settings' },
                   ].map(l => (
                     <Link key={l.href} href={l.href} onClick={() => setUserOpen(false)}
                       style={{ display:'block', padding:'9px 14px', color:'#6b7280', fontSize:'13px',
@@ -222,7 +218,7 @@ export default function Navbar() {
               )}
             </div>
           ) : (
-            <Link href="/auth/login"
+            <Link href="/login"
               style={{ padding:'7px 16px', background:'linear-gradient(135deg,#6c63ff,#a855f7)',
                 borderRadius:'8px', color:'#fff', fontSize:'13px', fontWeight:600,
                 textDecoration:'none', fontFamily:"'DM Sans',sans-serif", transition:'opacity .15s' }}

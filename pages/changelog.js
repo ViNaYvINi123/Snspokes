@@ -44,7 +44,7 @@ export default function Changelog() {
         <meta name="description" content="See what's new in snspokes — every update, fix, and improvement." />
       </Head>
       <Navbar />
-      <main style={{ paddingTop:'90px', minHeight:'100vh', background:'#0a0a0f', fontFamily:"'Syne', system-ui, sans-serif" }}>
+      <main style={{ paddingTop:'90px', minHeight:'100vh', background:'#0a0a0f', fontFamily:"'DM Sans', system-ui, sans-serif" }}>
         <div style={{ maxWidth:'720px', margin:'0 auto', padding:'60px 24px' }}>
           <div style={{ marginBottom:'48px' }}>
             <h1 style={{ fontSize:'40px', fontWeight:'800', color:'#fff', margin:'0 0 12px', letterSpacing:'-0.03em' }}>Changelog</h1>

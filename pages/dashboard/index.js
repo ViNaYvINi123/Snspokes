@@ -266,11 +266,8 @@ function OverviewTab({ data, plan, planColor, switchTab }) {
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))', gap:'10px' }}>
           {[
             { href:'/tools/code-generator', icon:'💻', label:'Code Generator' },
-            { href:'/tools/query-builder',  icon:'📊', label:'Query Builder' },
-            { href:'/tools/error-finder',   icon:'🐛', label:'Error Finder' },
-            { href:'/tools/script-linter',  icon:'✅', label:'Script Linter' },
-            { href:'/tools/version-matrix', icon:'🔖', label:'Version Matrix' },
-            { href:'/search',               icon:'🔍', label:'Search Spokes' },
+                        { href:'/tools/error-finder',   icon:'🐛', label:'Error Finder' },
+                                    { href:'/search',               icon:'🔍', label:'Search Spokes' },
           ].map(l => (
             <Link key={l.href} href={l.href} style={{ display:'flex', alignItems:'center', gap:'10px', padding:'12px 14px', background:'#111827', borderRadius:'10px', textDecoration:'none', color:'#9999bb', fontSize:'13px', transition:'all 0.15s', border:'1px solid transparent' }}
               onMouseEnter={e => { e.currentTarget.style.color='#fff'; e.currentTarget.style.borderColor='#2a2a3e'; }}
@@ -300,7 +297,7 @@ function OverviewTab({ data, plan, planColor, switchTab }) {
 
 // ── Queries Tab ────────────────────────────────────────────
 function QueriesTab({ items, onDelete }) {
-  if (!items.length) return <EmptyState msg="No saved queries yet" link="/tools/query-builder" cta="Open Query Builder" />;
+  if (!items.length) return <EmptyState msg="No saved queries yet" link="/search" cta="Start Searching" />;
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
       {items.map(q => (
@@ -314,7 +311,7 @@ function QueriesTab({ items, onDelete }) {
             </div>
           </div>
           <div style={{ display:'flex', gap:'8px', flexShrink:0 }}>
-            <Link href={`/tools/query-builder?q=${encodeURIComponent(q.query)}&table=${q.table_name || ''}`}
+            <Link href={`/search?q=${encodeURIComponent(q.query)}&table=${q.table_name || ''}`}
               style={{ padding:'5px 12px', background:'#6c63ff22', border:'1px solid #6c63ff44', borderRadius:'8px', color:'#8b85ff', fontSize:'12px', textDecoration:'none' }}>Use</Link>
             <button onClick={() => onDelete(q.id)} style={{ padding:'5px 12px', background:'#FF6B6B11', border:'1px solid #FF6B6B33', borderRadius:'8px', color:'#f87171', fontSize:'12px', cursor:'pointer', fontFamily:'inherit' }}>Delete</button>
           </div>

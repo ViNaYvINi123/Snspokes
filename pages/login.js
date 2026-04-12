@@ -24,11 +24,11 @@ const EyeIcon = ({ open }) => open ? (
 );
 
 const s = {
-  page:   { minHeight:'100vh', background:'#080810', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'24px', fontFamily:"'Syne', system-ui, sans-serif" },
+  page:   { minHeight:'100vh', background:'#080810', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'24px', fontFamily:"'DM Sans', system-ui, sans-serif" },
   card:   { width:'100%', maxWidth:'420px', background:'#0f0f1a', border:'1px solid #1e1e2e', borderRadius:'20px', padding:'36px 32px', boxShadow:'0 24px 80px rgba(0,0,0,0.4)' },
-  input:  { width:'100%', background:'#111827', border:'1px solid #2a2a3e', borderRadius:'12px', padding:'12px 16px', color:'#e2e8f0', fontSize:'14px', fontFamily:"'Syne', sans-serif", outline:'none', transition:'border-color 0.2s, box-shadow 0.2s', boxSizing:'border-box' },
-  btn:    { width:'100%', padding:'13px', background:'linear-gradient(135deg,#6c63ff,#a855f7)', border:'none', borderRadius:'12px', color:'#fff', fontSize:'14px', fontWeight:'700', cursor:'pointer', fontFamily:"'Syne', sans-serif", transition:'opacity 0.2s, transform 0.1s', letterSpacing:'0.01em' },
-  oauth:  { width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'10px', padding:'12px', background:'#1a1a2e', border:'1px solid #2a2a3e', borderRadius:'12px', color:'#e2e8f0', fontSize:'13px', fontWeight:'600', cursor:'pointer', fontFamily:"'Syne', sans-serif", transition:'all 0.15s' },
+  input:  { width:'100%', background:'#111827', border:'1px solid #2a2a3e', borderRadius:'12px', padding:'12px 16px', color:'#e2e8f0', fontSize:'14px', fontFamily:"'DM Sans', sans-serif", outline:'none', transition:'border-color 0.2s, box-shadow 0.2s', boxSizing:'border-box' },
+  btn:    { width:'100%', padding:'13px', background:'linear-gradient(135deg,#6c63ff,#a855f7)', border:'none', borderRadius:'12px', color:'#fff', fontSize:'14px', fontWeight:'700', cursor:'pointer', fontFamily:"'DM Sans', sans-serif", transition:'opacity 0.2s, transform 0.1s', letterSpacing:'0.01em' },
+  oauth:  { width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'10px', padding:'12px', background:'#1a1a2e', border:'1px solid #2a2a3e', borderRadius:'12px', color:'#e2e8f0', fontSize:'13px', fontWeight:'600', cursor:'pointer', fontFamily:"'DM Sans', sans-serif", transition:'all 0.15s' },
   error:  { background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.25)', color:'#f87171', borderRadius:'10px', padding:'10px 14px', fontSize:'13px', marginBottom:'16px' },
   label:  { fontSize:'12px', color:'#6b7280', display:'block', marginBottom:'6px', fontWeight:'600', textTransform:'uppercase', letterSpacing:'0.06em' },
   divider:{ display:'flex', alignItems:'center', gap:'12px', margin:'20px 0' },

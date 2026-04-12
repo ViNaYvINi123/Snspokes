@@ -16,6 +16,7 @@ const DEFAULT_CONFIG = {
     Tools: [
       { label: 'Code Generator', href: '/tools/code-generator' },
       { label: 'Error Finder',   href: '/tools/error-finder' },
+      { label: 'Cheatsheet',     href: '/tools/cheatsheet' },
     ],
     Resources: [
       { label: 'Documentation',  href: '/docs' },
@@ -65,7 +66,7 @@ export default function Footer() {
     <footer style={{
       borderTop: '1px solid #1e1e2e', background: '#060810',
       paddingTop: '60px', paddingBottom: '40px', marginTop: '80px',
-      fontFamily: "'Syne', system-ui, sans-serif",
+      fontFamily: "'DM Sans', system-ui, sans-serif",
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
 

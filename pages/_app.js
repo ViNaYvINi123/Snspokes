@@ -107,7 +107,7 @@ function MaintenanceCheck({ children }) {
   }, []);
 
   if (maintenance) return (
-    <div style={{ minHeight:'100vh', background:'#0a0a0f', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center', padding:'24px', fontFamily:"'Syne', system-ui, sans-serif" }}>
+    <div style={{ minHeight:'100vh', background:'#0a0a0f', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center', padding:'24px', fontFamily:"'DM Sans', system-ui, sans-serif" }}>
       <div style={{ fontSize:'52px', marginBottom:'20px' }}>🔧</div>
       <h1 style={{ color:'#fff', fontSize:'28px', fontWeight:'800', marginBottom:'10px' }}>Down for Maintenance</h1>
       <p style={{ color:'#6b7280', fontSize:'15px', maxWidth:'380px', lineHeight:'1.6' }}>We're doing some quick improvements. We'll be back shortly!</p>

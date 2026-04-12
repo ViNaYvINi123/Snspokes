@@ -44,7 +44,7 @@ export default function CookieBanner() {
       <style>{`
         @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
       `}</style>
-      <div style={{ position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',zIndex:9999,width:'100%',maxWidth:'560px',padding:'0 16px',fontFamily:'Inter,Syne,sans-serif' }}>
+      <div style={{ position:'fixed',bottom:'24px',left:'50%',transform:'translateX(-50%)',zIndex:9999,width:'100%',maxWidth:'560px',padding:'0 16px',fontFamily:'DM Sans, sans-serif' }}>
         <div style={{ background:'#fff',borderRadius:'16px',boxShadow:'0 20px 60px rgba(0,0,0,0.15)',border:'1px solid #e5e7eb',overflow:'hidden',animation:'slideUp 0.3s ease' }}>
 
           {/* Main banner */}

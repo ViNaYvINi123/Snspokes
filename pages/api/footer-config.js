@@ -15,11 +15,9 @@ const DEFAULT_CONFIG = {
     ],
     Tools: [
       { label: 'Code Generator', href: '/tools/code-generator' },
-      { label: 'Script Linter',  href: '/tools/script-linter' },
-      { label: 'Error Finder',   href: '/tools/error-finder' },
-      { label: 'Query Builder',  href: '/tools/query-builder' },
-      { label: 'Version Matrix', href: '/tools/version-matrix' },
-    ],
+            { label: 'Error Finder',   href: '/tools/error-finder' },
+      { label: 'Cheatsheet',     href: '/tools/cheatsheet' },
+                ],
     Resources: [
       { label: 'Documentation',  href: '/docs' },
       { label: 'Submit a Spoke', href: '/submit-spoke' },

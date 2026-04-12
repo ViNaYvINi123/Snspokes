@@ -47,10 +47,10 @@ export default function Spokes() {
             <p style={{ color: '#6b6b8a', fontSize: '16px', marginBottom: '32px' }}>Complete reference for all ServiceNow Integration Hub spokes</p>
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
               <input type="text" placeholder="Filter spokes..." value={search} onChange={e => setSearch(e.target.value)}
-                style={{ flex: 1, minWidth: '200px', padding: '12px 16px', background: '#0f0f1a', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#fff', fontSize: '14px', fontFamily: 'Syne, sans-serif' }} />
+                style={{ flex: 1, minWidth: '200px', padding: '12px 16px', background: '#0f0f1a', border: '1px solid #1e1e2e', borderRadius: '10px', color: '#fff', fontSize: '14px', fontFamily: 'DM Sans, sans-serif' }} />
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {CATEGORIES.map(cat => (
-                  <button key={cat} onClick={() => setCategory(cat)} style={{ padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '500', fontFamily: 'Syne, sans-serif', background: category === cat ? 'rgba(108,99,255,0.2)' : 'transparent', border: `1px solid ${category === cat ? '#6c63ff' : '#1e1e2e'}`, color: category === cat ? '#8b85ff' : '#6b6b8a', transition: 'all 0.2s' }}>{cat}</button>
+                  <button key={cat} onClick={() => setCategory(cat)} style={{ padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '500', fontFamily: 'DM Sans, sans-serif', background: category === cat ? 'rgba(108,99,255,0.2)' : 'transparent', border: `1px solid ${category === cat ? '#6c63ff' : '#1e1e2e'}`, color: category === cat ? '#8b85ff' : '#6b6b8a', transition: 'all 0.2s' }}>{cat}</button>
                 ))}
               </div>
             </div>
