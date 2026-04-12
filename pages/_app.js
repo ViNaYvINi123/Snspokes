@@ -39,7 +39,7 @@ import { ToastProvider } from '../components/Toast';
 
 
 // Pages that require authentication
-const PROTECTED_PATHS = ['/dashboard', '/admin', '/onboarding', '/settings'];
+const PROTECTED_PATHS = ['/dashboard', '/onboarding'];
 
 function SessionGuard({ children }) {
   const { data: session, status } = useSession();
