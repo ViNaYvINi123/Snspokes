@@ -644,3 +644,8 @@ INSERT INTO sn_feature_flags (name, description, enabled) VALUES
 ON CONFLICT (name) DO NOTHING;
 
 SELECT 'v35 migration complete — all tables ready' AS status;
+
+-- Fix: missing columns needed by NextAuth
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS provider_id TEXT;
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN DEFAULT false;
+ALTER TABLE sn_users ADD COLUMN IF NOT EXISTS image TEXT;

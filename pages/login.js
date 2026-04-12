@@ -68,6 +68,7 @@ export default function Login() {
     </div>
   );
   const isBanned    = router.query.error === 'banned';
+  const oauthError  = router.query.error === 'AccessDenied' || router.query.error === 'OAuthCallback';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -103,6 +104,10 @@ export default function Login() {
           </div>
 
           {isBanned && <div style={{ ...s.error, marginBottom:'20px' }}>Your account has been suspended. Contact support for help.</div>}
+
+          {oauthError && <div style={{ background:'rgba(245,158,11,0.08)', border:'1px solid rgba(245,158,11,0.2)', borderRadius:'10px', padding:'11px 14px', fontSize:'13px', color:'#f59e0b', marginBottom:'16px', display:'flex', alignItems:'center', gap:'8px' }}>
+            <span>⚠️</span> Google sign-in failed. Please use email and password instead, or try again later.
+          </div>}
 
           {sessionMsg && (
             <div style={{ background: sessionMsg.bg, border: '1px solid ' + sessionMsg.border, borderRadius: '10px', padding: '11px 14px', fontSize: '13px', color: sessionMsg.color, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
